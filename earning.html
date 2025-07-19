@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Earnings - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #28a745;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1e7e34;
+    }
+
+    .message {
+      margin-top: 20px;
+      text-align: center;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Trigger Daily Earnings</h2>
+    <button onclick="triggerEarnings()">Run Earnings Distribution</button>
+    <div class="message" id="messageBox"></div>
+  </div>
+
+  <script>
+    async function triggerEarnings() {
+      try {
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/earnings/daily", {
+          method: "POST"
+        });
+        const data = await res.json();
+        document.getElementById("messageBox").textContent = data.message;
+      } catch (err) {
+        document.getElementById("messageBox").textContent = "Failed to trigger earnings.";
+      }
+    }
+  </script>
+</body>
+</html>
