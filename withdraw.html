@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Withdraw - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #009933;
+      color: white;
+      text-align: center;
+      padding: 15px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #009933;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      margin-top: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background: #009933;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #007a29;
+    }
+
+    .note {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #d9534f;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Withdraw Earnings</h1>
+</header>
+
+<div class="container">
+  <h2>Request Withdrawal</h2>
+  <form id="withdrawForm">
+    <label for="amount">Amount to Withdraw (KES):</label>
+    <input type="number" id="amount" required />
+
+    <button type="submit">Submit Withdrawal</button>
+
+    <p class="note">
+      NOTE: Minimum withdrawal amount is based on your investment.<br/>
+      - 150 KES if invested 500<br/>
+      - 300 KES if invested 1000<br/>
+      - Increases proportionally.
+    </p>
+  </form>
+</div>
+
+<script>
+  const username = localStorage.getItem("username");
+  if (!username) {
+    alert("Please log in first.");
+    window.location.href = "login.html";
+  }
+
+  document.getElementById("withdrawForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById("amount").value);
+
+    if (!amount || amount <= 0) {
+      alert("Enter a valid amount.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("amount", amount);
+
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      alert(data.message || "Withdrawal submitted.");
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      alert("Error submitting withdrawal.");
+    }
+  });
+</script>
+
+</body>
+</html>
