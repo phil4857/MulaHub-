@@ -4,51 +4,63 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jipate Bonus</title>
-  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Jipate Bonus Platform</h1>
+  <h1>Jipate Bonus Investment</h1>
 
-  <section>
+  <section id="register">
     <h2>Register</h2>
     <form id="registerForm">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <input type="text" name="referral" placeholder="Referral (optional)" />
+      <input name="username" placeholder="Username" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <input name="referral" placeholder="Referral (optional)" />
       <button type="submit">Register</button>
     </form>
   </section>
 
-  <section>
+  <section id="login">
     <h2>Login</h2>
     <form id="loginForm">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="password" name="password" placeholder="Password" required />
+      <input name="username" placeholder="Username" required />
+      <input name="password" type="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
   </section>
 
-  <section>
+  <section id="invest">
     <h2>Invest</h2>
     <form id="investForm">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="number" step="0.01" name="amount" placeholder="Amount" required />
-      <input type="text" name="transaction_ref" placeholder="Transaction Reference" required />
-      <button type="submit">Submit Investment</button>
+      <input name="username" placeholder="Username" required />
+      <input name="amount" placeholder="Amount" required type="number" />
+      <input name="transaction_ref" placeholder="Transaction Ref" required />
+      <button type="submit">Invest</button>
     </form>
   </section>
 
-  <section>
+  <section id="withdraw">
     <h2>Withdraw</h2>
     <form id="withdrawForm">
-      <input type="text" name="username" placeholder="Username" required />
-      <input type="number" step="0.01" name="amount" placeholder="Amount" required />
+      <input name="username" placeholder="Username" required />
+      <input name="amount" placeholder="Amount" required type="number" />
       <button type="submit">Withdraw</button>
     </form>
   </section>
 
-  <div id="response"></div>
+  <section id="admin">
+    <h2>Admin Controls</h2>
+    <form id="approveUserForm">
+      <input name="username" placeholder="Username to Approve" required />
+      <button type="submit">Approve User</button>
+    </form>
 
-  <script src="script.js"></script>
+    <form id="approveInvestmentForm">
+      <input name="username" placeholder="Username to Approve Investment" required />
+      <button type="submit">Approve Investment</button>
+    </form>
+  </section>
+
+  <div id="messages"></div>
 </body>
 </html>
