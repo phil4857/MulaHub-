@@ -1,31 +1,42 @@
-document.getElementById('loginForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+// login.js
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
 
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  const formData = new FormData();
-  formData.append('username', username);
-  formData.append('password', password);
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
 
-  try {
-    const response = await fetch('https://repo-1red-jipate-bonus.onrender.com/login', {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      alert(data.message);
-      localStorage.setItem("username", username);
-      window.location.href = 'dashboard.html';
-    } else {
-      alert(data.detail || "Login failed.");
+    if (!username || !password) {
+      alert("Please fill all fields.");
+      return;
     }
 
-  } catch (error) {
-    alert("An error occurred. Try again later.");
-    console.error(error);
-  }
+    try {
+      const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Login failed");
+      }
+
+      // Save to localStorage
+      localStorage.setItem("username", username);
+
+      // Route by role
+      if (username.toLowerCase() === "admin") {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "dashboard.html";
+      }
+
+    } catch (err) {
+      alert(err.message);
+    }
+  });
 });
