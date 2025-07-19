@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4fc;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background-color: #1f4e79;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f0f8ff;
+    }
+    button {
+      padding: 6px 12px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <table id="userTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Password Hash</th>
+        <th>Referral</th>
+        <th>Balance</th>
+        <th>Earnings</th>
+        <th>Approved</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const API_URL = "https://repo-1red-jipate-bonus.onrender.com";
+
+    async function loadUsers() {
+      const res = await fetch(`${API_URL}/admin/view_users`);
+      const data = await res.json();
+      const tbody = document.querySelector("#userTable tbody");
+      tbody.innerHTML = "";
+
+      Object.entries(data).forEach(([username, user]) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${username}</td>
+          <td>${user.password_hash}</td>
+          <td>${user.referral || "-"}</td>
+          <td>${user.balance.toFixed(2)}</td>
+          <td>${user.earnings.toFixed(2)}</td>
+          <td>${user.approved ? "✅" : "❌"}</td>
+          <td>
+            <button onclick="approveUser('${username}')">Approve</button>
+            <button onclick="resetPassword('${username}')">Reset Password</button>
+          </td>
+        `;
+
+        tbody.appendChild(row);
+      });
+    }
+
+    async function approveUser(username) {
+      await fetch(`${API_URL}/admin/approve_user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `username=${username}`
+      });
+      alert(`${username} approved!`);
+      loadUsers();
+    }
+
+    async function resetPassword(username) {
+      const newPassword = prompt(`Enter new password for ${username}:`);
+      if (!newPassword) return;
+      await fetch(`${API_URL}/admin/reset_password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `username=${username}&new_password=${newPassword}`
+      });
+      alert(`Password reset for ${username}`);
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>
