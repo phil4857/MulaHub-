@@ -8,9 +8,14 @@
   <h2>Test Registration</h2>
   <form method="POST" action="https://repo-1red-jipate-bonus.onrender.com/register">
     <label>Username:</label><br>
-    <input type="text" name="username" value="testuser123"><br>
+    <input type="text" name="username" value="testuser123" required><br>
+
     <label>Password:</label><br>
-    <input type="password" name="password" value="testpass"><br>
+    <input type="password" name="password" value="testpass" required><br>
+
+    <label>Referral (optional):</label><br>
+    <input type="text" name="referral"><br><br>
+
     <input type="submit" value="Register">
   </form>
 </body>
