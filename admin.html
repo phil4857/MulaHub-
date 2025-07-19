@@ -1,34 +1,11 @@
-<!-- admin.html -->
-<h2>Admin Dashboard</h2>
-<div id="userTable"></div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    const username = localStorage.getItem("username");
-    if (username !== "admin") {
-      alert("Access Denied.");
-      window.location.href = "login.html";
-      return;
-    }
-
-    try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
-      const users = await res.json();
-
-      let html = "<table border='1'><tr><th>Username</th><th>Phone</th><th>Referral</th><th>Balance</th></tr>";
-      for (const [key, value] of Object.entries(users)) {
-        html += `<tr>
-          <td>${value.username}</td>
-          <td>${value.phone || "N/A"}</td>
-          <td>${value.referral || "N/A"}</td>
-          <td>${value.balance || 0}</td>
-        </tr>`;
-      }
-      html += "</table>";
-      document.getElementById("userTable").innerHTML = html;
-
-    } catch (err) {
-      alert("Failed to load users");
-    }
-  });
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+</head>
+<body>
+  <h2>Admin Panel</h2>
+  <div id="userList"></div>
+  <script src="admin.js"></script>
+</body>
+</html>
