@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Dashboard - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eaf4ea;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #28a745;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #28a745;
+    }
+
+    .info {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f0f8f0;
+      border-left: 4px solid #28a745;
+    }
+
+    .actions button {
+      margin: 10px 5px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      background: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+
+    .actions button:hover {
+      background: #1f7a36;
+    }
+
+    .logout {
+      float: right;
+      background: #dc3545 !important;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Welcome to Jipate Bonus Dashboard</h1>
+</header>
+
+<div class="container">
+  <div class="info" id="userInfo">
+    <strong>Username:</strong> <span id="usernameDisplay"></span><br />
+    <strong>Balance:</strong> KES <span id="balanceDisplay">Loading...</span><br />
+    <strong>Earnings:</strong> KES <span id="earningsDisplay">Loading...</span><br />
+    <strong>Referral Link:</strong> <span id="referralLink"></span><br />
+    <strong>Payment Number:</strong> 0737734533
+  </div>
+
+  <div class="actions">
+    <button onclick="window.location.href='invest.html'">Invest</button>
+    <button onclick="window.location.href='withdraw.html'">Withdraw</button>
+    <button onclick="logout()" class="logout">Logout</button>
+  </div>
+</div>
+
+<script>
+  const username = localStorage.getItem("username");
+  if (!username) {
+    alert("Please login first.");
+    window.location.href = "login.html";
+  }
+
+  document.getElementById("usernameDisplay").textContent = username;
+  document.getElementById("referralLink").textContent = 
+    `https://jipate-bonus-v1-bcti.vercel.app/register.html?ref=${username}`;
+
+  async function loadUserData() {
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
+      const data = await res.json();
+      const user = data[username];
+      document.getElementById("balanceDisplay").textContent = user.balance.toFixed(2);
+      document.getElementById("earningsDisplay").textContent = user.earnings.toFixed(2);
+    } catch (err) {
+      alert("Failed to load user data.");
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("username");
+    window.location.href = "login.html";
+  }
+
+  loadUserData();
+</script>
+
+</body>
+</html>
