@@ -1,39 +1,41 @@
-const backendUrl = "https://jipate-bonus-ylut.onrender.com"; // your Render backend
+const backend = "https://repo-1red-jipate-bonus.onrender.com";
 
-function postData(url, formData) {
-  fetch(url, {
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const res = await fetch(`${backend}/register`, {
     method: "POST",
     body: formData,
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      document.getElementById("response").innerText = JSON.stringify(data, null, 2);
-    })
-    .catch((err) => {
-      document.getElementById("response").innerText = "Error: " + err;
-    });
-}
-
-document.getElementById("registerForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-  postData(`${backendUrl}/register`, formData);
+  });
+  alert(await res.text());
 });
 
-document.getElementById("loginForm").addEventListener("submit", function (e) {
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const formData = new FormData(this);
-  postData(`${backendUrl}/login`, formData);
+  const formData = new FormData(e.target);
+  const res = await fetch(`${backend}/login`, {
+    method: "POST",
+    body: formData,
+  });
+  alert(await res.text());
 });
 
-document.getElementById("investForm").addEventListener("submit", function (e) {
+document.getElementById("investForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const formData = new FormData(this);
-  postData(`${backendUrl}/invest`, formData);
+  const formData = new FormData(e.target);
+  const res = await fetch(`${backend}/invest`, {
+    method: "POST",
+    body: formData,
+  });
+  alert(await res.text());
 });
 
-document.getElementById("withdrawForm").addEventListener("submit", function (e) {
+document.getElementById("withdrawForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const formData = new FormData(this);
-  postData(`${backendUrl}/withdraw`, formData);
+  const formData = new FormData(e.target);
+  const res = await fetch(`${backend}/withdraw`, {
+    method: "POST",
+    body: formData,
+  });
+  alert(await res.text());
 });
