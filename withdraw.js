@@ -28,8 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const user = users[username];
       const investment = investments[username];
 
-      if (!user || !investment) {
-        alert("Account or investment not found.");
+      if (!user) {
+        alert("User not found on backend. Ensure you're registered and approved.");
+        return;
+      }
+
+      if (!investment || !investment.approved) {
+        alert("No approved investment found for this user.");
         return;
       }
 
@@ -72,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = "dashboard.html";
 
     } catch (err) {
-      console.error(err);
+      console.error("Withdrawal error:", err);
       alert(err.message || "Error occurred during withdrawal.");
     }
   });
