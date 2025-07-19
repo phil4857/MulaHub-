@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f0f5;
+      color: #333;
+      padding: 40px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: #a25c00;
+    }
+
+    form {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #a25c00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #824400;
+    }
+
+    .msg {
+      font-size: 14px;
+      margin-top: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Create Your Jipate Bonus Account</h2>
+  <form id="register-form">
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <input type="text" id="referral" placeholder="Referral (optional)" />
+    <button type="submit">Register</button>
+    <div class="msg" id="message"></div>
+  </form>
+
+  <script>
+    const form = document.getElementById("register-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const referral = document.getElementById("referral").value;
+
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("password", password);
+      if (referral) formData.append("referral", referral);
+
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/register", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      document.getElementById("message").innerText = data.message || data.detail;
+    });
+  </script>
+
+</body>
+</html>
