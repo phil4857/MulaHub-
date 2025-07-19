@@ -1,34 +1,34 @@
-// register.js
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('registerForm');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+    const username = document.getElementById('username').value;
+    const phone = document.getElementById('phone').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const referral = document.getElementById('referral').value;
 
-    if (!username || !password) {
-      alert("All fields are required.");
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
       return;
     }
 
     try {
-      const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+      const res = await fetch('https://repo-1red-jipate-bonus.onrender.com/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}&password=${encodeURIComponent(password)}&referral=${encodeURIComponent(referral)}`
       });
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.detail || "Registration failed");
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Registration failed");
 
-      alert("Registration successful. Please log in.");
-      localStorage.setItem("username", username);
-      window.location.href = "dashboard.html";
+      alert("User registered successfully.");
+      window.location.href = "login.html";
     } catch (err) {
+      console.error(err);
       alert(err.message);
     }
   });
