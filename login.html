@@ -1,96 +1,21 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Jipate Bonus</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fefefe;
-      padding: 40px;
-      max-width: 500px;
-      margin: auto;
-    }
-
-    h2 {
-      text-align: center;
-      color: #005c99;
-    }
-
-    form {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #005c99;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #004070;
-    }
-
-    .msg {
-      text-align: center;
-      margin-top: 10px;
-      color: red;
-    }
-  </style>
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h2>Login to Jipate Bonus</h2>
-  <form id="login-form">
-    <input type="text" id="username" placeholder="Username" required />
-    <input type="password" id="password" placeholder="Password" required />
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="Username" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
     <button type="submit">Login</button>
-    <div class="msg" id="message"></div>
   </form>
+  <p>Don't have an account? <a href="register.html">Register here</a></p>
 
-  <script>
-    const form = document.getElementById("login-form");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
-
-      const formData = new FormData();
-      formData.append("username", username);
-      formData.append("password", password);
-
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("username", username);
-        window.location.href = "dashboard.html";
-      } else {
-        document.getElementById("message").innerText = data.detail || data.message;
-      }
-    });
-  </script>
-
+  <script src="login.js"></script>
 </body>
 </html>
