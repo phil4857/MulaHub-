@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Dashboard - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e6f2ff;
+      padding: 40px;
+      color: #003366;
+    }
+    h1 {
+      text-align: center;
+      color: #004080;
+    }
+    .section {
+      background: #ffffff;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 500px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #004080;
+      color: white;
+      font-weight: bold;
+    }
+    .note {
+      font-size: 0.85em;
+      color: #333;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Your Dashboard</h1>
+
+  <div class="section">
+    <h3>Invest</h3>
+    <form id="investForm">
+      <input type="number" name="amount" placeholder="Investment Amount" required>
+      <input type="text" name="transaction_ref" placeholder="Transaction Reference" required>
+      <button type="submit">Submit Investment</button>
+    </form>
+    <div class="note">Investments on Sunday get 5% discount</div>
+  </div>
+
+  <div class="section">
+    <h3>Withdraw</h3>
+    <form id="withdrawForm">
+      <input type="number" name="amount" placeholder="Amount to Withdraw" required>
+      <button type="submit">Request Withdrawal</button>
+    </form>
+    <div class="note">Minimum withdrawal: 150 for KES 500 investment, 300 for 1000, etc.</div>
+  </div>
+
+  <script>
+    const API = "https://repo-1red-jipate-bonus.onrender.com";
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get("user");
+
+    document.getElementById("investForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      form.append("username", username);
+
+      const res = await fetch(`${API}/invest`, {
+        method: "POST",
+        body: form
+      });
+
+      const result = await res.json();
+      alert(result.message || result.detail || "Error");
+    });
+
+    document.getElementById("withdrawForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      form.append("username", username);
+
+      const res = await fetch(`${API}/withdraw`, {
+        method: "POST",
+        body: form
+      });
+
+      const result = await res.json();
+      alert(result.message || result.detail || "Error");
+    });
+  </script>
+</body>
+</html>
