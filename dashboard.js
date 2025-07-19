@@ -1,47 +1,61 @@
-document.addEventListener('DOMContentLoaded', async function () {
-  const username = localStorage.getItem('username');
+document.addEventListener("DOMContentLoaded", async () => {
+  const username = localStorage.getItem("username");
+
   if (!username) {
-    alert("Please login first.");
-    window.location.href = 'login.html';
+    alert("Please log in first.");
+    window.location.href = "login.html";
     return;
   }
 
-  document.getElementById('welcome').innerText = `Welcome, ${username}`;
+  // Set username
+  document.getElementById("usernameDisplay").textContent = username;
 
-  // Load balance and earnings
+  // Set referral link
+  const referralUrl = `${window.location.origin}/register.html?ref=${username}`;
+  const referralLinkEl = document.getElementById("referralLink");
+  referralLinkEl.textContent = referralUrl;
+  referralLinkEl.href = referralUrl;
+
   try {
-    const response = await fetch(`https://repo-1red-jipate-bonus.onrender.com/admin/view_users`);
-    const data = await response.json();
+    // Trigger daily earnings (idempotent)
+    await fetch("https://repo-1red-jipate-bonus.onrender.com/earnings/daily", {
+      method: "POST",
+    });
 
-    if (data[username]) {
-      document.getElementById('balance').innerText = `Balance: KES ${data[username].balance.toFixed(2)}`;
-      document.getElementById('earnings').innerText = `Total Earnings: KES ${data[username].earnings.toFixed(2)}`;
-      
-      // Countdown
-      const lastTime = data[username].last_earning_time;
-      const nextTime = lastTime + 86400 * 1000;
-      const countdown = setInterval(() => {
-        const now = Date.now();
-        const remaining = nextTime - now;
-        if (remaining <= 0) {
-          clearInterval(countdown);
-          document.getElementById('countdown').innerText = "You can now earn!";
-        } else {
-          const hours = Math.floor(remaining / (1000 * 60 * 60));
-          const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-          const secs = Math.floor((remaining % (1000 * 60)) / 1000);
-          document.getElementById('countdown').innerText = `Next earning in: ${hours}h ${mins}m ${secs}s`;
-        }
-      }, 1000);
+    // Fetch all users
+    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
+    const users = await res.json();
+
+    const user = users[username];
+    if (!user) {
+      alert("User not found.");
+      return;
     }
+
+    // Update DOM with balance and earnings
+    document.getElementById("balanceDisplay").textContent = `KES ${user.balance.toFixed(2)}`;
+    document.getElementById("earningsDisplay").textContent = `KES ${user.earnings.toFixed(2)}`;
+
+    // Show MPESA payment instructions
+    document.getElementById("paymentInstructions").textContent = "Send payment to MPESA number: 0737734533";
+
+    // Display referred users
+    const referredUsers = user.referred_users || [];
+    const referredList = document.getElementById("referredUsers");
+    referredList.innerHTML = "";
+
+    if (referredUsers.length === 0) {
+      referredList.innerHTML = "<li>No referrals yet</li>";
+    } else {
+      referredUsers.forEach((refUser) => {
+        const li = document.createElement("li");
+        li.textContent = refUser;
+        referredList.appendChild(li);
+      });
+    }
+
   } catch (err) {
     console.error(err);
     alert("Failed to load dashboard data.");
   }
-
-  // Logout
-  document.getElementById('logoutBtn').addEventListener('click', function () {
-    localStorage.clear();
-    window.location.href = 'login.html';
-  });
 });
