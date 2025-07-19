@@ -3,116 +3,135 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard - Jipate Bonus</title>
+  <title>Admin Panel - Jipate Bonus</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4fc;
-      margin: 20px;
+      background-color: #fff8f0;
+      color: #3a2f0b;
+      padding: 40px;
     }
     h1 {
       text-align: center;
-      color: #333;
+      color: #a25c00;
     }
-    table {
+    .section {
+      background: #fffdf7;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(160, 120, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+    }
+    input, button {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: #fff;
-    }
-    th, td {
       padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      text-align: left;
-      font-size: 14px;
-    }
-    th {
-      background-color: #1f4e79;
-      color: white;
-    }
-    tr:nth-child(even) {
-      background-color: #f0f8ff;
     }
     button {
-      padding: 6px 12px;
-      background-color: #4caf50;
+      background-color: #a25c00;
       color: white;
-      border: none;
-      cursor: pointer;
+      font-weight: bold;
     }
-    button:hover {
-      background-color: #45a049;
+    pre {
+      background: #f5f5dc;
+      padding: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
   </style>
 </head>
 <body>
-  <h1>Admin Dashboard</h1>
-  <table id="userTable">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Password Hash</th>
-        <th>Referral</th>
-        <th>Balance</th>
-        <th>Earnings</th>
-        <th>Approved</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h1>Admin Panel</h1>
+
+  <div class="section">
+    <h3>Approve User</h3>
+    <form id="approveUserForm">
+      <input type="text" name="username" placeholder="Username to approve" required>
+      <button type="submit">Approve</button>
+    </form>
+  </div>
+
+  <div class="section">
+    <h3>Approve Investment</h3>
+    <form id="approveInvestmentForm">
+      <input type="text" name="username" placeholder="Username to approve investment" required>
+      <button type="submit">Approve</button>
+    </form>
+  </div>
+
+  <div class="section">
+    <h3>Reset Password</h3>
+    <form id="resetPasswordForm">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="text" name="new_password" placeholder="New Password" required>
+      <button type="submit">Reset</button>
+    </form>
+  </div>
+
+  <div class="section">
+    <h3>View Users</h3>
+    <button onclick="loadUsers()">Load Users</button>
+    <pre id="userList">Users will appear here...</pre>
+  </div>
+
+  <div class="section">
+    <h3>View Investments</h3>
+    <button onclick="loadInvestments()">Load Investments</button>
+    <pre id="investmentList">Investments will appear here...</pre>
+  </div>
 
   <script>
-    const API_URL = "https://repo-1red-jipate-bonus.onrender.com";
+    const API = "https://repo-1red-jipate-bonus.onrender.com";
+
+    document.getElementById("approveUserForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const res = await fetch(`${API}/admin/approve_user`, {
+        method: "POST",
+        body: form
+      });
+      const result = await res.json();
+      alert(result.message || result.detail);
+    });
+
+    document.getElementById("approveInvestmentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const res = await fetch(`${API}/admin/approve_investment`, {
+        method: "POST",
+        body: form
+      });
+      const result = await res.json();
+      alert(result.message || result.detail);
+    });
+
+    document.getElementById("resetPasswordForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const res = await fetch(`${API}/admin/reset_password`, {
+        method: "POST",
+        body: form
+      });
+      const result = await res.json();
+      alert(result.message || result.detail);
+    });
 
     async function loadUsers() {
-      const res = await fetch(`${API_URL}/admin/view_users`);
+      const res = await fetch(`${API}/admin/view_users`);
       const data = await res.json();
-      const tbody = document.querySelector("#userTable tbody");
-      tbody.innerHTML = "";
-
-      Object.entries(data).forEach(([username, user]) => {
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-          <td>${username}</td>
-          <td>${user.password_hash}</td>
-          <td>${user.referral || "-"}</td>
-          <td>${user.balance.toFixed(2)}</td>
-          <td>${user.earnings.toFixed(2)}</td>
-          <td>${user.approved ? "✅" : "❌"}</td>
-          <td>
-            <button onclick="approveUser('${username}')">Approve</button>
-            <button onclick="resetPassword('${username}')">Reset Password</button>
-          </td>
-        `;
-
-        tbody.appendChild(row);
-      });
+      document.getElementById("userList").textContent = JSON.stringify(data, null, 2);
     }
 
-    async function approveUser(username) {
-      await fetch(`${API_URL}/admin/approve_user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `username=${username}`
-      });
-      alert(`${username} approved!`);
-      loadUsers();
+    async function loadInvestments() {
+      const res = await fetch(`${API}/admin/view_investments`);
+      const data = await res.json();
+      document.getElementById("investmentList").textContent = JSON.stringify(data, null, 2);
     }
-
-    async function resetPassword(username) {
-      const newPassword = prompt(`Enter new password for ${username}:`);
-      if (!newPassword) return;
-      await fetch(`${API_URL}/admin/reset_password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `username=${username}&new_password=${newPassword}`
-      });
-      alert(`Password reset for ${username}`);
-    }
-
-    loadUsers();
   </script>
 </body>
 </html>
