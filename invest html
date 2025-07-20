@@ -6,84 +6,65 @@
   <title>Invest - Jipate Bonus</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #ffd700, #1e3a5f); /* gold to navy blue */
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #FFD700, #FFF8DC); /* gold tones */
       margin: 0;
       padding: 0;
-      color: #333;
     }
 
     header {
-      background-color: #1e3a5f;
+      background: #003366; /* dark blue */
       color: white;
       text-align: center;
-      padding: 20px 0;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      padding: 15px;
     }
 
     .container {
       max-width: 500px;
-      margin: 50px auto;
-      background-color: white;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
 
     h2 {
       margin-top: 0;
-      color: #1e3a5f;
-      text-align: center;
+      color: #003366;
     }
 
     label {
       display: block;
-      margin-bottom: 6px;
-      margin-top: 20px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      margin-top: 15px;
     }
 
     input {
       width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      padding: 10px;
       margin-top: 5px;
       box-sizing: border-box;
     }
 
     button {
+      margin-top: 20px;
       width: 100%;
-      margin-top: 25px;
-      padding: 12px;
-      font-size: 16px;
-      background-color: #ffd700;
+      background: #003366;
+      color: white;
+      padding: 10px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
-      color: #1e3a5f;
     }
 
     button:hover {
-      background-color: #e6c200;
+      background: #001f33;
     }
 
     .note {
       margin-top: 20px;
       font-size: 14px;
-      color: #b30000;
-    }
-
-    .note strong {
-      color: #1e3a5f;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 30px;
-      color: white;
+      color: #cc0000;
     }
   </style>
 </head>
@@ -96,24 +77,20 @@
 <div class="container">
   <h2>Invest in Jipate Bonus 💵🎉💸</h2>
   <form id="investForm">
-    <label for="amount">Investment Amount (KES):</label>
-    <input type="number" id="amount" required placeholder="e.g. 500"/>
+    <label for="amount">Amount (KES):</label>
+    <input type="number" id="amount" required />
 
     <label for="transactionRef">Transaction Reference:</label>
-    <input type="text" id="transactionRef" required placeholder="MPESA code"/>
+    <input type="text" id="transactionRef" required />
 
     <button type="submit">Submit Investment</button>
 
     <p class="note">
-      <strong>NOTE:</strong> Please send payment via MPESA to <strong>0737734533</strong> before submitting this form.  
-      Sunday investments automatically receive a 5% bonus.
+      NOTE: Send your payment via MPESA to <strong>0737734533</strong> before submitting.<br />
+      Sunday investments receive a <strong>5% discount</strong> automatically.
     </p>
   </form>
 </div>
-
-<footer>
-  &copy; 2025 Jipate Bonus Platform
-</footer>
 
 <script>
   const username = localStorage.getItem("username");
@@ -124,12 +101,11 @@
 
   document.getElementById("investForm").addEventListener("submit", async function (e) {
     e.preventDefault();
-
     const amount = parseFloat(document.getElementById("amount").value);
-    const transactionRef = document.getElementById("transactionRef").value.trim();
+    const transactionRef = document.getElementById("transactionRef").value;
 
-    if (!amount || amount <= 0 || transactionRef === "") {
-      alert("Please enter a valid amount and transaction reference.");
+    if (!amount || amount <= 0 || !transactionRef) {
+      alert("Please enter valid details.");
       return;
     }
 
@@ -145,16 +121,10 @@
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.detail || "Failed to submit investment.");
-      }
-
-      alert(data.message || "Investment submitted successfully!");
+      alert(data.message || "Investment submitted.");
       window.location.href = "dashboard.html";
     } catch (err) {
-      console.error(err);
-      alert("Error submitting investment. Please try again.");
+      alert("Error submitting investment.");
     }
   });
 </script>
