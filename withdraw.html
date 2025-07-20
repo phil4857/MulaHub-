@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Withdraw - Jipate Bonus</title>
+  <title>Withdraw - Jipate Bonus💸🎉💵</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f9f9f9;
+      background: #e8ffe8; /* light green background */
       margin: 0;
       padding: 0;
     }
@@ -23,7 +23,7 @@
       max-width: 500px;
       margin: 30px auto;
       padding: 20px;
-      background: white;
+      background: #ffe6f0; /* light pink */
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
@@ -83,46 +83,94 @@
     <button type="submit">Submit Withdrawal</button>
 
     <p class="note">
-      NOTE: Minimum withdrawal amount is based on your investment.<br/>
-      - 150 KES if invested 500<br/>
-      - 300 KES if invested 1000<br/>
-      - Increases proportionally.
+      NOTE: Withdrawal limits depend on investment:<br/>
+      - 150 KES for 500 invested<br/>
+      - 300 KES for 1000 invested<br/>
+      - 30% cap for investments above 1500 KES
     </p>
   </form>
 </div>
 
 <script>
-  const username = localStorage.getItem("username");
-  if (!username) {
-    alert("Please log in first.");
-    window.location.href = "login.html";
-  }
-
-  document.getElementById("withdrawForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById("amount").value);
-
-    if (!amount || amount <= 0) {
-      alert("Enter a valid amount.");
+  document.addEventListener("DOMContentLoaded", () => {
+    const username = localStorage.getItem("username");
+    if (!username) {
+      alert("Please log in first.");
+      window.location.href = "login.html";
       return;
     }
 
-    const formData = new FormData();
-    formData.append("username", username);
-    formData.append("amount", amount);
+    document.getElementById("withdrawForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById("amount").value);
 
-    try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
-        method: "POST",
-        body: formData,
-      });
+      if (!amount || amount <= 0) {
+        alert("Enter a valid amount.");
+        return;
+      }
 
-      const data = await res.json();
-      alert(data.message || "Withdrawal submitted.");
-      window.location.href = "dashboard.html";
-    } catch (err) {
-      alert("Error submitting withdrawal.");
-    }
+      try {
+        const [userRes, investRes] = await Promise.all([
+          fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users"),
+          fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_investments"),
+        ]);
+
+        const users = await userRes.json();
+        const investments = await investRes.json();
+
+        const user = users[username];
+        const investment = investments[username];
+
+        if (!user || !investment) {
+          alert("Account or investment not found.");
+          return;
+        }
+
+        const invested = investment.amount;
+        const balance = user.balance;
+
+        let allowedLimit = 0;
+        if (invested >= 500 && invested < 1000) {
+          allowedLimit = 150;
+        } else if (invested >= 1000 && invested < 1500) {
+          allowedLimit = 300;
+        } else if (invested >= 1500) {
+          allowedLimit = Math.floor(invested * 0.3);
+        }
+
+        if (amount > allowedLimit) {
+          alert(`Your withdrawal limit is KES ${allowedLimit}`);
+          return;
+        }
+
+        if (amount > balance) {
+          alert("Insufficient balance.");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("username", username);
+        formData.append("amount", amount);
+
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Withdrawal failed.");
+        }
+
+        const result = await res.json();
+        alert(result.message || "Withdrawal successful.");
+        window.location.href = "dashboard.html";
+
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Error occurred during withdrawal.");
+      }
+    });
   });
 </script>
 
