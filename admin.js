@@ -1,65 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const adminLoggedIn = localStorage.getItem('admin') === 'true';
-    const currentPage = window.location.pathname.split('/').pop();
+    const username = localStorage.getItem('username');
 
-    if (!adminLoggedIn && currentPage !== 'unlock_admin.html') {
-        alert('Access denied. Admin only.');
-        window.location.href = 'unlock_admin.html';
+    // If not logged in at all
+    if (!username) {
+        alert('Please log in first.');
+        window.location.href = 'login.html';
         return;
     }
 
-    if (adminLoggedIn && currentPage === 'unlock_admin.html') {
-        // Already unlocked, go to admin dashboard
-        window.location.href = 'admin.html';
+    // Only show admin content if user is actually admin
+    if (username !== 'admin') {
+        alert('Access denied. Admins only.');
+        window.location.href = 'dashboard.html';
+        return;
     }
-});
 
-function unlockAdmin() {
-    const password = prompt("Enter admin password:");
-    fetch('https://repo-1red-jipate-bonus.onrender.com/admin/unlock', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `password=${encodeURIComponent(password)}`
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            localStorage.setItem('admin', 'true');
-            alert("Admin access granted.");
-            window.location.href = 'admin.html';
-        } else {
-            alert("Wrong password.");
-        }
-    })
-    .catch(err => {
-        console.error("Unlock error:", err);
-        alert("Server error. Try again later.");
-    });
-}
+    // Allow admin access
+    localStorage.setItem('admin', 'true');
+    document.getElementById('adminPanel').style.display = 'block';
+    viewUsers();
+});
 
 function viewUsers() {
     fetch('https://repo-1red-jipate-bonus.onrender.com/admin/view_users')
         .then(res => res.json())
         .then(users => {
-            const output = Object.entries(users).map(([username, info]) => 
-                `<div style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 8px;">
-                    <strong>${username}</strong><br/>
-                    Number: ${info.phone || 'N/A'}<br/>
-                    Balance: KES ${info.balance}<br/>
-                    Referral: ${info.referral || 'N/A'}<br/>
-                    Approved: ${info.approved ? 'Yes' : 'No'}
-                </div>`
+            const output = Object.entries(users).map(([username, info]) =>
+                `<div><strong>${username}</strong>: ${JSON.stringify(info)}</div>`
             ).join('');
             document.getElementById('userData').innerHTML = output;
         })
         .catch(err => {
-            console.error("Failed to fetch user data:", err);
-            alert("Unable to load users.");
+            console.error(err);
+            alert("Failed to fetch user data.");
         });
 }
 
 function logout() {
     localStorage.removeItem('admin');
-    alert("Logged out.");
+    localStorage.removeItem('username');
     window.location.href = 'login.html';
 }
