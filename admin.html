@@ -1,4 +1,3 @@
-admin_html = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,10 +7,19 @@ admin_html = """
 <body>
   <div class="container">
     <h2>Admin Dashboard</h2>
-    <button onclick="unlockAdmin()">Unlock Admin</button>
-    <div id="userList"></div>
+    
+    <div id="loginSection">
+      <label for="adminPassword">Enter Admin Password:</label>
+      <input type="password" id="adminPassword" placeholder="Admin Password">
+      <button onclick="unlockAdmin()">Unlock Admin</button>
+    </div>
+
+    <div id="adminContent" style="display: none;">
+      <h3>Registered Users</h3>
+      <div id="userList"></div>
+    </div>
   </div>
+
   <script src="admin.js"></script>
 </body>
 </html>
-"""
