@@ -1,43 +1,46 @@
 from fastapi import APIRouter, HTTPException, Form
-from passlib.hash import bcrypt
+from passlib.context import CryptContext
+from pydantic import BaseModel
 from typing import Dict
 import json
 import os
 
-admin_router = APIRouter()
+router = APIRouter()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Path to user data file (you can change this path)
-USER_DATA_FILE = "users.json"
+USERS_FILE = "users.json"
+INVESTMENTS_FILE = "investments.json"
 
-# Dummy admin credentials (you can update this securely later)
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD_HASH = bcrypt.hash("admin123")  # Password is admin123
-
-def load_users() -> Dict:
-    if not os.path.exists(USER_DATA_FILE):
+def read_data(filename):
+    if not os.path.exists(filename):
         return {}
-    with open(USER_DATA_FILE, "r") as f:
+    with open(filename, "r") as f:
         return json.load(f)
 
-@admin_router.post("/admin/login")
-def admin_login(username: str = Form(...), password: str = Form(...)):
-    if username != ADMIN_USERNAME:
-        raise HTTPException(status_code=401, detail="Invalid admin username")
-    if not bcrypt.verify(password, ADMIN_PASSWORD_HASH):
-        raise HTTPException(status_code=401, detail="Invalid admin password")
-    return {"message": "Admin logged in successfully"}
+def write_data(filename, data):
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
 
-@admin_router.get("/admin/view_users")
+@router.get("/admin/view_users")
 def view_users():
-    users = load_users()
+    users = read_data(USERS_FILE)
     return users
 
-@admin_router.post("/admin/approve_user")
-def approve_user(username: str = Form(...)):
-    users = load_users()
+@router.get("/admin/view_investments")
+def view_investments():
+    return read_data(INVESTMENTS_FILE)
+
+@router.post("/admin/approve_user")
+def approve_user(username: str = Form(...), admin_password: str = Form(...)):
+    users = read_data(USERS_FILE)
+    admin = users.get("admin")
+
+    if not admin or not pwd_context.verify(admin_password, admin["password_hash"]):
+        raise HTTPException(status_code=403, detail="Unauthorized access")
+
     if username not in users:
         raise HTTPException(status_code=404, detail="User not found")
+
     users[username]["approved"] = True
-    with open(USER_DATA_FILE, "w") as f:
-        json.dump(users, f)
-    return {"message": f"User {username} approved successfully"}
+    write_data(USERS_FILE, users)
+    return {"message": f"User '{username}' approved successfully"}
