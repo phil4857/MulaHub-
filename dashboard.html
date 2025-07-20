@@ -6,69 +6,121 @@
   <title>User Dashboard - Jipate Bonus</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #e6f2ff;
-      padding: 40px;
-      color: #003366;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(145deg, #d6e6f2, #f4f9ff);
+      margin: 0;
+      padding: 40px 20px;
+      color: #002244;
     }
     h1 {
       text-align: center;
-      color: #004080;
+      color: #003366;
+      margin-bottom: 30px;
+    }
+    .dashboard-container {
+      max-width: 600px;
+      margin: auto;
     }
     .section {
       background: #ffffff;
-      padding: 20px;
-      margin: 20px auto;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 500px;
+      padding: 25px;
+      margin-bottom: 25px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    h3 {
+      color: #004080;
+      margin-top: 0;
     }
     input, button {
       width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      box-sizing: border-box;
     }
     button {
       background-color: #004080;
       color: white;
       font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0059b3;
     }
     .note {
       font-size: 0.85em;
       color: #333;
       margin-top: 10px;
     }
+    .info-box {
+      padding: 15px;
+      background: #e6f2ff;
+      border-left: 5px solid #3399ff;
+      margin-bottom: 15px;
+    }
+    .info-label {
+      font-weight: bold;
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
   <h1>Welcome to Your Dashboard</h1>
 
-  <div class="section">
-    <h3>Invest</h3>
-    <form id="investForm">
-      <input type="number" name="amount" placeholder="Investment Amount" required>
-      <input type="text" name="transaction_ref" placeholder="Transaction Reference" required>
-      <button type="submit">Submit Investment</button>
-    </form>
-    <div class="note">Investments on Sunday get 5% discount</div>
-  </div>
+  <div class="dashboard-container">
 
-  <div class="section">
-    <h3>Withdraw</h3>
-    <form id="withdrawForm">
-      <input type="number" name="amount" placeholder="Amount to Withdraw" required>
-      <button type="submit">Request Withdrawal</button>
-    </form>
-    <div class="note">Minimum withdrawal: 150 for KES 500 investment, 300 for 1000, etc.</div>
+    <div class="info-box">
+      <div><span class="info-label">Username:</span><span id="usernameDisplay">Loading...</span></div>
+      <div><span class="info-label">Referral Link:</span><span id="referralDisplay">Generating...</span></div>
+      <div><span class="info-label">Daily Earnings:</span><span id="earningsDisplay">KES 0</span></div>
+    </div>
+
+    <div class="section">
+      <h3>Invest</h3>
+      <form id="investForm">
+        <input type="number" name="amount" placeholder="Investment Amount (KES)" required>
+        <input type="text" name="transaction_ref" placeholder="Transaction Reference" required>
+        <button type="submit">Submit Investment</button>
+      </form>
+      <div class="note">🎉 Sunday investments receive a 5% bonus.</div>
+    </div>
+
+    <div class="section">
+      <h3>Withdraw</h3>
+      <form id="withdrawForm">
+        <input type="number" name="amount" placeholder="Amount to Withdraw (KES)" required>
+        <button type="submit">Request Withdrawal</button>
+      </form>
+      <div class="note">💰 Minimum: KES 150 for KES 500 investment, KES 300 for KES 1000, etc.</div>
+    </div>
+
   </div>
 
   <script>
     const API = "https://repo-1red-jipate-bonus.onrender.com";
     const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get("user");
+    const username = urlParams.get("user") || localStorage.getItem("username");
+
+    if (!username) {
+      alert("Please log in first.");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("usernameDisplay").textContent = username;
+      document.getElementById("referralDisplay").textContent = `https://yourdomain.com/register.html?ref=${username}`;
+
+      // Simulate earnings (update this from server later)
+      fetch(`${API}/admin/view_users`)
+        .then(res => res.json())
+        .then(data => {
+          const user = data[username];
+          if (user && user.balance) {
+            const daily = Math.floor(user.balance * 0.03); // 3% daily earnings example
+            document.getElementById("earningsDisplay").textContent = `KES ${daily}`;
+          }
+        });
+    }
 
     document.getElementById("investForm").addEventListener("submit", async (e) => {
       e.preventDefault();
