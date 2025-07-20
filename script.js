@@ -2,12 +2,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
   const countdownDisplay = document.getElementById("countdown");
 
+  // Set background color to blue
+  document.body.style.backgroundColor = "#004aad"; // deep blue
+
   // Daily earnings countdown (24 hours)
   function updateCountdown() {
-    const lastEarning = localStorage.getItem("lastEarning");
-    if (!lastEarning) return;
+    if (!countdownDisplay) return;
 
-    const now = new Date().getTime();
+    const lastEarning = localStorage.getItem("lastEarning");
+    if (!lastEarning) {
+      countdownDisplay.textContent = "You can now claim your daily earnings!";
+      return;
+    }
+
+    const now = Date.now();
     const nextEarning = parseInt(lastEarning) + 86400000; // 24 hrs in ms
     const remaining = nextEarning - now;
 
@@ -23,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   setInterval(updateCountdown, 1000);
+  updateCountdown(); // run on load
 
   // Handle form submission
   if (form) {
@@ -43,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(data.message || "Success");
 
         if (action.includes("earnings")) {
-          localStorage.setItem("lastEarning", new Date().getTime().toString());
+          localStorage.setItem("lastEarning", Date.now().toString());
         }
 
       } catch (error) {
