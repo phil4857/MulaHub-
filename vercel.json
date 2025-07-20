@@ -1,8 +1,1 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://repo-1red-jipate-bonus.onrender.com/api/$1"
-    }
-  ]
-}
+
