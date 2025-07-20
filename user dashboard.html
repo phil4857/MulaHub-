@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Dashboard - Jipate Bonus</title>
+  <title>User Dashboard - Jipate Bonus💸🎉💵</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #eaf4ea;
+      background: #f2fff5;
       margin: 0;
       padding: 0;
     }
 
     header {
       background: #28a745;
-      color: white;
+      color: gold;
       padding: 15px;
       text-align: center;
     }
@@ -40,22 +40,32 @@
       border-left: 4px solid #28a745;
     }
 
+    .info span {
+      font-weight: bold;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
     .actions button {
       margin: 10px 5px;
-      padding: 10px 15px;
+      padding: 10px 20px;
       border: none;
       border-radius: 5px;
       background: #28a745;
       color: white;
+      font-weight: bold;
       cursor: pointer;
     }
 
     .actions button:hover {
-      background: #1f7a36;
+      background: #1e7e34;
     }
 
     .logout {
-      float: right;
       background: #dc3545 !important;
     }
   </style>
@@ -63,29 +73,29 @@
 <body>
 
 <header>
-  <h1>Welcome to Jipate Bonus Dashboard</h1>
+  <h1>Welcome to Jipate Bonus Dashboard 💵🎉💸</h1>
 </header>
 
 <div class="container">
   <div class="info" id="userInfo">
-    <strong>Username:</strong> <span id="usernameDisplay"></span><br />
-    <strong>Balance:</strong> KES <span id="balanceDisplay">Loading...</span><br />
-    <strong>Earnings:</strong> KES <span id="earningsDisplay">Loading...</span><br />
-    <strong>Referral Link:</strong> <span id="referralLink"></span><br />
-    <strong>Payment Number:</strong> 0737734533
+    <p><strong>Username:</strong> <span id="usernameDisplay"></span></p>
+    <p><strong>Balance:</strong> KES <span id="balanceDisplay">Loading...</span></p>
+    <p><strong>Referral Earnings:</strong> KES <span id="earningsDisplay">Loading...</span></p>
+    <p><strong>Referral Link:</strong> <span id="referralLink"></span></p>
+    <p><strong>Payment Number:</strong> 0737734533</p>
   </div>
 
   <div class="actions">
-    <button onclick="window.location.href='invest.html'">Invest</button>
-    <button onclick="window.location.href='withdraw.html'">Withdraw</button>
-    <button onclick="logout()" class="logout">Logout</button>
+    <button onclick="window.location.href='invest.html'">💰 Invest</button>
+    <button onclick="window.location.href='withdraw.html'">📤 Withdraw</button>
+    <button onclick="logout()" class="logout">🚪 Logout</button>
   </div>
 </div>
 
 <script>
   const username = localStorage.getItem("username");
   if (!username) {
-    alert("Please login first.");
+    alert("Please log in first.");
     window.location.href = "login.html";
   }
 
@@ -98,9 +108,16 @@
       const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
       const data = await res.json();
       const user = data[username];
-      document.getElementById("balanceDisplay").textContent = user.balance.toFixed(2);
-      document.getElementById("earningsDisplay").textContent = user.earnings.toFixed(2);
+
+      if (!user) {
+        alert("User data not found.");
+        return;
+      }
+
+      document.getElementById("balanceDisplay").textContent = parseFloat(user.balance || 0).toFixed(2);
+      document.getElementById("earningsDisplay").textContent = parseFloat(user.earnings || 0).toFixed(2);
     } catch (err) {
+      console.error(err);
       alert("Failed to load user data.");
     }
   }
