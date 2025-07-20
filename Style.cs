@@ -1,50 +1,40 @@
+Style_cs = """
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f9f9f9;
+  font-family: Arial, sans-serif;
+  background-color: #f8f8f8;
   color: #333;
   margin: 0;
   padding: 0;
 }
 
 .container {
-  max-width: 500px;
-  margin: 60px auto;
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
-h2, h3 {
-  color: #007BFF;
-  text-align: center;
-}
-
-input, select, button {
+input[type="text"],
+input[type="password"],
+input[type="number"],
+button {
   width: 100%;
   padding: 10px;
-  margin-top: 12px;
-  margin-bottom: 12px;
+  margin: 10px 0;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
+  border-radius: 5px;
 }
 
 button {
-  background-color: #007BFF;
+  background-color: #4CAF50;
   color: white;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s;
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #45a049;
 }
-
-.message {
-  text-align: center;
-  margin-top: 10px;
-  color: #28a745;
-  font-weight: bold;
-}
+"""
