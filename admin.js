@@ -1,101 +1,46 @@
-// admin.js
+# admin.js
 
-// Replace with your actual backend URL
-const backendURL = "https://repo-1red-jipate-bonus.onrender.com";
-
-// Ensure only admin (by username) can access this page
-document.addEventListener("DOMContentLoaded", () => {
-    const username = localStorage.getItem("username");
-    if (username !== "admin") {
-        alert("Access denied. Admins only.");
-        window.location.href = "login.html";
+"""
+document.addEventListener('DOMContentLoaded', () => {
+    const adminLoggedIn = localStorage.getItem('admin') === 'true';
+    if (!adminLoggedIn) {
+        alert('Access denied. Admin only.');
+        window.location.href = 'login.html';
+        return;
     }
-    loadUsers();
-    loadInvestments();
 });
 
-// Approve a user
-function approveUser(username) {
-    fetch(`${backendURL}/admin/approve_user`, {
-        method: "POST",
-        body: new URLSearchParams({ username }),
+function unlockAdmin() {
+    const password = prompt("Enter admin password:");
+    fetch('https://repo-1red-jipate-bonus.onrender.com/admin/unlock', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `password=${encodeURIComponent(password)}`
     })
     .then(res => res.json())
     .then(data => {
-        alert(data.message);
-        loadUsers();
+        if (data.success) {
+            localStorage.setItem('admin', 'true');
+            alert("Admin access granted.");
+        } else {
+            alert("Wrong password.");
+        }
     });
 }
 
-// Reset a user's password
-function resetPassword(username) {
-    const newPassword = prompt("Enter new password for " + username);
-    if (!newPassword) return;
-    fetch(`${backendURL}/admin/reset_password`, {
-        method: "POST",
-        body: new URLSearchParams({ username, new_password: newPassword }),
-    })
-    .then(res => res.json())
-    .then(data => alert(data.message));
-}
-
-// Approve an investment
-function approveInvestment(username) {
-    fetch(`${backendURL}/admin/approve_investment`, {
-        method: "POST",
-        body: new URLSearchParams({ username }),
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-        loadInvestments();
-    });
-}
-
-// Load user list
-function loadUsers() {
-    fetch(`${backendURL}/admin/view_users`)
+function viewUsers() {
+    fetch('https://repo-1red-jipate-bonus.onrender.com/admin/view_users')
         .then(res => res.json())
         .then(users => {
-            const table = document.getElementById("userTableBody");
-            table.innerHTML = "";
-            Object.entries(users).forEach(([username, data]) => {
-                const row = `
-                    <tr>
-                        <td>${username}</td>
-                        <td>${data.approved}</td>
-                        <td>${data.balance}</td>
-                        <td>${data.earnings}</td>
-                        <td>${data.referral || "None"}</td>
-                        <td>${data.referred_users.length}</td>
-                        <td>
-                            <button onclick="approveUser('${username}')">Approve</button>
-                            <button onclick="resetPassword('${username}')">Reset Password</button>
-                        </td>
-                    </tr>`;
-                table.innerHTML += row;
-            });
+            const output = Object.entries(users).map(([username, info]) => 
+                `<div><strong>${username}</strong>: ${JSON.stringify(info)}</div>`
+            ).join('');
+            document.getElementById('userData').innerHTML = output;
         });
 }
 
-// Load investment list
-function loadInvestments() {
-    fetch(`${backendURL}/admin/view_investments`)
-        .then(res => res.json())
-        .then(investments => {
-            const table = document.getElementById("investmentTableBody");
-            table.innerHTML = "";
-            Object.entries(investments).forEach(([username, data]) => {
-                const row = `
-                    <tr>
-                        <td>${username}</td>
-                        <td>${data.amount}</td>
-                        <td>${data.transaction_ref}</td>
-                        <td>${data.approved}</td>
-                        <td>${data.timestamp}</td>
-                        <td><button onclick="approveInvestment('${username}')">Approve</button></td>
-                    </tr>`;
-                table.innerHTML += row;
-            });
-        });
+function logout() {
+    localStorage.removeItem('admin');
+    window.location.href = 'login.html';
 }
+"""
