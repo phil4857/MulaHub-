@@ -1,38 +1,72 @@
+/* General page styling */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 20px;
   max-width: 600px;
   margin: auto;
-  background-color: #f8f9fa;
+  background-color: #f0f4f8; /* Light background */
+  color: #1c1c1c;
 }
 
+/* Headings */
 h1, h2 {
-  color: #333;
+  color: #0a1d66; /* Dark blue heading */
+  text-align: center;
 }
 
+/* Form container */
 form {
-  background: #fff;
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: #ffffff;
+  padding: 20px;
+  margin-bottom: 25px;
+  border: 2px solid #d4af37; /* Gold border */
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-input, button {
+/* Input fields */
+input, button, select {
   display: block;
   width: 100%;
-  padding: 10px;
-  margin-top: 10px;
+  padding: 12px;
+  margin-top: 12px;
   box-sizing: border-box;
+  border-radius: 6px;
+  font-size: 1rem;
 }
 
+/* Input fields style */
+input, select {
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+input:focus, select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Button style */
 button {
-  background-color: #007bff;
-  color: white;
+  background-color: #0a1d66; /* Deep blue */
+  color: #ffd700; /* Gold text */
+  font-weight: bold;
   border: none;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
+/* Button hover effect */
 button:hover {
-  background-color: #0056b3;
+  background-color: #1234a0; /* Lighter blue */
+}
+
+/* Message and alerts */
+.alert {
+  background-color: #ffeeba;
+  color: #856404;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-left: 5px solid #ffd700;
+  border-radius: 4px;
 }
