@@ -1,11 +1,17 @@
+admin_html = """
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Dashboard</title>
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Admin Panel</h2>
-  <div id="userList"></div>
+  <div class="container">
+    <h2>Admin Dashboard</h2>
+    <button onclick="unlockAdmin()">Unlock Admin</button>
+    <div id="userList"></div>
+  </div>
   <script src="admin.js"></script>
 </body>
 </html>
+"""
