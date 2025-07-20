@@ -3,33 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Dashboard - Jipate Bonus</title>
+  <title>User Dashboard - Jipate Bonus💵🎉💸</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(145deg, #d6e6f2, #f4f9ff);
+      background: linear-gradient(145deg, #002147, #FFD700); /* Blue and Gold */
       margin: 0;
       padding: 40px 20px;
-      color: #002244;
+      color: #ffffff;
     }
     h1 {
       text-align: center;
-      color: #003366;
+      color: #FFD700;
       margin-bottom: 30px;
     }
     .dashboard-container {
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      border-radius: 12px;
     }
     .section {
-      background: #ffffff;
+      background: rgba(0, 0, 0, 0.3);
       padding: 25px;
       margin-bottom: 25px;
       border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
     h3 {
-      color: #004080;
+      color: #FFD700;
       margin-top: 0;
     }
     input, button {
@@ -37,32 +40,41 @@
       padding: 12px;
       margin-top: 12px;
       border-radius: 6px;
-      border: 1px solid #bbb;
+      border: 1px solid #ccc;
       box-sizing: border-box;
     }
     button {
-      background-color: #004080;
-      color: white;
+      background-color: #FFD700;
+      color: #002147;
       font-weight: bold;
       cursor: pointer;
     }
     button:hover {
-      background-color: #0059b3;
+      background-color: #e6c200;
     }
     .note {
       font-size: 0.85em;
-      color: #333;
+      color: #fffad1;
       margin-top: 10px;
     }
     .info-box {
       padding: 15px;
-      background: #e6f2ff;
-      border-left: 5px solid #3399ff;
+      background: rgba(255, 255, 255, 0.2);
+      border-left: 5px solid #FFD700;
       margin-bottom: 15px;
     }
     .info-label {
       font-weight: bold;
       margin-right: 8px;
+    }
+    ul {
+      margin-top: 8px;
+      padding-left: 20px;
+      color: #fff;
+    }
+    a {
+      color: #FFD700;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -70,11 +82,13 @@
   <h1>Welcome to Your Dashboard</h1>
 
   <div class="dashboard-container">
-
     <div class="info-box">
       <div><span class="info-label">Username:</span><span id="usernameDisplay">Loading...</span></div>
-      <div><span class="info-label">Referral Link:</span><span id="referralDisplay">Generating...</span></div>
+      <div><span class="info-label">Referral Link:</span><a id="referralLink" href="#" target="_blank">Generating...</a></div>
+      <div><span class="info-label">Balance:</span><span id="balanceDisplay">KES 0</span></div>
       <div><span class="info-label">Daily Earnings:</span><span id="earningsDisplay">KES 0</span></div>
+      <p id="paymentInstructions">💡 Withdrawals are processed within 24 hours.</p>
+      <div><span class="info-label">Your Referrals:</span><ul id="referredUsers"><li>Loading...</li></ul></div>
     </div>
 
     <div class="section">
@@ -95,7 +109,6 @@
       </form>
       <div class="note">💰 Minimum: KES 150 for KES 500 investment, KES 300 for KES 1000, etc.</div>
     </div>
-
   </div>
 
   <script>
@@ -108,19 +121,38 @@
       window.location.href = "login.html";
     } else {
       document.getElementById("usernameDisplay").textContent = username;
-      document.getElementById("referralDisplay").textContent = `https://yourdomain.com/register.html?ref=${username}`;
-
-      // Simulate earnings (update this from server later)
-      fetch(`${API}/admin/view_users`)
-        .then(res => res.json())
-        .then(data => {
-          const user = data[username];
-          if (user && user.balance) {
-            const daily = Math.floor(user.balance * 0.03); // 3% daily earnings example
-            document.getElementById("earningsDisplay").textContent = `KES ${daily}`;
-          }
-        });
+      const refLink = `https://yourdomain.com/register.html?ref=${username}`;
+      document.getElementById("referralLink").href = refLink;
+      document.getElementById("referralLink").textContent = refLink;
     }
+
+    fetch(`${API}/admin/view_users`)
+      .then(res => res.json())
+      .then(data => {
+        const user = data[username];
+        if (user) {
+          const earnings = Math.floor(user.balance * 0.03);
+          document.getElementById("earningsDisplay").textContent = `KES ${earnings}`;
+          document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
+        }
+      });
+
+    fetch(`${API}/admin/view_referrals`)
+      .then(res => res.json())
+      .then(data => {
+        const referred = data[username] || [];
+        const ul = document.getElementById("referredUsers");
+        ul.innerHTML = "";
+        if (referred.length === 0) {
+          ul.innerHTML = "<li>No referrals yet.</li>";
+        } else {
+          referred.forEach(name => {
+            const li = document.createElement("li");
+            li.textContent = name;
+            ul.appendChild(li);
+          });
+        }
+      });
 
     document.getElementById("investForm").addEventListener("submit", async (e) => {
       e.preventDefault();
