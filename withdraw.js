@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`https://repo-1red-jipate-bonus.onrender.com/admin/view_users`),
         fetch(`https://repo-1red-jipate-bonus.onrender.com/admin/view_investments`)
       ]);
+
       const users = await userRes.json();
       const investments = await investRes.json();
 
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      if (!investment || !investment.approved) {
+      if (!investment || investment.approved !== true) {
         alert("No approved investment found for this user.");
         return;
       }
