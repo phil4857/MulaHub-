@@ -21,7 +21,8 @@ users = {
         "password_hash": bcrypt.hashpw("adminpass".encode(), bcrypt.gensalt()).decode(),
         "approved": True,
         "role": "admin"
-    }
+    },
+    # You can add more users here if needed
 }
 
 class LoginRequest(BaseModel):
@@ -40,4 +41,9 @@ def admin_login(data: LoginRequest):
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Access denied")
 
-    return {"message": "Admin login successful", "username": data.username}
+    return {
+        "message": "Admin login successful",
+        "username": data.username,
+        "role": "admin",
+        "access": "granted"
+    }
