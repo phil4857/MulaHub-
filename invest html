@@ -7,13 +7,13 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f8ff;
+      background: linear-gradient(to bottom, gold, #006699);
       margin: 0;
       padding: 0;
     }
 
     header {
-      background: #006699;
+      background: #004080;
       color: white;
       text-align: center;
       padding: 15px;
@@ -24,13 +24,14 @@
       margin: 30px auto;
       padding: 20px;
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
     }
 
     h2 {
       margin-top: 0;
-      color: #006699;
+      color: #004080;
+      text-align: center;
     }
 
     label {
@@ -44,27 +45,36 @@
       padding: 10px;
       margin-top: 5px;
       box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
 
     button {
       margin-top: 20px;
       width: 100%;
-      background: #006699;
+      background: #004080;
       color: white;
-      padding: 10px;
+      padding: 12px;
+      font-size: 16px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
 
     button:hover {
-      background: #004466;
+      background: #003366;
     }
 
     .note {
       margin-top: 20px;
       font-size: 14px;
       color: #cc0000;
+      text-align: center;
+    }
+
+    .success {
+      color: green;
     }
   </style>
 </head>
@@ -75,10 +85,10 @@
 </header>
 
 <div class="container">
-  <h2>Invest in Jipate Bonus</h2>
+  <h2>Invest in Jipate Bonus 💵🎉💸</h2>
   <form id="investForm">
     <label for="amount">Amount (KES):</label>
-    <input type="number" id="amount" required />
+    <input type="number" id="amount" min="100" required />
 
     <label for="transactionRef">Transaction Reference:</label>
     <input type="text" id="transactionRef" required />
@@ -86,8 +96,8 @@
     <button type="submit">Submit Investment</button>
 
     <p class="note">
-      NOTE: Send your payment via MPESA to <strong>0737734533</strong> before submitting.
-      Sunday investments receive a 5% discount automatically.
+      NOTE: Send your payment via MPESA to <strong>0737734533</strong> before submitting.<br/>
+      Sunday investments automatically receive a 5% bonus.
     </p>
   </form>
 </div>
@@ -101,11 +111,12 @@
 
   document.getElementById("investForm").addEventListener("submit", async function (e) {
     e.preventDefault();
+
     const amount = parseFloat(document.getElementById("amount").value);
-    const transactionRef = document.getElementById("transactionRef").value;
+    const transactionRef = document.getElementById("transactionRef").value.trim();
 
     if (!amount || amount <= 0 || !transactionRef) {
-      alert("Please enter valid details.");
+      alert("Please fill out all fields correctly.");
       return;
     }
 
@@ -121,10 +132,17 @@
       });
 
       const data = await res.json();
-      alert(data.message || "Investment submitted.");
+
+      if (!res.ok) {
+        throw new Error(data.detail || "Investment failed.");
+      }
+
+      alert(data.message || "Investment submitted successfully.");
       window.location.href = "dashboard.html";
+
     } catch (err) {
-      alert("Error submitting investment.");
+      console.error(err);
+      alert("Error submitting investment: " + (err.message || "Unknown error."));
     }
   });
 </script>
