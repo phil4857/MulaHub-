@@ -7,22 +7,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // Set username
+  // Display logged-in username
   document.getElementById("usernameDisplay").textContent = username;
 
-  // Set referral link
-  const referralUrl = `${window.location.origin}/register.html?ref=${username}`;
+  // Display referral link
+  const referralUrl = `${window.location.origin}/register.html?ref=${encodeURIComponent(username)}`;
   const referralLinkEl = document.getElementById("referralLink");
   referralLinkEl.textContent = referralUrl;
   referralLinkEl.href = referralUrl;
 
   try {
-    // Trigger daily earnings (idempotent)
+    // Trigger daily earnings
     await fetch("https://repo-1red-jipate-bonus.onrender.com/earnings/daily", {
       method: "POST",
     });
 
-    // Fetch all users
+    // Fetch user details
     const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
     const users = await res.json();
 
@@ -32,14 +32,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Update DOM with balance and earnings
+    // Update balance and earnings
     document.getElementById("balanceDisplay").textContent = `KES ${user.balance.toFixed(2)}`;
-    document.getElementById("earningsDisplay").textContent = `KES ${user.earnings.toFixed(2)}`;
+    document.getElementById("earningsDisplay").textContent = `KES ${user.earnings ? user.earnings.toFixed(2) : '0.00'}`;
 
-    // Show MPESA payment instructions
-    document.getElementById("paymentInstructions").textContent = "Send payment to MPESA number: 0737734533";
+    // MPESA payment instructions
+    document.getElementById("paymentInstructions").textContent =
+      "Send payment to MPESA number: 0737734533";
 
-    // Display referred users
+    // Display referred users list
     const referredUsers = user.referred_users || [];
     const referredList = document.getElementById("referredUsers");
     referredList.innerHTML = "";
@@ -55,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
   } catch (err) {
-    console.error(err);
-    alert("Failed to load dashboard data.");
+    console.error("Dashboard error:", err);
+    alert("Failed to load dashboard data. Please try again later.");
   }
 });
