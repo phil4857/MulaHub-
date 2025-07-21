@@ -91,9 +91,9 @@
           const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
             method: "POST",
             headers: {
-              "Content-Type": "application/x-www-form-urlencoded"
+              "Content-Type": "application/json"
             },
-            body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+            body: JSON.stringify({ username, password })
           });
 
           const data = await res.json();
@@ -104,12 +104,7 @@
 
           alert(data.message || "Login successful");
           localStorage.setItem("username", username);
-
-          if (username.toLowerCase() === "admin") {
-            window.location.href = "admin.html";
-          } else {
-            window.location.href = "dashboard.html";
-          }
+          window.location.href = data.redirect;
 
         } catch (err) {
           console.error("Login error:", err);
