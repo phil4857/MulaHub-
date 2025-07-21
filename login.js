@@ -1,19 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('loginForm');
+  const errorMsg = document.getElementById('errorMsg');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    errorMsg.textContent = '';
 
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
 
     if (!username || !password) {
-      alert("Please enter both username and password.");
+      errorMsg.textContent = "Please enter both username and password.";
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:8000/login", {
+      const response = await fetch("https://your-backend-url.onrender.com/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -24,9 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!res.ok) {
+      if (!response.ok) {
         throw new Error(data.detail || "Login failed");
       }
 
@@ -35,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = data.redirect;
 
     } catch (err) {
-      alert(err.message);
+      console.error("Login error:", err);
+      errorMsg.textContent = err.message || "Login failed. Please try again.";
     }
   });
 });
