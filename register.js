@@ -1,51 +1,53 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('registerForm');
-  const errorMsg = document.getElementById('errorMsg');
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("registerForm");
 
-  form.addEventListener('submit', async (e) => {
+  if (!form) {
+    alert("Registration form not found.");
+    return;
+  }
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const username = document.getElementById('username').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const referral = document.getElementById('referral').value.trim();
+    const username = document.getElementById("username").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const referral = document.getElementById("referral").value.trim();
 
-    // Clear error message
-    errorMsg.textContent = '';
+    const errorMsg = document.getElementById("errorMsg");
 
     if (!username || !phone || !password || !confirmPassword) {
-      errorMsg.textContent = 'All fields except referral are required.';
+      errorMsg.textContent = "All fields are required.";
       return;
     }
 
     if (password !== confirmPassword) {
-      errorMsg.textContent = 'Passwords do not match.';
+      errorMsg.textContent = "Passwords do not match.";
       return;
     }
 
     try {
-      const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/register", {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: `username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}&password=${encodeURIComponent(password)}&ref=${encodeURIComponent(referral)}`
+        body: `username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}&password=${encodeURIComponent(password)}&referral=${encodeURIComponent(referral)}`
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (!response.ok) {
-        throw new Error(data.detail || "Registration failed. Try again later.");
+      if (!res.ok) {
+        throw new Error(data.detail || "Registration failed");
       }
 
-      alert("Registration successful! You can now log in.");
+      alert("Registration successful!");
       localStorage.setItem("username", username);
       window.location.href = "dashboard.html";
-
     } catch (err) {
       console.error("Registration error:", err);
-      errorMsg.textContent = err.message;
+      errorMsg.textContent = err.message || "Failed to register. Try again.";
     }
   });
 });
