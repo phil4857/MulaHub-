@@ -34,10 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       alert(data.message || "Login successful");
 
+      // Save session
       localStorage.setItem("username", username);
 
-      // Redirect
-      if (username === "admin") {
+      // Redirect based on role
+      if (username.toLowerCase() === "admin") {
         window.location.href = "admin.html";
       } else {
         window.location.href = "dashboard.html";
