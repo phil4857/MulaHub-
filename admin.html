@@ -6,21 +6,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="style.css">
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
     .user-card {
-      background-color: #f9f9f9;
-      border: 1px solid #ccc;
+      background-color: #eef2f5;
       border-radius: 10px;
       padding: 15px;
       margin: 10px 0;
     }
+
     .user-card h4 {
-      margin: 0;
+      margin: 0 0 5px;
       color: #007bff;
     }
-    .error-message {
-      color: red;
-      font-size: 14px;
-    }
+
     .reset-btn {
       margin-top: 10px;
       background-color: #dc3545;
@@ -30,8 +42,35 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
     .reset-btn:hover {
       background-color: #c82333;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
     }
   </style>
 </head>
@@ -53,6 +92,8 @@
   </div>
 
   <script>
+    let currentAdmin = {};
+
     async function adminLogin() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
@@ -70,13 +111,14 @@
         const data = await response.json();
 
         if (!response.ok) throw new Error(data.detail || "Login failed");
-
         if (!data.is_admin) throw new Error("Access denied. Not an admin.");
 
+        // Save credentials in memory (insecure for real prod use)
+        currentAdmin = { username, password };
         localStorage.setItem("adminAuth", "true");
+
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("adminContent").style.display = "block";
-
         fetchUsers();
 
       } catch (err) {
@@ -121,8 +163,15 @@
       if (!newPass) return;
 
       try {
-        const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/users/${encodeURIComponent(username)}/reset-password?new_password=${encodeURIComponent(newPass)}`, {
-          method: "PATCH"
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            admin_username: currentAdmin.username,
+            admin_password: currentAdmin.password,
+            target_username: username,
+            new_password: newPass
+          })
         });
 
         const data = await res.json();
