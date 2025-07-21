@@ -1,39 +1,34 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("registerForm");
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('registerForm');
 
-  if (!form) {
-    alert("Registration form not found.");
-    return;
-  }
-
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const username = document.getElementById("username").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
-    const referral = document.getElementById("referral").value.trim();
+    const username = document.getElementById('username').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    const referral = document.getElementById('referral').value.trim();
 
-    const errorMsg = document.getElementById("errorMsg");
-
-    if (!username || !phone || !password || !confirmPassword) {
-      errorMsg.textContent = "All fields are required.";
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      errorMsg.textContent = "Passwords do not match.";
+    // Simple client-side validation
+    if (!username || !phone || !password || !confirm) {
+      alert("Please fill in all required fields.");
       return;
     }
 
     try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/register", {
+      const res = await fetch("http://localhost:8000/register", {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/json"
         },
-        body: `username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}&password=${encodeURIComponent(password)}&referral=${encodeURIComponent(referral)}`
+        body: JSON.stringify({
+          username,
+          number: phone,
+          password,
+          confirm,
+          referral: referral || null
+        })
       });
 
       const data = await res.json();
@@ -42,12 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(data.detail || "Registration failed");
       }
 
-      alert("Registration successful!");
-      localStorage.setItem("username", username);
-      window.location.href = "dashboard.html";
+      alert(data.message || "Registered successfully!");
+      localStorage.setItem("username", data.username);
+
+      window.location.href = data.redirect;
+
     } catch (err) {
-      console.error("Registration error:", err);
-      errorMsg.textContent = err.message || "Failed to register. Try again.";
+      alert(err.message);
     }
   });
 });
