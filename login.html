@@ -1,42 +1,123 @@
-document.getElementById('loginForm').addEventListener('submit', function (e) {
-  e.preventDefault();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body {
+      background-color: gold;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
+    .login-container {
+      background-color: blue;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 300px;
+      text-align: center;
+    }
 
-  const formData = new FormData();
-  formData.append("username", username);
-  formData.append("password", password);
+    h2 {
+      color: white;
+      margin-bottom: 20px;
+    }
 
-  fetch("https://repo-1red-jipate-bonus-1.onrender.com/login", {
-    method: "POST",
-    body: formData
-  })
-    .then(async res => {
-      if (!res.ok) {
-        const error = await res.json();
-        alert("Login failed: " + error.detail);
-        return;
-      }
-      return res.json();
-    })
-    .then(data => {
-      if (!data) return;
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
 
-      alert("Login successful!");
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: darkorange;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-      // Save username for session
-      localStorage.setItem("username", username);
+    button:hover {
+      background-color: orangered;
+    }
 
-      // Redirect
-      if (username.toLowerCase() === "admin" || username.toLowerCase() === "admin4857") {
-        window.location.href = "admin.html";
-      } else {
-        window.location.href = "dashboard.html";
-      }
-    })
-    .catch(err => {
-      console.error("Fetch error:", err);
-      alert("Network error. Please try again later.");
+    .error-message {
+      color: yellow;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required><br>
+      <input type="password" id="password" placeholder="Password" required><br>
+      <button type="submit">Login</button>
+      <div class="error-message" id="errorMsg"></div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('loginForm');
+      const errorMsg = document.getElementById('errorMsg');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMsg.textContent = '';
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+          errorMsg.textContent = "Please fill in both fields.";
+          return;
+        }
+
+        try {
+          const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.detail || "Login failed");
+          }
+
+          alert(data.message || "Login successful");
+          localStorage.setItem("username", username);
+
+          if (username.toLowerCase() === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "dashboard.html";
+          }
+
+        } catch (err) {
+          console.error("Login error:", err);
+          errorMsg.textContent = err.message || "Login failed. Please try again.";
+        }
+      });
     });
-});
+  </script>
+
+</body>
+</html>
