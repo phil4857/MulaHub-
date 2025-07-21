@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Dashboard - Jipate Bonus💸🎉💵</title>
+  <title>User Dashboard - Jipate Bonus 💵🎉</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -73,16 +73,16 @@
 <body>
 
 <header>
-  <h1>Welcome to Jipate Bonus Dashboard 💵🎉💸</h1>
+  <h1>Welcome to Jipate Bonus Dashboard 💵🎉</h1>
 </header>
 
 <div class="container">
   <div class="info" id="userInfo">
-    <p><strong>Username:</strong> <span id="usernameDisplay"></span></p>
+    <p><strong>Username:</strong> <span id="usernameDisplay">Loading...</span></p>
     <p><strong>Balance:</strong> KES <span id="balanceDisplay">Loading...</span></p>
     <p><strong>Referral Earnings:</strong> KES <span id="earningsDisplay">Loading...</span></p>
-    <p><strong>Referral Link:</strong> <span id="referralLink"></span></p>
-    <p><strong>Payment Number:</strong> 0737734533</p>
+    <p><strong>Referral Link:</strong> <span id="referralLink">Loading...</span></p>
+    <p><strong>Payment Number:</strong> <span id="payNumber">0737734533</span></p>
   </div>
 
   <div class="actions">
@@ -94,31 +94,38 @@
 
 <script>
   const username = localStorage.getItem("username");
+
   if (!username) {
     alert("Please log in first.");
     window.location.href = "login.html";
   }
 
   document.getElementById("usernameDisplay").textContent = username;
-  document.getElementById("referralLink").textContent = 
-    `https://jipate-bonus-v1-bcti.vercel.app/register.html?ref=${username}`;
+  document.getElementById("referralLink").textContent =
+    `https://jipate-bonus-v1.vercel.app/register.html?ref=${username}`;
 
   async function loadUserData() {
     try {
       const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+
       const data = await res.json();
       const user = data[username];
 
       if (!user) {
-        alert("User data not found.");
+        alert("User not found. Logging out.");
+        logout();
         return;
       }
 
       document.getElementById("balanceDisplay").textContent = parseFloat(user.balance || 0).toFixed(2);
       document.getElementById("earningsDisplay").textContent = parseFloat(user.earnings || 0).toFixed(2);
     } catch (err) {
-      console.error(err);
-      alert("Failed to load user data.");
+      console.error("Error loading user data:", err);
+      alert("Unable to load user info. Try again later.");
     }
   }
 
