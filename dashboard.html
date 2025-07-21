@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(145deg, #002147, #FFD700); /* Blue and Gold */
+      background: linear-gradient(145deg, #002147, #FFD700);
       margin: 0;
       padding: 40px 20px;
       color: #ffffff;
@@ -74,7 +74,7 @@
     }
     a {
       color: #FFD700;
-      word-break: break-all;
+      word-break: break-word;
     }
   </style>
 </head>
@@ -113,8 +113,7 @@
 
   <script>
     const API = "https://repo-1red-jipate-bonus.onrender.com";
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get("user") || localStorage.getItem("username");
+    const username = localStorage.getItem("username");
 
     if (!username) {
       alert("Please log in first.");
@@ -124,48 +123,64 @@
       const refLink = `https://yourdomain.com/register.html?ref=${username}`;
       document.getElementById("referralLink").href = refLink;
       document.getElementById("referralLink").textContent = refLink;
-    }
 
-    fetch(`${API}/admin/view_users`)
-      .then(res => res.json())
-      .then(data => {
-        const user = data[username];
-        if (user) {
+      // Fetch user details
+      fetch(`${API}/user/${username}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to load user data");
+          return res.json();
+        })
+        .then(user => {
           const earnings = Math.floor(user.balance * 0.03);
           document.getElementById("earningsDisplay").textContent = `KES ${earnings}`;
           document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
-        }
-      });
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Error loading user data.");
+        });
 
-    fetch(`${API}/admin/view_referrals`)
-      .then(res => res.json())
-      .then(data => {
-        const referred = data[username] || [];
-        const ul = document.getElementById("referredUsers");
-        ul.innerHTML = "";
-        if (referred.length === 0) {
-          ul.innerHTML = "<li>No referrals yet.</li>";
-        } else {
-          referred.forEach(name => {
-            const li = document.createElement("li");
-            li.textContent = name;
-            ul.appendChild(li);
-          });
-        }
-      });
+      // Fetch referrals
+      fetch(`${API}/referrals/${username}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to load referrals");
+          return res.json();
+        })
+        .then(referred => {
+          const ul = document.getElementById("referredUsers");
+          ul.innerHTML = "";
+          if (!referred.length) {
+            ul.innerHTML = "<li>No referrals yet.</li>";
+          } else {
+            referred.forEach(name => {
+              const li = document.createElement("li");
+              li.textContent = name;
+              ul.appendChild(li);
+            });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Error loading referrals.");
+        });
+    }
 
     document.getElementById("investForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = new FormData(e.target);
       form.append("username", username);
 
-      const res = await fetch(`${API}/invest`, {
-        method: "POST",
-        body: form
-      });
-
-      const result = await res.json();
-      alert(result.message || result.detail || "Error");
+      try {
+        const res = await fetch(`${API}/invest`, {
+          method: "POST",
+          body: form
+        });
+        const result = await res.json();
+        alert(result.message || result.detail || "Investment processed.");
+      } catch (err) {
+        console.error(err);
+        alert("Error processing investment.");
+      }
     });
 
     document.getElementById("withdrawForm").addEventListener("submit", async (e) => {
@@ -173,13 +188,17 @@
       const form = new FormData(e.target);
       form.append("username", username);
 
-      const res = await fetch(`${API}/withdraw`, {
-        method: "POST",
-        body: form
-      });
-
-      const result = await res.json();
-      alert(result.message || result.detail || "Error");
+      try {
+        const res = await fetch(`${API}/withdraw`, {
+          method: "POST",
+          body: form
+        });
+        const result = await res.json();
+        alert(result.message || result.detail || "Withdrawal request sent.");
+      } catch (err) {
+        console.error(err);
+        alert("Error processing withdrawal.");
+      }
     });
   </script>
 </body>
