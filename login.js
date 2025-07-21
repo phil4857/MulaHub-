@@ -1,11 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('loginForm');
 
-  if (!form) {
-    alert("Login form not found.");
-    return;
-  }
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -13,17 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = document.getElementById('password').value;
 
     if (!username || !password) {
-      alert("Please fill in both username and password.");
+      alert("Please enter both username and password.");
       return;
     }
 
     try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
+      const res = await fetch("http://localhost:8000/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/json"
         },
-        body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+        body: JSON.stringify({
+          username,
+          password
+        })
       });
 
       const data = await res.json();
@@ -33,20 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       alert(data.message || "Login successful");
-
-      // Save session
-      localStorage.setItem("username", username);
-
-      // Redirect based on role
-      if (username.toLowerCase() === "admin") {
-        window.location.href = "admin.html";
-      } else {
-        window.location.href = "dashboard.html";
-      }
+      localStorage.setItem("username", data.username);
+      window.location.href = data.redirect;
 
     } catch (err) {
-      console.error("Login error:", err);
-      alert(err.message || "Login failed. Please check your credentials.");
+      alert(err.message);
     }
   });
 });
