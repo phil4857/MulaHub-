@@ -1,29 +1,40 @@
-/* Updated CSS Styling with Enhanced UI and Blue Background Theme */
+/* ----------------------------------------
+   Global Styles – Light Blue UI Theme
+---------------------------------------- */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #e6f0ff; /* Light blue background */
+  background-color: #e6f0ff; /* Soft light blue */
   color: #222;
   margin: 0;
   padding: 0;
   line-height: 1.6;
 }
 
+/* ----------------------------------------
+   Container Styling
+---------------------------------------- */
 .container {
   max-width: 600px;
   margin: 40px auto;
   padding: 30px;
-  background-color: #ffffff;
+  background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease-in-out;
 }
 
+/* ----------------------------------------
+   Headings
+---------------------------------------- */
 h1, h2, h3 {
   color: #003366;
   margin-bottom: 20px;
   text-align: center;
 }
 
+/* ----------------------------------------
+   Inputs & Buttons
+---------------------------------------- */
 input[type="text"],
 input[type="password"],
 input[type="number"],
@@ -38,6 +49,7 @@ button {
   box-sizing: border-box;
 }
 
+/* Focus state for inputs and buttons */
 input:focus,
 button:focus {
   outline: none;
@@ -45,6 +57,7 @@ button:focus {
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
+/* Buttons */
 button {
   background-color: #007bff;
   color: #fff;
@@ -57,8 +70,11 @@ button:hover {
   background-color: #0056b3;
 }
 
+/* ----------------------------------------
+   Messages
+---------------------------------------- */
 .error {
-  color: red;
+  color: #cc0000;
   font-size: 14px;
   margin-top: -5px;
   margin-bottom: 10px;
@@ -73,6 +89,9 @@ button:hover {
   display: block;
 }
 
+/* ----------------------------------------
+   Footer
+---------------------------------------- */
 footer {
   text-align: center;
   padding: 20px;
