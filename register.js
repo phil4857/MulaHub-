@@ -10,14 +10,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirm = document.getElementById('confirmPassword').value;
     const referral = document.getElementById('referral').value.trim();
 
-    // Simple client-side validation
     if (!username || !phone || !password || !confirm) {
       alert("Please fill in all required fields.");
       return;
     }
 
+    if (password !== confirm) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    // Optional: validate phone number format
+    const phoneRegex = /^07\d{8}$/;
+    if (!phoneRegex.test(phone)) {
+      alert("Please enter a valid phone number (e.g., 07XXXXXXXX).");
+      return;
+    }
+
     try {
-      const res = await fetch("http://localhost:8000/register", {
+      const res = await fetch("/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -40,10 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
       alert(data.message || "Registered successfully!");
       localStorage.setItem("username", data.username);
 
-      window.location.href = data.redirect;
+      // Redirect after successful registration
+      window.location.href = data.redirect || "/dashboard.html";
 
     } catch (err) {
-      alert(err.message);
+      console.error("Registration error:", err);
+      alert(err.message || "An error occurred. Please try again.");
     }
   });
 });
