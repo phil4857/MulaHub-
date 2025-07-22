@@ -138,7 +138,6 @@
           document.getElementById("earningsDisplay").textContent = `KES ${user.earnings}`;
           document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
 
-          // Check eligibility for bonus
           const claimBtn = document.getElementById("claimBonusBtn");
           const lastClaim = new Date(user.last_claim_time);
           const now = new Date();
@@ -162,12 +161,17 @@
         .then(referred => {
           const ul = document.getElementById("referredUsers");
           ul.innerHTML = "";
-          if (!referred.length) {
+
+          if (!Array.isArray(referred) || referred.length === 0) {
             ul.innerHTML = "<li>No referrals yet.</li>";
           } else {
-            referred.forEach(name => {
+            referred.forEach(item => {
               const li = document.createElement("li");
-              li.textContent = name;
+              if (typeof item === "object" && item !== null) {
+                li.textContent = item.username || item.name || JSON.stringify(item);
+              } else {
+                li.textContent = item;
+              }
               ul.appendChild(li);
             });
           }
