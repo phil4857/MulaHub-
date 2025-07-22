@@ -85,16 +85,16 @@
     <div class="info-box">
       <div><span class="info-label">Username:</span><span id="usernameDisplay">Loading...</span></div>
       <div><span class="info-label">Referral Link:</span><a id="referralLink" href="#" target="_blank">Generating...</a></div>
-      <p class="note">You earn KES 50 for every approved user who registers with your referral link and makes an investment. Unapproved users can refer but won't receive referral bonuses.</p>
+      <p class="note">Earn KES 50 for every approved referral who makes a payment. Unapproved users can refer but don’t earn bonuses.</p>
       <div><span class="info-label">Balance:</span><span id="balanceDisplay">KES 0</span></div>
       <div><span class="info-label">Daily Earnings:</span><span id="earningsDisplay">KES 0</span></div>
-      <p id="paymentInstructions">💡 Withdrawals are processed within 24 hours.</p>
+      <div><span class="info-label">Last Bonus Claimed:</span><span id="bonusStatus">Checking...</span></div>
       <div><span class="info-label">Your Referrals:</span><ul id="referredUsers"><li>Loading...</li></ul></div>
     </div>
 
     <div class="section">
       <h3>Claim Daily Bonus</h3>
-      <p class="note">Claim your 10% daily bonus every 24 hours.</p>
+      <p class="note">You can only claim 10% of your investment once every 24 hours.</p>
       <button id="claimBonusBtn" disabled>Checking Eligibility...</button>
     </div>
 
@@ -105,7 +105,7 @@
         <input type="text" name="transaction_ref" placeholder="Transaction Reference" required>
         <button type="submit">Submit Investment</button>
       </form>
-      <div class="note">🎉 Sunday investments receive a 5% bonus.</div>
+      <div class="note">Minimum investment is KES 500. 🎉 Sunday investments get 5% bonus.</div>
     </div>
 
     <div class="section">
@@ -114,7 +114,7 @@
         <input type="number" name="amount" placeholder="Amount to Withdraw (KES)" required>
         <button type="submit">Request Withdrawal</button>
       </form>
-      <div class="note">💰 Minimum: KES 150 for KES 500 investment, KES 300 for KES 1000, etc.</div>
+      <div class="note">Withdrawals are only allowed on Mondays. Minimum amount: 30% of your total investment.</div>
     </div>
   </div>
 
@@ -125,114 +125,101 @@
     if (!username) {
       alert("Please log in first.");
       window.location.href = "login.html";
-    } else {
-      document.getElementById("usernameDisplay").textContent = username;
-      const refLink = `https://yourdomain.com/register.html?ref=${username}`;
-      document.getElementById("referralLink").href = refLink;
-      document.getElementById("referralLink").textContent = refLink;
-
-      // Fetch user details
-      fetch(`${API}/user/${username}`)
-        .then(res => res.json())
-        .then(user => {
-          document.getElementById("earningsDisplay").textContent = `KES ${user.earnings}`;
-          document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
-
-          const claimBtn = document.getElementById("claimBonusBtn");
-          const lastClaim = new Date(user.last_claim_time);
-          const now = new Date();
-          const hoursSinceLastClaim = (now - lastClaim) / (1000 * 60 * 60);
-          if (isNaN(lastClaim.getTime()) || hoursSinceLastClaim >= 24) {
-            claimBtn.disabled = false;
-            claimBtn.textContent = "Claim Bonus";
-          } else {
-            const remaining = (24 - hoursSinceLastClaim).toFixed(1);
-            claimBtn.textContent = `Bonus available in ${remaining} hrs`;
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Error loading user data.");
-        });
-
-      // Fetch referrals
-      fetch(`${API}/referrals/${username}`)
-        .then(res => res.json())
-        .then(referred => {
-          const ul = document.getElementById("referredUsers");
-          ul.innerHTML = "";
-
-          if (!Array.isArray(referred) || referred.length === 0) {
-            ul.innerHTML = "<li>No referrals yet.</li>";
-          } else {
-            referred.forEach(item => {
-              const li = document.createElement("li");
-              if (typeof item === "object" && item !== null) {
-                li.textContent = item.username || item.name || JSON.stringify(item);
-              } else {
-                li.textContent = item;
-              }
-              ul.appendChild(li);
-            });
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Error loading referrals.");
-        });
-
-      // Claim bonus
-      document.getElementById("claimBonusBtn").addEventListener("click", async () => {
-        try {
-          const res = await fetch(`${API}/claim-bonus?username=${username}`, {
-            method: "POST"
-          });
-          const result = await res.json();
-          alert(result.message || "Bonus claimed.");
-          location.reload();
-        } catch (err) {
-          console.error(err);
-          alert("Error claiming bonus.");
-        }
-      });
     }
 
+    document.getElementById("usernameDisplay").textContent = username;
+    const refLink = `https://jipate-bonus-v1-bcti.vercel.app/register.html?ref=${username}`;
+    document.getElementById("referralLink").href = refLink;
+    document.getElementById("referralLink").textContent = refLink;
+
+    // Load user data
+    fetch(`${API}/user/${username}`)
+      .then(res => res.json())
+      .then(user => {
+        document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
+        document.getElementById("earningsDisplay").textContent = `KES ${user.earnings}`;
+        document.getElementById("bonusStatus").textContent = new Date(user.last_claim_time).toLocaleString();
+
+        const claimBtn = document.getElementById("claimBonusBtn");
+        const lastClaim = new Date(user.last_claim_time);
+        const now = new Date();
+        const diffHours = (now - lastClaim) / (1000 * 60 * 60);
+        if (isNaN(lastClaim.getTime()) || diffHours >= 24) {
+          claimBtn.disabled = false;
+          claimBtn.textContent = "Claim Bonus";
+        } else {
+          claimBtn.disabled = true;
+          const hoursLeft = (24 - diffHours).toFixed(1);
+          claimBtn.textContent = `Available in ${hoursLeft}h`;
+        }
+
+        // Claim bonus
+        claimBtn.addEventListener("click", async () => {
+          try {
+            const res = await fetch(`${API}/claim-bonus?username=${username}`, { method: "POST" });
+            const data = await res.json();
+            alert(data.message || "Bonus claimed");
+            location.reload();
+          } catch (e) {
+            alert("Error claiming bonus");
+          }
+        });
+      });
+
+    // Load referrals
+    fetch(`${API}/referrals/${username}`)
+      .then(res => res.json())
+      .then(data => {
+        const ul = document.getElementById("referredUsers");
+        ul.innerHTML = "";
+        if (!data.length) {
+          ul.innerHTML = "<li>No referrals yet.</li>";
+        } else {
+          data.forEach(name => {
+            const li = document.createElement("li");
+            li.textContent = name;
+            ul.appendChild(li);
+          });
+        }
+      });
+
+    // Invest
     document.getElementById("investForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = new FormData(e.target);
+      const amount = parseFloat(form.get("amount"));
+      if (amount < 500) {
+        return alert("Minimum investment is KES 500");
+      }
       form.append("username", username);
 
-      try {
-        const res = await fetch(`${API}/invest`, {
-          method: "POST",
-          body: form
-        });
-        const result = await res.json();
-        alert(result.message || result.detail || "Investment processed.");
-        location.reload();
-      } catch (err) {
-        console.error(err);
-        alert("Error processing investment.");
-      }
+      const res = await fetch(`${API}/invest`, { method: "POST", body: form });
+      const data = await res.json();
+      alert(data.message || "Investment submitted");
+      location.reload();
     });
 
+    // Withdraw
     document.getElementById("withdrawForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      const today = new Date().getDay(); // 1 = Monday
+      if (today !== 1) {
+        return alert("Withdrawals allowed only on Mondays");
+      }
+
+      const amount = parseFloat(new FormData(e.target).get("amount"));
+      const userData = await fetch(`${API}/user/${username}`).then(res => res.json());
+      const minAllowed = userData.invested_amount * 0.3;
+      if (amount < minAllowed) {
+        return alert(`You must withdraw at least 30% (KES ${minAllowed.toFixed(0)})`);
+      }
+
       const form = new FormData(e.target);
       form.append("username", username);
-
-      try {
-        const res = await fetch(`${API}/withdraw`, {
-          method: "POST",
-          body: form
-        });
-        const result = await res.json();
-        alert(result.message || result.detail || "Withdrawal request sent.");
-        location.reload();
-      } catch (err) {
-        console.error(err);
-        alert("Error processing withdrawal.");
-      }
+      const res = await fetch(`${API}/withdraw`, { method: "POST", body: form });
+      const data = await res.json();
+      alert(data.message || "Withdrawal request sent");
+      location.reload();
     });
   </script>
 </body>
