@@ -85,10 +85,17 @@
     <div class="info-box">
       <div><span class="info-label">Username:</span><span id="usernameDisplay">Loading...</span></div>
       <div><span class="info-label">Referral Link:</span><a id="referralLink" href="#" target="_blank">Generating...</a></div>
+      <p class="note">You earn KES 50 for every approved user who registers with your referral link and makes an investment. Unapproved users can refer but won't receive referral bonuses.</p>
       <div><span class="info-label">Balance:</span><span id="balanceDisplay">KES 0</span></div>
       <div><span class="info-label">Daily Earnings:</span><span id="earningsDisplay">KES 0</span></div>
       <p id="paymentInstructions">💡 Withdrawals are processed within 24 hours.</p>
       <div><span class="info-label">Your Referrals:</span><ul id="referredUsers"><li>Loading...</li></ul></div>
+    </div>
+
+    <div class="section">
+      <h3>Claim Daily Bonus</h3>
+      <p class="note">Claim your 10% daily bonus every 24 hours.</p>
+      <button id="claimBonusBtn">Claim Bonus</button>
     </div>
 
     <div class="section">
@@ -131,8 +138,7 @@
           return res.json();
         })
         .then(user => {
-          const earnings = Math.floor(user.balance * 0.03);
-          document.getElementById("earningsDisplay").textContent = `KES ${earnings}`;
+          document.getElementById("earningsDisplay").textContent = `KES ${user.earnings}`;
           document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
         })
         .catch(err => {
@@ -163,6 +169,21 @@
           console.error(err);
           alert("Error loading referrals.");
         });
+
+      // Claim bonus
+      document.getElementById("claimBonusBtn").addEventListener("click", async () => {
+        try {
+          const res = await fetch(`${API}/claim-bonus?username=${username}`, {
+            method: "POST"
+          });
+          const result = await res.json();
+          alert(result.message || "Bonus claimed.");
+          location.reload(); // refresh values
+        } catch (err) {
+          console.error(err);
+          alert("Error claiming bonus.");
+        }
+      });
     }
 
     document.getElementById("investForm").addEventListener("submit", async (e) => {
@@ -177,6 +198,7 @@
         });
         const result = await res.json();
         alert(result.message || result.detail || "Investment processed.");
+        location.reload();
       } catch (err) {
         console.error(err);
         alert("Error processing investment.");
@@ -195,6 +217,7 @@
         });
         const result = await res.json();
         alert(result.message || result.detail || "Withdrawal request sent.");
+        location.reload();
       } catch (err) {
         console.error(err);
         alert("Error processing withdrawal.");
