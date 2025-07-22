@@ -96,6 +96,7 @@
   </div>
 
   <script>
+    const API = "https://repo-1red-jipate-bonus.onrender.com";
     let currentAdmin = {};
 
     async function adminLogin() {
@@ -105,7 +106,7 @@
       errorDiv.textContent = "";
 
       try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
+        const res = await fetch(`${API}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
@@ -120,6 +121,7 @@
 
         currentAdmin = { username, password };
         localStorage.setItem("adminAuthed", "true");
+        localStorage.setItem("adminUser", JSON.stringify(currentAdmin));
 
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("adminContent").style.display = "block";
@@ -132,7 +134,7 @@
 
     async function fetchUsers() {
       try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/users");
+        const res = await fetch(`${API}/users`);
         const users = await res.json();
 
         const list = document.getElementById("userList");
@@ -169,7 +171,7 @@
 
     async function approveUser(username) {
       try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/approve-user", {
+        const res = await fetch(`${API}/admin/approve-user`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -185,7 +187,7 @@
 
         if (!res.ok) throw new Error(data.detail || data.message || text || "Approval failed");
 
-        alert(`✅ ${username} has been approved.`);
+        alert(`✅ ${username} approved.`);
         fetchUsers();
       } catch (err) {
         alert("Error: " + err.message);
@@ -197,7 +199,7 @@
       if (!newPass) return;
 
       try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
+        const res = await fetch(`${API}/admin/reset-password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -220,9 +222,13 @@
       }
     }
 
+    // Auto-login if previously authenticated
     window.addEventListener("DOMContentLoaded", () => {
-      const isAuthed = localStorage.getItem("adminAuthed") === "true";
-      if (isAuthed) {
+      const authed = localStorage.getItem("adminAuthed");
+      const adminData = JSON.parse(localStorage.getItem("adminUser") || "{}");
+
+      if (authed === "true" && adminData.username && adminData.password) {
+        currentAdmin = adminData;
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("adminContent").style.display = "block";
         fetchUsers();
