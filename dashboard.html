@@ -95,7 +95,7 @@
     <div class="section">
       <h3>Claim Daily Bonus</h3>
       <p class="note">Claim your 10% daily bonus every 24 hours.</p>
-      <button id="claimBonusBtn">Claim Bonus</button>
+      <button id="claimBonusBtn" disabled>Checking Eligibility...</button>
     </div>
 
     <div class="section">
@@ -133,13 +133,23 @@
 
       // Fetch user details
       fetch(`${API}/user/${username}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to load user data");
-          return res.json();
-        })
+        .then(res => res.json())
         .then(user => {
           document.getElementById("earningsDisplay").textContent = `KES ${user.earnings}`;
           document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
+
+          // Check eligibility for bonus
+          const claimBtn = document.getElementById("claimBonusBtn");
+          const lastClaim = new Date(user.last_claim_time);
+          const now = new Date();
+          const hoursSinceLastClaim = (now - lastClaim) / (1000 * 60 * 60);
+          if (isNaN(lastClaim.getTime()) || hoursSinceLastClaim >= 24) {
+            claimBtn.disabled = false;
+            claimBtn.textContent = "Claim Bonus";
+          } else {
+            const remaining = (24 - hoursSinceLastClaim).toFixed(1);
+            claimBtn.textContent = `Bonus available in ${remaining} hrs`;
+          }
         })
         .catch(err => {
           console.error(err);
@@ -148,10 +158,7 @@
 
       // Fetch referrals
       fetch(`${API}/referrals/${username}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to load referrals");
-          return res.json();
-        })
+        .then(res => res.json())
         .then(referred => {
           const ul = document.getElementById("referredUsers");
           ul.innerHTML = "";
@@ -178,7 +185,7 @@
           });
           const result = await res.json();
           alert(result.message || "Bonus claimed.");
-          location.reload(); // refresh values
+          location.reload();
         } catch (err) {
           console.error(err);
           alert("Error claiming bonus.");
