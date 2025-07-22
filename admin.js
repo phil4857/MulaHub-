@@ -37,9 +37,13 @@ function viewUsers(adminUsername, adminPassword) {
                 const approveBtn = !user.approved
                     ? `<button onclick="approveUser('${user.username}', '${adminUsername}', '${adminPassword}')">Approve</button>`
                     : '';
+
+                const resetBtn = `<button onclick="resetPassword('${user.username}', '${adminUsername}', '${adminPassword}')">Reset Password</button>`;
+
                 return `<div style="margin-bottom:10px">
                     <strong>${user.username}</strong> - ${user.number} 
-                    | Approved: ${user.approved ? '✅' : '❌'} ${approveBtn}
+                    | Approved: ${user.approved ? '✅' : '❌'}
+                    ${approveBtn} ${resetBtn}
                 </div>`;
             }).join('');
             document.getElementById('userData').innerHTML = output;
@@ -62,17 +66,42 @@ function approveUser(targetUsername, adminUsername, adminPassword) {
             target_username: targetUsername
         })
     })
-    .then(res => {
-        if (!res.ok) throw new Error("Approval failed.");
-        return res.json();
-    })
-    .then(data => {
-        alert(data.message);
+    .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || data.message || "Approval failed");
+        alert(data.message || "User approved successfully.");
         viewUsers(adminUsername, adminPassword);
     })
     .catch(err => {
         console.error(err);
         alert("Failed to approve user: " + err.message);
+    });
+}
+
+function resetPassword(targetUsername, adminUsername, adminPassword) {
+    const newPassword = prompt(`Enter a new password for ${targetUsername}:`);
+    if (!newPassword) return;
+
+    fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            admin_username: adminUsername,
+            admin_password: adminPassword,
+            target_username: targetUsername,
+            new_password: newPassword
+        })
+    })
+    .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || data.message || "Reset failed");
+        alert(data.message || "Password reset successfully.");
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Failed to reset password: " + err.message);
     });
 }
 
