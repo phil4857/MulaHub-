@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <title>Login - Jipate Bonus</title>
   <style>
     body {
       background-color: gold;
@@ -99,16 +99,18 @@
           const data = await res.json();
 
           if (!res.ok) {
-            throw new Error(data.detail || "Login failed");
+            errorMsg.textContent = data.detail || "Login failed.";
+            return;
           }
 
-          alert(data.message || "Login successful");
           localStorage.setItem("username", username);
-          window.location.href = data.redirect;
+          alert(data.message || "Login successful");
+
+          window.location.href = data.redirect || "dashboard.html";
 
         } catch (err) {
           console.error("Login error:", err);
-          errorMsg.textContent = err.message || "Login failed. Please try again.";
+          errorMsg.textContent = "Network error. Please try again.";
         }
       });
     });
