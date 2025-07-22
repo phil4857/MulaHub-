@@ -33,18 +33,32 @@
       color: #007bff;
     }
 
-    .reset-btn {
+    .reset-btn,
+    .approve-btn {
       margin-top: 10px;
-      background-color: #dc3545;
-      color: white;
-      border: none;
+      margin-right: 5px;
       padding: 8px 12px;
       border-radius: 5px;
       cursor: pointer;
+      border: none;
+    }
+
+    .reset-btn {
+      background-color: #dc3545;
+      color: white;
     }
 
     .reset-btn:hover {
       background-color: #c82333;
+    }
+
+    .approve-btn {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .approve-btn:hover {
+      background-color: #0056b3;
     }
 
     .error-message {
@@ -72,6 +86,11 @@
     button:hover {
       background-color: #218838;
     }
+
+    #userCount {
+      margin: 15px 0;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -86,7 +105,7 @@
     </div>
 
     <div id="adminContent" style="display: none;">
-      <h3>Registered Users</h3>
+      <h3>Total Users: <span id="userCount">0</span></h3>
       <div id="userList">Loading users...</div>
     </div>
   </div>
@@ -113,7 +132,6 @@
         if (!response.ok) throw new Error(data.detail || "Login failed");
         if (!data.is_admin) throw new Error("Access denied. Not an admin.");
 
-        // Save credentials in memory (insecure for real prod use)
         currentAdmin = { username, password };
         localStorage.setItem("adminAuth", "true");
 
@@ -132,7 +150,10 @@
         const users = await res.json();
 
         const list = document.getElementById("userList");
+        const count = document.getElementById("userCount");
+
         list.innerHTML = "";
+        count.textContent = users.length;
 
         if (Array.isArray(users) && users.length > 0) {
           users.forEach(user => {
@@ -145,6 +166,7 @@
               <p><strong>Approved:</strong> ${user.approved ? "✅" : "❌"}</p>
               <p><strong>Balance:</strong> KES ${user.balance}</p>
               <p><strong>Registered:</strong> ${new Date(user.registered_at).toLocaleString()}</p>
+              ${!user.approved ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : ""}
               <button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
             `;
             list.appendChild(userCard);
@@ -179,6 +201,28 @@
         if (!res.ok) throw new Error(data.detail || "Failed to reset password");
 
         alert(`Password for '${username}' was reset successfully.`);
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function approveUser(username) {
+      try {
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            admin_username: currentAdmin.username,
+            admin_password: currentAdmin.password,
+            target_username: username
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Approval failed");
+
+        alert(`✅ ${username} approved.`);
+        fetchUsers(); // Refresh list
       } catch (err) {
         alert("Error: " + err.message);
       }
