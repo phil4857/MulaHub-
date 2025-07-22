@@ -1,231 +1,134 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      padding: 20px;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    .user-card {
-      background-color: #eef2f5;
-      border-radius: 10px;
-      padding: 15px;
-      margin: 10px 0;
-    }
-    .user-card h4 {
-      margin: 0 0 5px;
-      color: #007bff;
-    }
-    .approve-btn, .reset-btn {
-      margin-top: 10px;
-      margin-right: 5px;
-      padding: 8px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      border: none;
-    }
-    .approve-btn {
-      background-color: #007bff;
-      color: white;
-    }
-    .approve-btn:hover {
-      background-color: #0056b3;
-    }
-    .reset-btn {
-      background-color: #dc3545;
-      color: white;
-    }
-    .reset-btn:hover {
-      background-color: #c82333;
-    }
-    .error-message {
-      color: red;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    input {
-      display: block;
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 10px;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #218838;
-    }
-    #userCount {
-      margin: 15px 0;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Admin Dashboard</h2>
+<script>
+  let currentAdmin = {};
 
-    <div id="loginSection">
-      <input type="text" id="username" placeholder="Admin Username" required />
-      <input type="password" id="password" placeholder="Admin Password" required />
-      <button onclick="adminLogin()">Login</button>
-      <div id="loginError" class="error-message"></div>
-    </div>
+  async function adminLogin() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const errorDiv = document.getElementById("loginError");
+    errorDiv.textContent = "";
 
-    <div id="adminContent" style="display: none;">
-      <h3>Total Users: <span id="userCount">0</span></h3>
-      <div id="userList">Loading users...</div>
-    </div>
-  </div>
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
 
-  <script>
-    let currentAdmin = {};
+      const text = await res.text();
+      let data = {};
+      try { data = JSON.parse(text); } catch {}
 
-    async function adminLogin() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value;
-      const errorDiv = document.getElementById("loginError");
-      errorDiv.textContent = "";
+      if (!res.ok) throw new Error(data.detail || data.message || text || "Login failed");
+      if (!data.is_admin) throw new Error("Access denied. Not an admin.");
 
-      try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
+      currentAdmin = { username, password };
+      localStorage.setItem("adminAuthed", "true");
+
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("adminContent").style.display = "block";
+      fetchUsers();
+
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+  async function fetchUsers() {
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/users");
+      const users = await res.json();
+
+      const list = document.getElementById("userList");
+      const count = document.getElementById("userCount");
+
+      list.innerHTML = "";
+      count.textContent = users.length;
+
+      if (Array.isArray(users) && users.length > 0) {
+        users.forEach(user => {
+          const userCard = document.createElement("div");
+          userCard.className = "user-card";
+          userCard.innerHTML = `
+            <h4>${user.username}</h4>
+            <p><strong>Phone:</strong> ${user.number}</p>
+            <p><strong>Referral:</strong> ${user.referral || "None"}</p>
+            <p><strong>Approved:</strong> ${user.approved ? "✅" : "❌"}</p>
+            <p><strong>Balance:</strong> KES ${user.balance}</p>
+            <p><strong>Registered:</strong> ${new Date(user.registered_at).toLocaleString()}</p>
+            ${!user.approved ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : ""}
+            <button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
+          `;
+          list.appendChild(userCard);
         });
-
-        const text = await res.text();
-        let data = {};
-        try { data = JSON.parse(text); } catch {}
-
-        if (!res.ok) throw new Error(data.detail || data.message || text || "Login failed");
-        if (!data.is_admin) throw new Error("Access denied. Not an admin.");
-
-        currentAdmin = { username, password };
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("adminContent").style.display = "block";
-        fetchUsers();
-
-      } catch (err) {
-        errorDiv.textContent = err.message;
+      } else {
+        list.textContent = "No users found.";
       }
+
+    } catch (err) {
+      document.getElementById("userList").textContent = "Failed to load users.";
+      console.error("Fetch users failed:", err);
     }
+  }
 
-    async function fetchUsers() {
-      try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/users");
-        const users = await res.json();
+  async function approveUser(username) {
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/approve-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          admin_username: currentAdmin.username,
+          admin_password: currentAdmin.password,
+          target_username: username  // ✅ CORRECT field
+        })
+      });
 
-        const list = document.getElementById("userList");
-        const count = document.getElementById("userCount");
+      const text = await res.text();
+      let data = {};
+      try { data = JSON.parse(text); } catch {}
 
-        list.innerHTML = "";
-        count.textContent = users.length;
+      if (!res.ok) throw new Error(data.detail || data.message || text || "Approval failed");
 
-        if (Array.isArray(users) && users.length > 0) {
-          users.forEach(user => {
-            const userCard = document.createElement("div");
-            userCard.className = "user-card";
-            userCard.innerHTML = `
-              <h4>${user.username}</h4>
-              <p><strong>Phone:</strong> ${user.number}</p>
-              <p><strong>Referral:</strong> ${user.referral || "None"}</p>
-              <p><strong>Approved:</strong> ${user.approved ? "✅" : "❌"}</p>
-              <p><strong>Balance:</strong> KES ${user.balance}</p>
-              <p><strong>Registered:</strong> ${new Date(user.registered_at).toLocaleString()}</p>
-              ${!user.approved ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : ""}
-              <button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
-            `;
-            list.appendChild(userCard);
-          });
-        } else {
-          list.textContent = "No users found.";
-        }
-
-      } catch (err) {
-        document.getElementById("userList").textContent = "Failed to load users.";
-        console.error("Fetch users failed:", err);
-      }
+      alert(`✅ ${username} approved.`);
+      fetchUsers();
+    } catch (err) {
+      alert("Error: " + err.message);
     }
+  }
 
-    async function approveUser(username) {
-      try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/approve-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            admin_username: currentAdmin.username,
-            admin_password: currentAdmin.password,
-            username
-          })
-        });
+  async function resetPassword(username) {
+    const newPass = prompt(`Enter new password for ${username}:`);
+    if (!newPass) return;
 
-        const text = await res.text();
-        let data = {};
-        try { data = JSON.parse(text); } catch {}
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          admin_username: currentAdmin.username,
+          admin_password: currentAdmin.password,
+          target_username: username,
+          new_password: newPass
+        })
+      });
 
-        if (!res.ok) throw new Error(data.detail || data.message || text || "Approval failed");
+      const text = await res.text();
+      let data = {};
+      try { data = JSON.parse(text); } catch {}
 
-        alert(`✅ ${username} approved.`);
-        fetchUsers();
-      } catch (err) {
-        alert("Error: " + err.message);
-      }
+      if (!res.ok) throw new Error(data.detail || data.message || text || "Failed to reset password");
+
+      alert(`🔐 Password for '${username}' reset successfully.`);
+    } catch (err) {
+      alert("Error: " + err.message);
     }
+  }
 
-    async function resetPassword(username) {
-      const newPass = prompt(`Enter new password for ${username}:`);
-      if (!newPass) return;
-
-      try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            admin_username: currentAdmin.username,
-            admin_password: currentAdmin.password,
-            target_username: username,
-            new_password: newPass
-          })
-        });
-
-        const text = await res.text();
-        let data = {};
-        try { data = JSON.parse(text); } catch {}
-
-        if (!res.ok) throw new Error(data.detail || data.message || text || "Failed to reset password");
-
-        alert(`🔐 Password for '${username}' reset successfully.`);
-      } catch (err) {
-        alert("Error: " + err.message);
-      }
+  window.addEventListener("DOMContentLoaded", () => {
+    const isAuthed = localStorage.getItem("adminAuthed") === "true";
+    if (isAuthed && currentAdmin.username && currentAdmin.password) {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("adminContent").style.display = "block";
+      fetchUsers();
     }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      const isAuthed = localStorage.getItem("adminAuthed") === "true";
-      if (isAuthed) {
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("adminContent").style.display = "block";
-        fetchUsers();
-      }
-    });
-  </script>
-</body>
-</html>
+  });
+</script>
