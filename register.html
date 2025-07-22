@@ -1,68 +1,205 @@
-<script>
-  function togglePassword(id) {
-    const input = document.getElementById(id);
-    input.type = input.type === "password" ? "text" : "password";
-  }
-
-  document.getElementById('registerForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const username = document.getElementById('username').value.trim();
-    const number = document.getElementById('phone').value.trim();
-    const password = document.getElementById('password').value;
-    const confirm = document.getElementById('confirmPassword').value;
-    const referral = document.getElementById('referral').value.trim();
-    const terms = document.getElementById('terms').checked;
-    const errorMsg = document.getElementById('errorMsg');
-    const successMsg = document.getElementById('successMsg');
-
-    errorMsg.textContent = '';
-    successMsg.textContent = '';
-
-    if (!terms) {
-      errorMsg.textContent = 'You must agree to the terms and conditions.';
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #fefcea, #f1da36);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
 
-    if (!/^[0-9]{10}$/.test(number)) {
-      errorMsg.textContent = 'Invalid phone number. Must be exactly 10 digits.';
-      return;
+    .register-container {
+      background-color: #ffffffee;
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 420px;
     }
 
-    if (password.length < 6) {
-      errorMsg.textContent = 'Password must be at least 6 characters.';
-      return;
+    .register-container h2 {
+      text-align: center;
+      color: #1a237e;
+      margin-bottom: 25px;
     }
 
-    if (password !== confirm) {
-      errorMsg.textContent = 'Passwords do not match.';
-      return;
+    input[type="text"],
+    input[type="password"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      font-size: 16px;
     }
 
-    try {
-      const res = await fetch("http://localhost:8000/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username, number, password, confirm, referral: referral || null })
-      });
+    .toggle-password {
+      float: right;
+      margin-top: -30px;
+      margin-right: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+    }
 
-      const data = await res.json();
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
 
-      if (!res.ok) {
-        errorMsg.textContent = data.detail || "Registration failed.";
-      } else {
-        successMsg.textContent = "Registration successful! Redirecting...";
-        localStorage.setItem("username", data.username);
-        setTimeout(() => {
-          window.location.href = data.redirect || "dashboard.html";
-        }, 2000);
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    .error-message,
+    .success-message {
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .error-message {
+      color: red;
+    }
+
+    .success-message {
+      color: green;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .checkbox-label {
+      font-size: 14px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .checkbox-label input {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="register-container">
+    <h2>Create Account</h2>
+    <form id="registerForm">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="tel" id="phone" placeholder="Phone Number (e.g., 0712345678)" required pattern="[0-9]{10}" />
+      
+      <input type="password" id="password" placeholder="Password" required />
+      <span class="toggle-password" onclick="togglePassword('password')">Show</span>
+      
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+      <span class="toggle-password" onclick="togglePassword('confirmPassword')">Show</span>
+      
+      <input type="text" id="referral" placeholder="Referral Code (Optional)" />
+
+      <label class="checkbox-label">
+        <input type="checkbox" id="terms" required />
+        I agree to the <a href="#">terms & conditions</a>.
+      </label>
+
+      <div class="error-message" id="errorMsg"></div>
+      <div class="success-message" id="successMsg"></div>
+
+      <button type="submit">Register</button>
+    </form>
+  </div>
+
+  <script>
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === "password" ? "text" : "password";
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const number = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const referral = document.getElementById('referral').value.trim();
+      const terms = document.getElementById('terms').checked;
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+
+      errorMsg.textContent = '';
+      successMsg.textContent = '';
+
+      if (!terms) {
+        errorMsg.textContent = 'You must agree to the terms and conditions.';
+        return;
       }
 
-    } catch (err) {
-      errorMsg.textContent = "An error occurred. Please try again later.";
-      console.error(err);
-    }
-  });
-</script>
+      if (!/^[0-9]{10}$/.test(number)) {
+        errorMsg.textContent = 'Invalid phone number. Must be exactly 10 digits.';
+        return;
+      }
+
+      if (password.length < 6) {
+        errorMsg.textContent = 'Password must be at least 6 characters.';
+        return;
+      }
+
+      if (password !== confirm) {
+        errorMsg.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      try {
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            username,
+            number,
+            password,
+            confirm,
+            referral: referral || null
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorMsg.textContent = data.detail || "Registration failed.";
+        } else {
+          successMsg.textContent = "Registration successful! Redirecting...";
+          localStorage.setItem("username", data.username);
+          setTimeout(() => {
+            window.location.href = data.redirect || "dashboard.html";
+          }, 2000);
+        }
+
+      } catch (err) {
+        errorMsg.textContent = "An error occurred. Please try again later.";
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
