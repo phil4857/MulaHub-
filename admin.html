@@ -175,7 +175,7 @@
           body: JSON.stringify({
             admin_username: currentAdmin.username,
             admin_password: currentAdmin.password,
-            target_username: username  // ✅ FIXED
+            target_username: username
           })
         });
 
@@ -185,7 +185,7 @@
 
         if (!res.ok) throw new Error(data.detail || data.message || text || "Approval failed");
 
-        alert(`✅ ${username} approved.`);
+        alert(`✅ ${username} has been approved.`);
         fetchUsers();
       } catch (err) {
         alert("Error: " + err.message);
