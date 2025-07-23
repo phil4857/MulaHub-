@@ -11,6 +11,7 @@
       color: #2e2e2e;
       padding: 40px;
       text-align: center;
+      margin: 0;
     }
 
     h1 {
@@ -28,6 +29,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
+      margin-top: 30px;
     }
 
     .card {
@@ -51,6 +53,7 @@
     .card p {
       font-size: 14px;
       color: #555;
+      margin-bottom: 15px;
     }
 
     .btn {
@@ -61,12 +64,23 @@
       color: white;
       text-decoration: none;
       border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #844900;
     }
 
     footer {
-      margin-top: 40px;
+      margin-top: 60px;
       font-size: 14px;
       color: #777;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        width: 90%;
+      }
     }
   </style>
 </head>
@@ -90,13 +104,13 @@
 
     <div class="card">
       <h3>Admin</h3>
-      <p>Admin-only access for user and investment approvals.</p>
+      <p>Admin-only access for user approvals and password resets.</p>
       <a class="btn" href="admin.html">Admin Panel</a>
     </div>
   </div>
 
   <footer>
-    <p>📱 MPESA SEND MONEY: 0737734533 | 💰 Daily earnings: 10% | 🎁 Sunday 5% bonus | 💸 Withdraw limits vary with investment</p>
+    <p>📱 MPESA SEND MONEY: <strong>0737734533</strong> | 💰 Daily earnings: <strong>10%</strong> | 🎁 Sunday 5% bonus | 💸 Withdraw limits vary with investment</p>
   </footer>
 
 </body>
