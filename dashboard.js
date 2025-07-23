@@ -7,10 +7,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // Display logged-in username
+  // Show logged-in username
   document.getElementById("usernameDisplay").textContent = username;
 
-  // Display referral link
+  // Setup referral link
   const referralUrl = `${window.location.origin}/register.html?ref=${encodeURIComponent(username)}`;
   const referralLinkEl = document.getElementById("referralLink");
   referralLinkEl.textContent = referralUrl;
@@ -20,27 +20,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Trigger daily earnings
     await fetch("https://repo-1red-jipate-bonus.onrender.com/earnings/daily", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username })
     });
 
-    // Fetch user details
+    // Fetch all users
     const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
-    const users = await res.json();
+    if (!res.ok) throw new Error("Unable to fetch user data");
 
+    const users = await res.json();
     const user = users[username];
+
     if (!user) {
-      alert("User not found.");
+      alert("Your account could not be found.");
       return;
     }
 
-    // Update balance and earnings
-    document.getElementById("balanceDisplay").textContent = `KES ${user.balance.toFixed(2)}`;
-    document.getElementById("earningsDisplay").textContent = `KES ${user.earnings ? user.earnings.toFixed(2) : '0.00'}`;
+    // Enforce investment rule
+    if (!user.invested || user.investment_amount < 500 || !user.approved) {
+      document.getElementById("balanceDisplay").textContent = "KES 0.00";
+      document.getElementById("earningsDisplay").textContent = "KES 0.00";
+      alert("Earnings are only available after approval and a minimum investment of KES 500.");
+    } else {
+      const earnings = user.earnings ?? 0;
+      const balance = user.balance ?? 0;
 
-    // MPESA payment instructions
+      document.getElementById("balanceDisplay").textContent = `KES ${balance.toFixed(2)}`;
+      document.getElementById("earningsDisplay").textContent = `KES ${earnings.toFixed(2)}`;
+    }
+
+    // Payment instructions
     document.getElementById("paymentInstructions").textContent =
       "Send payment to MPESA number: 0737734533";
 
-    // Display referred users list
+    // Referral list
     const referredUsers = user.referred_users || [];
     const referredList = document.getElementById("referredUsers");
     referredList.innerHTML = "";
