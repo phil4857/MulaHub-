@@ -20,10 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          username,
-          password
-        })
+        body: JSON.stringify({ username, password })
       });
 
       const data = await response.json();
@@ -39,9 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Redirect logic
       if (data.is_admin) {
-        window.location.href = "/admin_dashboard.html";  // adjust if needed
+        window.location.href = "/admin_dashboard.html";  // change if needed
       } else if (data.is_approved) {
-        window.location.href = "/dashboard.html";  // adjust if needed
+        window.location.href = "/dashboard.html";        // change if needed
       } else {
         errorMsg.textContent = "Account not yet approved by admin.";
       }
