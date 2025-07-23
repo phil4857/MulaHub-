@@ -88,7 +88,7 @@
         }
 
         try {
-          const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
+          const res = await fetch("/login", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
@@ -104,9 +104,17 @@
           }
 
           localStorage.setItem("username", username);
-          alert(data.message || "Login successful");
+          localStorage.setItem("is_admin", data.is_admin);
+          localStorage.setItem("is_approved", data.is_approved);
 
-          window.location.href = data.redirect || "dashboard.html";
+          // Redirect logic
+          if (data.is_admin) {
+            window.location.href = "/admin_dashboard.html";
+          } else if (data.is_approved) {
+            window.location.href = "/dashboard.html";
+          } else {
+            errorMsg.textContent = "Account not yet approved by admin.";
+          }
 
         } catch (err) {
           console.error("Login error:", err);
