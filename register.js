@@ -20,26 +20,27 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Optional: validate phone number format
     const phoneRegex = /^07\d{8}$/;
     if (!phoneRegex.test(phone)) {
       alert("Please enter a valid phone number (e.g., 07XXXXXXXX).");
       return;
     }
 
+    const formData = new URLSearchParams();
+    formData.append("username", username);
+    formData.append("number", phone);
+    formData.append("password", password);
+    if (referral) {
+      formData.append("referral", referral);
+    }
+
     try {
       const res = await fetch("/register", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
-          username,
-          number: phone,
-          password,
-          confirm,
-          referral: referral || null
-        })
+        body: formData.toString()
       });
 
       const data = await res.json();
@@ -49,10 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       alert(data.message || "Registered successfully!");
-      localStorage.setItem("username", data.username);
+      localStorage.setItem("username", username);
 
-      // Redirect after successful registration
-      window.location.href = data.redirect || "/dashboard.html";
+      window.location.href = "/dashboard.html";
 
     } catch (err) {
       console.error("Registration error:", err);
