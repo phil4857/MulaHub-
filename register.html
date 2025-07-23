@@ -186,18 +186,24 @@
         const data = await res.json();
 
         if (!res.ok) {
-          errorMsg.textContent = data.detail || "Registration failed.";
+          if (data && typeof data.detail === 'string') {
+            errorMsg.textContent = data.detail;
+          } else if (data && data.message) {
+            errorMsg.textContent = data.message;
+          } else {
+            errorMsg.textContent = "Registration failed.";
+          }
         } else {
           successMsg.textContent = "Registration successful! Redirecting...";
-          localStorage.setItem("username", data.username);
+          localStorage.setItem("username", data.username || username);
           setTimeout(() => {
             window.location.href = data.redirect || "dashboard.html";
           }, 2000);
         }
 
       } catch (err) {
+        console.error("Error during registration:", err);
         errorMsg.textContent = "An error occurred. Please try again later.";
-        console.error(err);
       }
     });
   </script>
