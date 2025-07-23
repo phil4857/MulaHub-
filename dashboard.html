@@ -76,6 +76,15 @@
       color: #FFD700;
       word-break: break-word;
     }
+    #adminLink {
+      display: block;
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+      color: #FFD700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -90,6 +99,7 @@
       <div><span class="info-label">Daily Earnings:</span><span id="earningsDisplay">KES 0</span></div>
       <div><span class="info-label">Last Bonus Claimed:</span><span id="bonusStatus">Checking...</span></div>
       <div><span class="info-label">Your Referrals:</span><ul id="referredUsers"><li>Loading...</li></ul></div>
+      <a id="adminLink" href="admin.html" style="display:none;">Go to Admin Dashboard</a>
     </div>
 
     <div class="section">
@@ -138,29 +148,37 @@
       .then(user => {
         document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
         document.getElementById("earningsDisplay").textContent = `KES ${user.earnings}`;
-        document.getElementById("bonusStatus").textContent = new Date(user.last_claim_time).toLocaleString();
+        document.getElementById("bonusStatus").textContent = new Date(user.last_bonus_time || 0).toLocaleString();
 
+        // Show admin link if user is admin
+        if (user.is_admin) {
+          document.getElementById("adminLink").style.display = "block";
+        }
+
+        // Daily bonus eligibility
         const claimBtn = document.getElementById("claimBonusBtn");
-        const lastClaim = new Date(user.last_claim_time);
+        const lastClaim = user.last_bonus_time ? new Date(user.last_bonus_time) : new Date(0);
         const now = new Date();
-        const diffHours = (now - lastClaim) / (1000 * 60 * 60);
-        if (isNaN(lastClaim.getTime()) || diffHours >= 24) {
+        const diffHrs = (now - lastClaim) / 36e5; // milliseconds → hours
+        if (diffHrs >= 24) {
           claimBtn.disabled = false;
           claimBtn.textContent = "Claim Bonus";
         } else {
-          claimBtn.disabled = true;
-          const hoursLeft = (24 - diffHours).toFixed(1);
-          claimBtn.textContent = `Available in ${hoursLeft}h`;
+          const hrsLeft = (24 - diffHrs).toFixed(1);
+          claimBtn.textContent = `Available in ${hrsLeft}h`;
         }
 
-        // Claim bonus
         claimBtn.addEventListener("click", async () => {
           try {
-            const res = await fetch(`${API}/claim-bonus?username=${username}`, { method: "POST" });
+            const res = await fetch(`${API}/daily_bonus`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password: localStorage.getItem("password") })
+            });
             const data = await res.json();
-            alert(data.message || "Bonus claimed");
+            alert(data.message);
             location.reload();
-          } catch (e) {
+          } catch {
             alert("Error claiming bonus");
           }
         });
@@ -169,56 +187,45 @@
     // Load referrals
     fetch(`${API}/referrals/${username}`)
       .then(res => res.json())
-      .then(data => {
+      .then(list => {
         const ul = document.getElementById("referredUsers");
         ul.innerHTML = "";
-        if (!data.length) {
-          ul.innerHTML = "<li>No referrals yet.</li>";
-        } else {
-          data.forEach(name => {
-            const li = document.createElement("li");
-            li.textContent = name;
-            ul.appendChild(li);
-          });
-        }
+        if (!list.length) ul.innerHTML = "<li>No referrals yet.</li>";
+        else list.forEach(n => {
+          const li = document.createElement("li");
+          li.textContent = n;
+          ul.appendChild(li);
+        });
       });
 
     // Invest
-    document.getElementById("investForm").addEventListener("submit", async (e) => {
+    document.getElementById("investForm").addEventListener("submit", async e => {
       e.preventDefault();
       const form = new FormData(e.target);
-      const amount = parseFloat(form.get("amount"));
-      if (amount < 500) {
-        return alert("Minimum investment is KES 500");
-      }
+      const amt = parseFloat(form.get("amount"));
+      if (amt < 500) return alert("Minimum investment is KES 500");
       form.append("username", username);
-
       const res = await fetch(`${API}/invest`, { method: "POST", body: form });
-      const data = await res.json();
-      alert(data.message || "Investment submitted");
+      const d = await res.json();
+      alert(d.message);
       location.reload();
     });
 
     // Withdraw
-    document.getElementById("withdrawForm").addEventListener("submit", async (e) => {
+    document.getElementById("withdrawForm").addEventListener("submit", async e => {
       e.preventDefault();
-      const today = new Date().getDay(); // 1 = Monday
-      if (today !== 1) {
-        return alert("Withdrawals allowed only on Mondays");
-      }
-
-      const amount = parseFloat(new FormData(e.target).get("amount"));
-      const userData = await fetch(`${API}/user/${username}`).then(res => res.json());
-      const minAllowed = userData.invested_amount * 0.3;
-      if (amount < minAllowed) {
-        return alert(`You must withdraw at least 30% (KES ${minAllowed.toFixed(0)})`);
-      }
-
+      const day = new Date().getDay(); // 1=Mon
+      if (day !== 1) return alert("Withdrawals only on Mondays");
+      const amt = parseFloat(new FormData(e.target).get("amount"));
+      // fetch total_invested
+      const user = await fetch(`${API}/user/${username}`).then(r => r.json());
+      const min = 0.3 * user.total_invested;
+      if (amt < min) return alert(`Min withdrawal is 30%: KES ${min.toFixed(0)}`);
       const form = new FormData(e.target);
       form.append("username", username);
       const res = await fetch(`${API}/withdraw`, { method: "POST", body: form });
-      const data = await res.json();
-      alert(data.message || "Withdrawal request sent");
+      const d = await res.json();
+      alert(d.message);
       location.reload();
     });
   </script>
