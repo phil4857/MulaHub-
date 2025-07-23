@@ -80,9 +80,17 @@
 
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+
+      errorMsg.textContent = "";
+
+      if (!username || !password) {
+        errorMsg.textContent = "Both fields are required.";
+        return;
+      }
 
       try {
-        const res = await fetch("https://your-backend-url.com/admin/login", {
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
@@ -90,17 +98,20 @@
 
         const data = await res.json();
 
-        if (res.ok) {
-          localStorage.setItem("username", username);
-          localStorage.setItem("admin", "true");
-          alert("Admin login successful!");
-          window.location.href = "admin.html";  // Redirect to actual admin dashboard
-        } else {
-          document.getElementById("errorMsg").textContent = data.detail || "Invalid credentials.";
+        if (!res.ok) {
+          throw new Error(data.detail || "Invalid credentials.");
         }
+
+        if (!data.token) {
+          throw new Error("Token not received. Try again.");
+        }
+
+        localStorage.setItem("adminToken", data.token);
+        alert("Admin login successful!");
+        window.location.href = "admin.html";
       } catch (err) {
         console.error(err);
-        document.getElementById("errorMsg").textContent = "Server error. Try again later.";
+        errorMsg.textContent = err.message || "Server error. Try again later.";
       }
     });
   </script>
