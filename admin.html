@@ -28,7 +28,7 @@
       margin: 0 0 5px;
       color: #007bff;
     }
-    .approve-btn, .reset-btn {
+    .approve-btn, .reset-btn, #logoutBtn {
       margin-top: 10px;
       margin-right: 5px;
       padding: 8px 12px;
@@ -49,6 +49,10 @@
     }
     .reset-btn:hover {
       background-color: #c82333;
+    }
+    #logoutBtn {
+      background-color: #6c757d;
+      color: white;
     }
     .error-message {
       color: red;
@@ -90,6 +94,7 @@
     </div>
 
     <div id="adminContent" style="display: none;">
+      <button id="logoutBtn" onclick="logout()">Logout</button>
       <h3>Total Users: <span id="userCount">0</span></h3>
       <div id="userList">Loading users...</div>
     </div>
@@ -99,11 +104,21 @@
     const API = "https://repo-1red-jipate-bonus.onrender.com";
     let authToken = "";
 
+    function logout() {
+      localStorage.removeItem("adminToken");
+      location.reload();
+    }
+
     async function adminLogin() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value;
       const errorDiv = document.getElementById("loginError");
       errorDiv.textContent = "";
+
+      if (!username || !password) {
+        errorDiv.textContent = "Username and password are required.";
+        return;
+      }
 
       try {
         const res = await fetch(`${API}/admin/login`, {
@@ -112,14 +127,14 @@
           body: JSON.stringify({ username, password })
         });
 
+        const data = await res.json();
+
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || errorData.message || "Login failed");
+          throw new Error(data.detail || data.message || "Login failed");
         }
 
-        const data = await res.json();
         if (!data.is_admin || !data.token) {
-          throw new Error("Access denied or invalid response from server.");
+          throw new Error("Access denied or invalid credentials.");
         }
 
         authToken = data.token;
@@ -141,24 +156,34 @@
           }
         });
 
-        if (!res.ok) throw new Error("Unauthorized or failed to fetch users");
-        const users = await res.json();
+        if (res.status === 401 || res.status === 403) {
+          logout(); // Token invalid or expired
+          return;
+        }
 
+        if (!res.ok) throw new Error("Failed to fetch users.");
+
+        const users = await res.json();
         const list = document.getElementById("userList");
         const count = document.getElementById("userCount");
 
         list.innerHTML = "";
         count.textContent = users.length;
 
+        if (users.length === 0) {
+          list.innerHTML = "<p>No users available yet.</p>";
+          return;
+        }
+
         users.forEach(user => {
           const userCard = document.createElement("div");
           userCard.className = "user-card";
           userCard.innerHTML = `
             <h4>${user.username}</h4>
-            <p><strong>Phone:</strong> ${user.number}</p>
+            <p><strong>Phone:</strong> ${user.number || "N/A"}</p>
             <p><strong>Referral:</strong> ${user.referral || "None"}</p>
             <p><strong>Approved:</strong> ${user.approved ? "✅" : "❌"}</p>
-            <p><strong>Balance:</strong> KES ${user.balance}</p>
+            <p><strong>Balance:</strong> KES ${user.balance || 0}</p>
             <p><strong>Registered:</strong> ${new Date(user.registered_at).toLocaleString()}</p>
             ${!user.approved ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : ""}
             <button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
@@ -167,7 +192,7 @@
         });
 
       } catch (err) {
-        document.getElementById("userList").textContent = "Failed to load users.";
+        document.getElementById("userList").textContent = "❌ Could not load users.";
         console.error(err);
       }
     }
@@ -183,10 +208,8 @@
           body: JSON.stringify({ target_username: username })
         });
 
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || "Approval failed");
-        }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Approval failed");
 
         alert(`✅ ${username} approved.`);
         fetchUsers();
@@ -209,10 +232,8 @@
           body: JSON.stringify({ target_username: username, new_password: newPass })
         });
 
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || "Password reset failed");
-        }
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Password reset failed");
 
         alert(`🔐 Password for '${username}' reset successfully.`);
       } catch (err) {
