@@ -123,9 +123,7 @@
         localStorage.setItem("adminAuthed", "true");
         localStorage.setItem("adminUser", JSON.stringify(currentAdmin));
 
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("adminContent").style.display = "block";
-        fetchUsers();
+        showAdminDashboard();
 
       } catch (err) {
         errorDiv.textContent = err.message;
@@ -222,16 +220,26 @@
       }
     }
 
-    // Auto-login if previously authenticated
-    window.addEventListener("DOMContentLoaded", () => {
-      const authed = localStorage.getItem("adminAuthed");
-      const adminData = JSON.parse(localStorage.getItem("adminUser") || "{}");
+    function showAdminDashboard() {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("adminContent").style.display = "block";
+      fetchUsers();
+    }
 
-      if (authed === "true" && adminData.username && adminData.password) {
-        currentAdmin = adminData;
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("adminContent").style.display = "block";
-        fetchUsers();
+    // Auto-login on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      try {
+        const authed = localStorage.getItem("adminAuthed");
+        const adminData = JSON.parse(localStorage.getItem("adminUser") || "{}");
+
+        if (authed === "true" && adminData.username && adminData.password) {
+          currentAdmin = adminData;
+          showAdminDashboard();
+        }
+      } catch {
+        // Clear bad data
+        localStorage.removeItem("adminAuthed");
+        localStorage.removeItem("adminUser");
       }
     });
   </script>
