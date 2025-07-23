@@ -6,6 +6,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  // Only allow withdrawals on Mondays
+  const today = new Date();
+  const isMonday = today.getDay() === 1;
+  if (!isMonday) {
+    alert("Withdrawals are only allowed on Mondays.");
+    window.location.href = "dashboard.html";
+    return;
+  }
+
   document.getElementById('withdrawForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -42,18 +51,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const invested = investment.amount;
       const balance = user.balance;
 
-      // Determine withdrawal limit
-      let allowedLimit = 0;
+      // Calculate limits
+      const minAllowed = Math.floor(invested * 0.3);
+      let maxAllowed = 0;
+
       if (invested >= 500 && invested < 1000) {
-        allowedLimit = 150;
+        maxAllowed = 150;
       } else if (invested >= 1000 && invested < 1500) {
-        allowedLimit = 300;
+        maxAllowed = 300;
       } else if (invested >= 1500) {
-        allowedLimit = Math.floor(invested * 0.3);  // 30% cap
+        maxAllowed = Math.floor(invested * 0.3);  // 30% cap
       }
 
-      if (amount > allowedLimit) {
-        alert(`Your withdrawal limit is KES ${allowedLimit}`);
+      if (amount < minAllowed) {
+        alert(`Minimum withdrawal is 30% of your investment: KES ${minAllowed}`);
+        return;
+      }
+
+      if (amount > maxAllowed) {
+        alert(`Maximum allowed withdrawal is KES ${maxAllowed}`);
         return;
       }
 
@@ -62,8 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Submit withdrawal
-      const withdrawRes = await fetch(`https://repo-1red-jipate-bonus.onrender.com/withdraw`, {
+      // Submit withdrawal for admin approval
+      const withdrawRes = await fetch(`https://repo-1red-jipate-bonus.onrender.com/withdraw/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `username=${encodeURIComponent(username)}&amount=${encodeURIComponent(amount)}`
@@ -71,10 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!withdrawRes.ok) {
         const err = await withdrawRes.json();
-        throw new Error(err.detail || "Withdrawal failed");
+        throw new Error(err.detail || "Withdrawal request failed.");
       }
 
-      alert("Withdrawal request sent. You’ll be notified once processed.");
+      alert("✅ Withdrawal request submitted. Wait for admin approval.");
       window.location.href = "dashboard.html";
 
     } catch (err) {
