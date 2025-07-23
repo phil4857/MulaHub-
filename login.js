@@ -32,9 +32,19 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.detail || "Login failed");
       }
 
-      alert(data.message || "Login successful");
-      localStorage.setItem("username", data.username);
-      window.location.href = data.redirect;
+      // Save login info to localStorage
+      localStorage.setItem("username", username);
+      localStorage.setItem("is_admin", data.is_admin);
+      localStorage.setItem("is_approved", data.is_approved);
+
+      // Redirect logic
+      if (data.is_admin) {
+        window.location.href = "/admin_dashboard.html";  // adjust if needed
+      } else if (data.is_approved) {
+        window.location.href = "/dashboard.html";  // adjust if needed
+      } else {
+        errorMsg.textContent = "Account not yet approved by admin.";
+      }
 
     } catch (err) {
       console.error("Login error:", err);
