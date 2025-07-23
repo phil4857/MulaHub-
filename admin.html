@@ -176,19 +176,22 @@
         }
 
         users.forEach(user => {
-          const userCard = document.createElement("div");
-          userCard.className = "user-card";
-          userCard.innerHTML = `
-            <h4>${user.username}</h4>
+          const card = document.createElement("div");
+          card.className = "user-card";
+
+          const dateStr = user.registered_at ? new Date(user.registered_at).toLocaleString() : "Unknown";
+
+          card.innerHTML = `
+            <h4>${user.username || "Unknown"}</h4>
             <p><strong>Phone:</strong> ${user.number || "N/A"}</p>
             <p><strong>Referral:</strong> ${user.referral || "None"}</p>
             <p><strong>Approved:</strong> ${user.approved ? "✅" : "❌"}</p>
             <p><strong>Balance:</strong> KES ${user.balance || 0}</p>
-            <p><strong>Registered:</strong> ${new Date(user.registered_at).toLocaleString()}</p>
+            <p><strong>Registered:</strong> ${dateStr}</p>
             ${!user.approved ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : ""}
             <button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
           `;
-          list.appendChild(userCard);
+          list.appendChild(card);
         });
 
       } catch (err) {
