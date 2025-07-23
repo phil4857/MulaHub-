@@ -1,90 +1,103 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-  <meta charset="UTF-8" />  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
-  <title>Daily Earnings - Jipate Bonus</title>  
-  <style>  
-    body {  
-      font-family: Arial, sans-serif;  
-      background: #f2f2f2;  
-      margin: 0;  
-      padding: 0;  
-    }  
-  
-    .container {  
-      max-width: 500px;  
-      margin: 60px auto;  
-      background: #fff;  
-      padding: 25px;  
-      border-radius: 10px;  
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);  
-    }  
-  
-    h2 {  
-      text-align: center;  
-      color: #28a745;  
-    }  
-  
-    button {  
-      width: 100%;  
-      padding: 12px;  
-      background-color: #28a745;  
-      color: white;  
-      border: none;  
-      border-radius: 5px;  
-      margin-top: 20px;  
-      font-size: 16px;  
-      cursor: pointer;  
-    }  
-  
-    button:hover {  
-      background-color: #1e7e34;  
-    }  
-  
-    .message {  
-      margin-top: 20px;  
-      text-align: center;  
-      color: #333;  
-    }  
-  </style>  
-</head>  
-<body>  
-  <div class="container">  
-    <h2>Trigger Daily Earnings</h2>  
-    <div class="message" id="messageBox"></div>  
-    <button onclick="triggerEarnings()">Run Earnings Distribution</button>  
-  </div>  
-  
-  <script>  
-    // Ensure only admin can access this page  
-    const username = localStorage.getItem("username");  
-    if (username !== "admin") {  
-      alert("Access denied. This page is for admin only.");  
-      window.location.href = "login.html";  
-    }  
-  
-    async function triggerEarnings() {  
-      try {  
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/distribute_earnings", {  
-          method: "POST",  
-          headers: {  
-            "Content-Type": "application/json"  
-          }  
-        });  
-  
-        const data = await res.json();  
-  
-        if (res.ok) {  
-          document.getElementById("messageBox").innerText = "✅ Daily earnings distributed successfully!";  
-        } else {  
-          document.getElementById("messageBox").innerText = "❌ Failed: " + (data.detail || "Unknown error");  
-        }  
-      } catch (err) {  
-        console.error(err);  
-        document.getElementById("messageBox").innerText = "❌ Error: Unable to reach the server.";  
-      }  
-    }  
-  </script>  
-</body>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Earnings - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #28a745;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1e7e34;
+    }
+
+    .message {
+      margin-top: 20px;
+      text-align: center;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Trigger Daily Earnings</h2>
+    <div class="message" id="messageBox">Only approved investments above KES 500 will earn.</div>
+    <button onclick="triggerEarnings()">Run Earnings Distribution</button>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const isAdmin = localStorage.getItem("is_admin");
+      const token = localStorage.getItem("adminToken");
+
+      if (!isAdmin || isAdmin !== "true" || !token) {
+        alert("Access denied. Admin login required.");
+        window.location.href = "login.html";
+      }
+    });
+
+    async function triggerEarnings() {
+      const token = localStorage.getItem("adminToken");
+      const messageBox = document.getElementById("messageBox");
+
+      if (!token) {
+        alert("You must be logged in as admin.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/distribute_earnings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          messageBox.innerText = "✅ Daily earnings distributed successfully!";
+        } else {
+          messageBox.innerText = "❌ Failed: " + (data?.detail || "Unknown error from server");
+        }
+      } catch (err) {
+        console.error("Trigger error:", err);
+        messageBox.innerText = "❌ Error: Could not connect to server.";
+      }
+    }
+  </script>
+</body>
 </html>
