@@ -1,233 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>User Dashboard - Jipate Bonus💵🎉💸</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(145deg, #002147, #FFD700);
-      margin: 0;
-      padding: 40px 20px;
-      color: #ffffff;
-    }
-    h1 {
-      text-align: center;
-      color: #FFD700;
-      margin-bottom: 30px;
-    }
-    .dashboard-container {
-      max-width: 700px;
-      margin: auto;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 25px;
-      border-radius: 12px;
-    }
-    .section {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 25px;
-      margin-bottom: 25px;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-    h3 {
-      color: #FFD700;
-      margin-top: 0;
-    }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #FFD700;
-      color: #002147;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #e6c200;
-    }
-    .note {
-      font-size: 0.85em;
-      color: #fffad1;
-      margin-top: 10px;
-    }
-    .info-box {
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.2);
-      border-left: 5px solid #FFD700;
-      margin-bottom: 15px;
-    }
-    .info-label {
-      font-weight: bold;
-      margin-right: 8px;
-    }
-    ul {
-      margin-top: 8px;
-      padding-left: 20px;
-      color: #fff;
-    }
-    a {
-      color: #FFD700;
-      word-break: break-word;
-    }
-    #adminLink {
-      display: block;
-      margin-top: 15px;
-      text-align: center;
-      font-weight: bold;
-      color: #FFD700;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h1>Welcome to Your Dashboard</h1>
+from fastapi import FastAPI, Form, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from datetime import datetime
+import bcrypt, time
 
-  <div class="dashboard-container">
-    <div class="info-box">
-      <div><span class="info-label">Username:</span><span id="usernameDisplay">Loading...</span></div>
-      <div><span class="info-label">Referral Link:</span><a id="referralLink" href="#" target="_blank">Generating...</a></div>
-      <p class="note">Earn KES 50 for every approved referral who makes a payment. Unapproved users can refer but don’t earn bonuses.</p>
-      <div><span class="info-label">Balance:</span><span id="balanceDisplay">KES 0</span></div>
-      <div><span class="info-label">Daily Earnings:</span><span id="earningsDisplay">KES 0</span></div>
-      <div><span class="info-label">Last Bonus Claimed:</span><span id="bonusStatus">Checking...</span></div>
-      <div><span class="info-label">Your Referrals:</span><ul id="referredUsers"><li>Loading...</li></ul></div>
-      <a id="adminLink" href="admin.html" style="display:none;">Go to Admin Dashboard</a>
-    </div>
+app = FastAPI()
 
-    <div class="section">
-      <h3>Claim Daily Bonus</h3>
-      <p class="note">You can only claim 10% of your investment once every 24 hours.</p>
-      <button id="claimBonusBtn" disabled>Checking Eligibility...</button>
-    </div>
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://jipate-bonus-v1-bcti.vercel.app",
+        "https://repo-1red-jipate-bonus.onrender.com",
+        "http://localhost:3000",
+        "http://localhost:8000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    <div class="section">
-      <h3>Invest</h3>
-      <form id="investForm">
-        <input type="number" name="amount" placeholder="Investment Amount (KES)" required>
-        <input type="text" name="transaction_ref" placeholder="Transaction Reference" required>
-        <button type="submit">Submit Investment</button>
-      </form>
-      <div class="note">Minimum investment is KES 500. 🎉 Sunday investments get 5% bonus.</div>
-    </div>
+users = {}
+investments = {}
+login_attempts = {}
 
-    <div class="section">
-      <h3>Withdraw</h3>
-      <form id="withdrawForm">
-        <input type="number" name="amount" placeholder="Amount to Withdraw (KES)" required>
-        <button type="submit">Request Withdrawal</button>
-      </form>
-      <div class="note">Withdrawals are only allowed on Mondays. Minimum amount: 30% of your total investment.</div>
-    </div>
-  </div>
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "admin4857"
 
-  <script>
-    const API = "https://repo-1red-jipate-bonus.onrender.com";
-    const username = localStorage.getItem("username");
+class User(BaseModel):
+    username: str
+    number: str
+    password_hash: str
+    approved: bool = False
+    referral: str = None
+    referred_users: list = []
+    balance: float = 0.0
+    earnings: float = 0.0
+    last_earning_time: float = time.time()
 
-    if (!username) {
-      alert("Please log in first.");
-      window.location.href = "login.html";
+class Investment(BaseModel):
+    username: str
+    amount: float
+    transaction_ref: str
+    approved: bool = False
+    timestamp: datetime
+
+def hash_pwd(pw): return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
+def check_pwd(pw, h): return bcrypt.checkpw(pw.encode(), h.encode())
+
+def admin_auth(username: str = Form(...), password: str = Form(...)):
+    if username != ADMIN_USERNAME or password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403, detail="Invalid admin credentials")
+    return True
+
+@app.post("/admin/approve_user")
+def approve_user(username: str = Form(...), _: bool = Depends(admin_auth)):
+    u = users.get(username)
+    if not u:
+        raise HTTPException(404, "User not found")
+    u["approved"] = True
+    return {"message": f"{username} approved successfully"}
+
+@app.post("/admin/approve_investment")
+def approve_investment(username: str = Form(...), _: bool = Depends(admin_auth)):
+    inv = investments.get(username)
+    if not inv:
+        raise HTTPException(404, "Investment not found")
+    if inv["approved"]:
+        return {"message": "Investment already approved"}
+
+    inv["approved"] = True
+    users[username]["balance"] += inv["amount"]
+
+    ref = users[username].get("referral")
+    if ref in users:
+        users[ref]["balance"] += inv["amount"] * 0.05  # Referral bonus
+
+    return {"message": f"Investment for {username} approved"}
+
+@app.post("/bonus/grab")
+def grab_bonus(username: str = Form(...)):
+    u = users.get(username)
+    if not u:
+        raise HTTPException(404, "User not found")
+    now = time.time()
+    if now - u["last_earning_time"] < 86400:
+        raise HTTPException(400, "Bonus already claimed today")
+
+    daily_bonus = 0
+    inv = investments.get(username)
+    if inv and inv["approved"]:
+        daily_bonus = inv["amount"] * 0.10
+        u["balance"] += daily_bonus
+        u["earnings"] += daily_bonus
+        u["last_earning_time"] = now
+
+    return {
+        "message": f"Bonus of KES {daily_bonus:.2f} claimed successfully",
+        "bonus": daily_bonus,
+        "balance": u["balance"],
+        "link": "/dashboard.html"
     }
 
-    document.getElementById("usernameDisplay").textContent = username;
-    const refLink = `https://jipate-bonus-v1-bcti.vercel.app/register.html?ref=${username}`;
-    document.getElementById("referralLink").href = refLink;
-    document.getElementById("referralLink").textContent = refLink;
+@app.get("/dashboard")
+def dashboard(username: str):
+    u = users.get(username)
+    if not u:
+        raise HTTPException(404, "User not found")
+    return {
+        "username": username,
+        "balance": u["balance"],
+        "earnings": u["earnings"],
+        "last_bonus_time": datetime.fromtimestamp(u["last_earning_time"]).isoformat()
+    }
 
-    // Load user data
-    fetch(`${API}/user/${username}`)
-      .then(res => res.json())
-      .then(user => {
-        document.getElementById("balanceDisplay").textContent = `KES ${user.balance}`;
-        document.getElementById("earningsDisplay").textContent = `KES ${user.earnings}`;
-        document.getElementById("bonusStatus").textContent = new Date(user.last_bonus_time || 0).toLocaleString();
-
-        // Show admin link if user is admin
-        if (user.is_admin) {
-          document.getElementById("adminLink").style.display = "block";
-        }
-
-        // Daily bonus eligibility
-        const claimBtn = document.getElementById("claimBonusBtn");
-        const lastClaim = user.last_bonus_time ? new Date(user.last_bonus_time) : new Date(0);
-        const now = new Date();
-        const diffHrs = (now - lastClaim) / 36e5; // milliseconds → hours
-        if (diffHrs >= 24) {
-          claimBtn.disabled = false;
-          claimBtn.textContent = "Claim Bonus";
-        } else {
-          const hrsLeft = (24 - diffHrs).toFixed(1);
-          claimBtn.textContent = `Available in ${hrsLeft}h`;
-        }
-
-        claimBtn.addEventListener("click", async () => {
-          try {
-            const res = await fetch(`${API}/daily_bonus`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ username, password: localStorage.getItem("password") })
-            });
-            const data = await res.json();
-            alert(data.message);
-            location.reload();
-          } catch {
-            alert("Error claiming bonus");
-          }
-        });
-      });
-
-    // Load referrals
-    fetch(`${API}/referrals/${username}`)
-      .then(res => res.json())
-      .then(list => {
-        const ul = document.getElementById("referredUsers");
-        ul.innerHTML = "";
-        if (!list.length) ul.innerHTML = "<li>No referrals yet.</li>";
-        else list.forEach(n => {
-          const li = document.createElement("li");
-          li.textContent = n;
-          ul.appendChild(li);
-        });
-      });
-
-    // Invest
-    document.getElementById("investForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const form = new FormData(e.target);
-      const amt = parseFloat(form.get("amount"));
-      if (amt < 500) return alert("Minimum investment is KES 500");
-      form.append("username", username);
-      const res = await fetch(`${API}/invest`, { method: "POST", body: form });
-      const d = await res.json();
-      alert(d.message);
-      location.reload();
-    });
-
-    // Withdraw
-    document.getElementById("withdrawForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const day = new Date().getDay(); // 1=Mon
-      if (day !== 1) return alert("Withdrawals only on Mondays");
-      const amt = parseFloat(new FormData(e.target).get("amount"));
-      // fetch total_invested
-      const user = await fetch(`${API}/user/${username}`).then(r => r.json());
-      const min = 0.3 * user.total_invested;
-      if (amt < min) return alert(`Min withdrawal is 30%: KES ${min.toFixed(0)}`);
-      const form = new FormData(e.target);
-      form.append("username", username);
-      const res = await fetch(`${API}/withdraw`, { method: "POST", body: form });
-      const d = await res.json();
-      alert(d.message);
-      location.reload();
-    });
-  </script>
-</body>
-</html>
+# ✅ NEW: user details for frontend dashboard
+@app.get("/user/{username}")
+def get_user(username: str):
+    u = users.get(username)
+    if not u:
+        raise HTTPException(404, "User not found")
+    return {
+        "username": username,
+        "balance": u["balance"],
+        "earnings": u["earnings"],
+        "last_bonus_time": datetime.fromtimestamp(u["last_earning_time"]).isoformat(),
+        "is_admin": username == ADMIN_USERNAME,
+        "total_invested": investments.get(username, {}).get("amount", 0)
+    }
