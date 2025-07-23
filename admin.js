@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!storedToken) {
         const username = prompt("Enter admin username:");
         const password = prompt("Enter admin password:");
-        if (!username || !password) {
+
+        if (!username?.trim() || !password?.trim()) {
             alert("Login required.");
             window.location.href = "login.html";
             return;
@@ -17,12 +18,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({ username, password })
             });
 
+            const data = await res.json();
+
             if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.detail || "Login failed");
+                throw new Error(data.detail || "Login failed");
             }
 
-            const data = await res.json();
+            if (!data.token) {
+                throw new Error("No token received from server.");
+            }
+
             localStorage.setItem("adminToken", data.token);
             fetchUsers();
         } catch (err) {
@@ -43,26 +48,30 @@ async function fetchUsers() {
             }
         });
 
-        if (!res.ok) throw new Error("Failed to fetch users");
-
         const users = await res.json();
+
+        if (!res.ok) {
+            throw new Error(users.detail || "Failed to fetch users");
+        }
+
         const output = users.map(user => {
             const approveBtn = !user.approved
                 ? `<button onclick="approveUser('${user.username}')">Approve</button>`
                 : '';
-
             const resetBtn = `<button onclick="resetPassword('${user.username}')">Reset Password</button>`;
 
-            return `<div style="margin-bottom:10px">
-                <strong>${user.username}</strong> - ${user.number} 
-                | Approved: ${user.approved ? '✅' : '❌'}
-                ${approveBtn} ${resetBtn}
-            </div>`;
+            return `
+                <div style="margin-bottom:10px">
+                    <strong>${user.username}</strong> - ${user.number || "N/A"}
+                    | Approved: ${user.approved ? '✅' : '❌'}
+                    ${approveBtn} ${resetBtn}
+                </div>`;
         }).join('');
 
-        document.getElementById("userData").innerHTML = output;
+        document.getElementById("userData").innerHTML = output || "<p>No users found.</p>";
     } catch (err) {
         alert("Error loading users: " + err.message);
+        document.getElementById("userData").innerHTML = "<p>❌ Failed to load users.</p>";
     }
 }
 
@@ -80,7 +89,8 @@ async function approveUser(username) {
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Approval failed");
-        alert(data.message || "User approved");
+
+        alert(data.message || `✅ ${username} approved`);
         fetchUsers();
     } catch (err) {
         alert("Approval error: " + err.message);
@@ -90,7 +100,7 @@ async function approveUser(username) {
 async function resetPassword(username) {
     const token = localStorage.getItem("adminToken");
     const newPassword = prompt(`Enter new password for ${username}:`);
-    if (!newPassword) return;
+    if (!newPassword?.trim()) return;
 
     try {
         const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
@@ -99,11 +109,15 @@ async function resetPassword(username) {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ target_username: username, new_password: newPassword })
+            body: JSON.stringify({
+                target_username: username,
+                new_password: newPassword
+            })
         });
 
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Reset failed");
+
         alert("Password reset successfully.");
     } catch (err) {
         alert("Reset error: " + err.message);
