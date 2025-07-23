@@ -7,45 +7,39 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #e8ffe8; /* light green background */
+      background: #e8ffe8;
       margin: 0;
       padding: 0;
     }
-
     header {
       background: #009933;
       color: white;
       text-align: center;
       padding: 15px;
     }
-
     .container {
       max-width: 500px;
       margin: 30px auto;
       padding: 20px;
-      background: #ffe6f0; /* light pink */
+      background: #ffe6f0;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     h2 {
       margin-top: 0;
       color: #009933;
     }
-
     label {
       display: block;
       margin-bottom: 8px;
       margin-top: 15px;
     }
-
     input {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
       box-sizing: border-box;
     }
-
     button {
       margin-top: 20px;
       width: 100%;
@@ -56,11 +50,9 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     button:hover {
       background: #007a29;
     }
-
     .note {
       margin-top: 15px;
       font-size: 14px;
@@ -83,10 +75,13 @@
     <button type="submit">Submit Withdrawal</button>
 
     <p class="note">
-      NOTE: Withdrawal limits depend on investment:<br/>
+      🔐 Withdrawals are only allowed on <strong>Mondays</strong><br/>
+      💰 Minimum withdrawal is <strong>30% of your investment</strong><br/>
+      ⏳ All withdrawals require <strong>admin approval</strong><br/>
+      🧮 Example limits:<br/>
       - 150 KES for 500 invested<br/>
       - 300 KES for 1000 invested<br/>
-      - 30% cap for investments above 1500 KES
+      - 30% max if above 1500
     </p>
   </form>
 </div>
@@ -100,11 +95,19 @@
       return;
     }
 
+    const today = new Date();
+    const day = today.getDay(); // 1 = Monday
+    if (day !== 1) {
+      alert("Withdrawals are only allowed on Mondays.");
+      window.location.href = "dashboard.html";
+      return;
+    }
+
     document.getElementById("withdrawForm").addEventListener("submit", async function (e) {
       e.preventDefault();
       const amount = parseFloat(document.getElementById("amount").value);
 
-      if (!amount || amount <= 0) {
+      if (isNaN(amount) || amount <= 0) {
         alert("Enter a valid amount.");
         return;
       }
@@ -129,17 +132,24 @@
         const invested = investment.amount;
         const balance = user.balance;
 
-        let allowedLimit = 0;
+        const minAllowed = Math.floor(invested * 0.3);
+        let maxAllowed = 0;
+
         if (invested >= 500 && invested < 1000) {
-          allowedLimit = 150;
+          maxAllowed = 150;
         } else if (invested >= 1000 && invested < 1500) {
-          allowedLimit = 300;
+          maxAllowed = 300;
         } else if (invested >= 1500) {
-          allowedLimit = Math.floor(invested * 0.3);
+          maxAllowed = Math.floor(invested * 0.3);
         }
 
-        if (amount > allowedLimit) {
-          alert(`Your withdrawal limit is KES ${allowedLimit}`);
+        if (amount < minAllowed) {
+          alert(`Minimum withdrawal is 30% of investment: KES ${minAllowed}`);
+          return;
+        }
+
+        if (amount > maxAllowed) {
+          alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
           return;
         }
 
@@ -148,27 +158,28 @@
           return;
         }
 
+        // Submit withdrawal for admin approval
         const formData = new FormData();
         formData.append("username", username);
         formData.append("amount", amount);
 
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/request", {
           method: "POST",
           body: formData,
         });
 
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(err.detail || "Withdrawal failed.");
+          throw new Error(err.detail || "Withdrawal request failed.");
         }
 
         const result = await res.json();
-        alert(result.message || "Withdrawal successful.");
+        alert("✅ Withdrawal request submitted. Wait for admin approval.");
         window.location.href = "dashboard.html";
 
       } catch (err) {
         console.error(err);
-        alert(err.message || "Error occurred during withdrawal.");
+        alert(err.message || "An error occurred during withdrawal.");
       }
     });
   });
