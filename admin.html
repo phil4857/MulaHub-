@@ -1,189 +1,264 @@
-<script>
-  const API = "https://repo-1red-jipate-bonus.onrender.com";
-  let adminCredentials = {};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .user-card {
+      background-color: #eef2f5;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    .user-card h4 {
+      margin: 0 0 5px;
+      color: #007bff;
+    }
+    .approve-btn, .reset-btn, #logoutBtn {
+      margin-top: 10px;
+      margin-right: 5px;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      border: none;
+    }
+    .approve-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    .approve-btn:hover {
+      background-color: #0056b3;
+    }
+    .reset-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+    .reset-btn:hover {
+      background-color: #c82333;
+    }
+    #logoutBtn {
+      background-color: #6c757d;
+      color: white;
+    }
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    input {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #userCount {
+      margin: 15px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Admin Dashboard</h2>
 
-  function logout() {
-    localStorage.removeItem("adminUser");
-    localStorage.removeItem("adminPass");
-    location.reload();
-  }
+    <div id="loginSection">
+      <input type="text" id="username" placeholder="Admin Username" required />
+      <input type="password" id="password" placeholder="Admin Password" required />
+      <button onclick="adminLogin()">Login</button>
+      <div id="loginError" class="error-message"></div>
+    </div>
 
-  async function adminLogin() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    const errorDiv = document.getElementById("loginError");
-    errorDiv.textContent = "";
+    <div id="adminContent" style="display: none;">
+      <button id="logoutBtn" onclick="logout()">Logout</button>
+      <h3>Total Users: <span id="userCount">0</span></h3>
+      <div id="userList">Loading users...</div>
+    </div>
+  </div>
 
-    if (!username || !password) {
-      errorDiv.textContent = "Username and password are required.";
-      return;
+  <script>
+    const API = "https://repo-1red-jipate-bonus.onrender.com";
+    let adminCredentials = {};
+
+    function logout() {
+      localStorage.removeItem("adminUser");
+      localStorage.removeItem("adminPass");
+      location.reload();
     }
 
-    const form = new FormData();
-    form.append("username", username);
-    form.append("password", password);
+    async function adminLogin() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const errorDiv = document.getElementById("loginError");
+      errorDiv.textContent = "";
 
-    try {
-      const res = await fetch(`${API}/admin/login`, {
-        method: "POST",
-        body: form
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.token) {
-        const msg =
-          typeof data.detail === "string"
-            ? data.detail
-            : typeof data.message === "string"
-            ? data.message
-            : "Access denied.";
-        throw new Error(msg);
-      }
-
-      adminCredentials = { username, password };
-      localStorage.setItem("adminUser", username);
-      localStorage.setItem("adminPass", password);
-
-      document.getElementById("loginSection").style.display = "none";
-      document.getElementById("adminContent").style.display = "block";
-      fetchUsers();
-    } catch (err) {
-      errorDiv.textContent = err.message || "Login failed.";
-    }
-  }
-
-  async function fetchUsers() {
-    const form = new FormData();
-    form.append("username", adminCredentials.username);
-    form.append("password", adminCredentials.password);
-
-    const list = document.getElementById("userList");
-    const count = document.getElementById("userCount");
-
-    try {
-      const res = await fetch(`${API}/admin/users`, {
-        method: "POST",
-        body: form
-      });
-
-      const text = await res.text();
-      let users;
-
-      try {
-        users = JSON.parse(text);
-      } catch {
-        throw new Error("Invalid response from server.");
-      }
-
-      if (!res.ok) {
-        const msg = users?.detail || users?.message || text;
-        throw new Error(msg);
-      }
-
-      list.innerHTML = "";
-      count.textContent = users.length;
-
-      if (users.length === 0) {
-        list.innerHTML = "<p>No users available yet.</p>";
+      if (!username || !password) {
+        errorDiv.textContent = "Username and password are required.";
         return;
       }
 
-      users.forEach(user => {
-        const card = document.createElement("div");
-        card.className = "user-card";
+      const form = new FormData();
+      form.append("username", username);
+      form.append("password", password);
 
-        const dateStr = user.registered_at
-          ? new Date(user.registered_at).toLocaleString()
-          : "Unknown";
+      try {
+        const res = await fetch(`${API}/admin/login`, {
+          method: "POST",
+          body: form
+        });
 
-        card.innerHTML = `
-          <h4>${user.username || "Unknown"}</h4>
-          <p><strong>Phone:</strong> ${user.number || "N/A"}</p>
-          <p><strong>Referral:</strong> ${user.referral || "None"}</p>
-          <p><strong>Approved:</strong> ${user.approved ? "✅" : "❌"}</p>
-          <p><strong>Balance:</strong> KES ${user.balance || 0}</p>
-          <p><strong>Registered:</strong> ${dateStr}</p>
-          ${!user.approved
-            ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>`
-            : ""}
-          <button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
-        `;
-        list.appendChild(card);
-      });
-    } catch (err) {
-      list.innerHTML = `<p class="error-message">❌ ${err.message}</p>`;
-      console.error(err);
-    }
-  }
+        const data = await res.json();
 
-  async function approveUser(username) {
-    const form = new FormData();
-    form.append("username", username);
-    form.append("admin_username", adminCredentials.username);
-    form.append("admin_password", adminCredentials.password);
+        if (!res.ok || !data.token) {
+          throw new Error(data.detail || data.message || "Access denied.");
+        }
 
-    try {
-      const res = await fetch(`${API}/admin/approve_user`, {
-        method: "POST",
-        body: form
-      });
+        adminCredentials = { username, password };
+        localStorage.setItem("adminUser", username);
+        localStorage.setItem("adminPass", password);
 
-      const data = await res.json();
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("adminContent").style.display = "block";
+        fetchUsers();
 
-      if (!res.ok) {
-        const msg = data.detail || data.message || JSON.stringify(data);
-        throw new Error(msg);
+      } catch (err) {
+        errorDiv.textContent = err.message || "Login failed.";
       }
-
-      alert(`✅ ${username} approved.`);
-      fetchUsers();
-    } catch (err) {
-      alert("Error: " + err.message);
     }
-  }
 
-  async function resetPassword(username) {
-    const newPass = prompt(`Enter new password for ${username}:`);
-    if (!newPass) return;
+    async function fetchUsers() {
+      const form = new FormData();
+      form.append("username", adminCredentials.username);
+      form.append("password", adminCredentials.password);
 
-    const form = new FormData();
-    form.append("target_username", username);
-    form.append("new_password", newPass);
-    form.append("admin_username", adminCredentials.username);
-    form.append("admin_password", adminCredentials.password);
+      try {
+        const res = await fetch(`${API}/admin/users`, {
+          method: "POST",
+          body: form
+        });
 
-    try {
-      const res = await fetch(`${API}/admin/reset-password`, {
-        method: "POST",
-        body: form
-      });
+        const contentType = res.headers.get("content-type") || "";
+        if (!res.ok || !contentType.includes("application/json")) {
+          throw new Error("Failed to fetch users.");
+        }
 
-      const data = await res.json();
+        const users = await res.json();
+        const list = document.getElementById("userList");
+        const count = document.getElementById("userCount");
 
-      if (!res.ok) {
-        const msg = data.detail || data.message || JSON.stringify(data);
-        throw new Error(msg);
+        list.innerHTML = "";
+        count.textContent = users.length;
+
+        if (users.length === 0) {
+          list.innerHTML = "<p>No users available yet.</p>";
+          return;
+        }
+
+        users.forEach(user => {
+          const card = document.createElement("div");
+          card.className = "user-card";
+
+          const dateStr = user.registered_at ? new Date(user.registered_at).toLocaleString() : "Unknown";
+
+          card.innerHTML = `
+            <h4>${user.username || "Unknown"}</h4>
+            <p><strong>Phone:</strong> ${user.number || "N/A"}</p>
+            <p><strong>Referral:</strong> ${user.referral || "None"}</p>
+            <p><strong>Approved:</strong> ${user.approved ? "✅" : "❌"}</p>
+            <p><strong>Balance:</strong> KES ${user.balance || 0}</p>
+            <p><strong>Registered:</strong> ${dateStr}</p>
+            ${!user.approved ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : ""}
+            <button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
+          `;
+          list.appendChild(card);
+        });
+
+      } catch (err) {
+        document.getElementById("userList").innerHTML = `<p>❌ ${err.message}</p>`;
+        console.error("Fetch users error:", err);
       }
-
-      alert(`🔐 Password for '${username}' reset successfully.`);
-    } catch (err) {
-      alert("Error: " + err.message);
     }
-  }
 
-  window.addEventListener("DOMContentLoaded", () => {
-    const storedUser = localStorage.getItem("adminUser");
-    const storedPass = localStorage.getItem("adminPass");
+    async function approveUser(username) {
+      const form = new FormData();
+      form.append("username", username);
 
-    if (storedUser && storedPass) {
-      adminCredentials = {
-        username: storedUser,
-        password: storedPass
-      };
-      document.getElementById("loginSection").style.display = "none";
-      document.getElementById("adminContent").style.display = "block";
-      fetchUsers();
+      try {
+        const res = await fetch(`${API}/admin/approve_user`, {
+          method: "POST",
+          body: form
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || data.message || "Approval failed");
+
+        alert(`✅ ${username} approved.`);
+        fetchUsers();
+      } catch (err) {
+        alert("Error: " + (err.message || "Unknown error"));
+      }
     }
-  });
-</script>
+
+    async function resetPassword(username) {
+      const newPass = prompt(`Enter new password for ${username}:`);
+      if (!newPass) return;
+
+      const form = new FormData();
+      form.append("target_username", username);
+      form.append("new_password", newPass);
+
+      try {
+        const res = await fetch(`${API}/admin/reset-password`, {
+          method: "POST",
+          body: form
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || data.message || "Password reset failed");
+
+        alert(`🔐 Password for '${username}' reset successfully.`);
+      } catch (err) {
+        alert("Error: " + (err.message || "Unknown error"));
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const storedUser = localStorage.getItem("adminUser");
+      const storedPass = localStorage.getItem("adminPass");
+      if (storedUser && storedPass) {
+        adminCredentials = {
+          username: storedUser,
+          password: storedPass
+        };
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("adminContent").style.display = "block";
+        fetchUsers();
+      }
+    });
+  </script>
+</body>
+</html>
