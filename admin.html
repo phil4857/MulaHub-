@@ -129,12 +129,8 @@
 
         const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error(data.detail || data.message || "Login failed");
-        }
-
-        if (!data.is_admin || !data.token) {
-          throw new Error("Access denied or invalid credentials.");
+        if (!res.ok || !data.token || !data.is_admin) {
+          throw new Error(data.detail || data.message || "Access denied or invalid credentials.");
         }
 
         authToken = data.token;
