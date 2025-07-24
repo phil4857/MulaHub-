@@ -102,10 +102,11 @@
 
   <script>
     const API = "https://repo-1red-jipate-bonus.onrender.com";
-    let authToken = "";
+    let adminCredentials = {};
 
     function logout() {
-      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUser");
+      localStorage.removeItem("adminPass");
       location.reload();
     }
 
@@ -120,21 +121,26 @@
         return;
       }
 
+      const form = new FormData();
+      form.append("username", username);
+      form.append("password", password);
+
       try {
         const res = await fetch(`${API}/admin/login`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
+          body: form
         });
 
         const data = await res.json();
 
-        if (!res.ok || !data.token || !data.is_admin) {
-          throw new Error(data.detail || data.message || "Access denied or invalid credentials.");
+        if (!res.ok || !data.token) {
+          throw new Error(data.detail || data.message || "Access denied.");
         }
 
-        authToken = data.token;
-        localStorage.setItem("adminToken", authToken);
+        adminCredentials = { username, password };
+        localStorage.setItem("adminUser", username);
+        localStorage.setItem("adminPass", password);
+
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("adminContent").style.display = "block";
         fetchUsers();
@@ -145,17 +151,15 @@
     }
 
     async function fetchUsers() {
+      const form = new FormData();
+      form.append("username", adminCredentials.username);
+      form.append("password", adminCredentials.password);
+
       try {
         const res = await fetch(`${API}/admin/users`, {
-          headers: {
-            Authorization: `Bearer ${authToken}`
-          }
+          method: "POST",
+          body: form
         });
-
-        if (res.status === 401 || res.status === 403) {
-          logout(); // Token invalid or expired
-          return;
-        }
 
         if (!res.ok) throw new Error("Failed to fetch users.");
 
@@ -197,14 +201,13 @@
     }
 
     async function approveUser(username) {
+      const form = new FormData();
+      form.append("username", username);
+
       try {
-        const res = await fetch(`${API}/admin/approve-user`, {
+        const res = await fetch(`${API}/admin/approve_user`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`
-          },
-          body: JSON.stringify({ target_username: username })
+          body: form
         });
 
         const data = await res.json();
@@ -221,14 +224,14 @@
       const newPass = prompt(`Enter new password for ${username}:`);
       if (!newPass) return;
 
+      const form = new FormData();
+      form.append("target_username", username);
+      form.append("new_password", newPass);
+
       try {
         const res = await fetch(`${API}/admin/reset-password`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`
-          },
-          body: JSON.stringify({ target_username: username, new_password: newPass })
+          body: form
         });
 
         const data = await res.json();
@@ -241,9 +244,13 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      const stored = localStorage.getItem("adminToken");
-      if (stored) {
-        authToken = stored;
+      const storedUser = localStorage.getItem("adminUser");
+      const storedPass = localStorage.getItem("adminPass");
+      if (storedUser && storedPass) {
+        adminCredentials = {
+          username: storedUser,
+          password: storedPass
+        };
         document.getElementById("loginSection").style.display = "none";
         document.getElementById("adminContent").style.display = "block";
         fetchUsers();
