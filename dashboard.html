@@ -1,44 +1,111 @@
-const username = localStorage.getItem("username");
-const apiBase = "https://repo-1red-jipate-bonus.onrender.com";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Jipate Bonus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5dc;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    .info {
+      margin: 15px 0;
+    }
+    #message {
+      color: green;
+    }
+    #errorMsg {
+      color: red;
+    }
+    button {
+      background-color: darkorange;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: orangered;
+    }
+  </style>
+</head>
+<body>
 
-document.addEventListener("DOMContentLoaded", async () => {
-  if (!username) {
-    window.location.href = "login.html";
-    return;
-  }
+  <div class="container">
+    <h2>Welcome, <span id="username"></span></h2>
+    
+    <div class="info"><strong>Balance:</strong> KES <span id="balance">0.00</span></div>
+    <div class="info"><strong>Total Earnings:</strong> KES <span id="earnings">0.00</span></div>
+    <div class="info"><strong>Last Bonus Time:</strong> <span id="lastBonus">--</span></div>
 
-  document.getElementById("username").textContent = username;
+    <button id="grabBonusBtn">Grab Bonus</button>
 
-  try {
-    const res = await fetch(`${apiBase}/user/${username}`);
-    if (!res.ok) throw new Error("User not found");
+    <p id="message"></p>
+    <p id="errorMsg"></p>
+  </div>
 
-    const data = await res.json();
-    document.getElementById("balance").textContent = data.balance.toFixed(2);
-    document.getElementById("earnings").textContent = data.earnings.toFixed(2);
-    document.getElementById("lastBonus").textContent = new Date(data.last_bonus_time).toLocaleString();
-  } catch (err) {
-    document.getElementById("errorMsg").textContent = err.message;
-  }
-});
+  <script>
+    const username = localStorage.getItem("username");
+    const apiBase = "https://repo-1red-jipate-bonus.onrender.com";
 
-document.getElementById("grabBonusBtn").addEventListener("click", async () => {
-  try {
-    const res = await fetch(`${apiBase}/bonus/grab`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ username })
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!username) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      document.getElementById("username").textContent = username;
+
+      try {
+        const res = await fetch(`${apiBase}/user/${username}`);
+        if (!res.ok) throw new Error("User not found");
+
+        const data = await res.json();
+        document.getElementById("balance").textContent = data.balance.toFixed(2);
+        document.getElementById("earnings").textContent = data.earnings.toFixed(2);
+        document.getElementById("lastBonus").textContent = new Date(data.last_bonus_time).toLocaleString();
+      } catch (err) {
+        document.getElementById("errorMsg").textContent = err.message;
+      }
     });
 
-    const data = await res.json();
+    document.getElementById("grabBonusBtn").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${apiBase}/bonus/grab`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({ username })
+        });
 
-    if (!res.ok) throw new Error(data.detail || "Failed to grab bonus");
+        const data = await res.json();
 
-    document.getElementById("message").textContent = data.message;
-    document.getElementById("balance").textContent = data.balance.toFixed(2);
-    document.getElementById("errorMsg").textContent = "";
-  } catch (err) {
-    document.getElementById("errorMsg").textContent = err.message;
-    document.getElementById("message").textContent = "";
-  }
-});
+        if (!res.ok) throw new Error(data.detail || "Failed to grab bonus");
+
+        document.getElementById("message").textContent = data.message;
+        document.getElementById("balance").textContent = data.balance.toFixed(2);
+        document.getElementById("errorMsg").textContent = "";
+      } catch (err) {
+        document.getElementById("errorMsg").textContent = err.message;
+        document.getElementById("message").textContent = "";
+      }
+    });
+  </script>
+
+</body>
+</html>
