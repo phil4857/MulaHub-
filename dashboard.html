@@ -1,130 +1,122 @@
-from fastapi import FastAPI, Form, HTTPException, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from datetime import datetime
-import bcrypt, time
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://jipate-bonus-v1-bcti.vercel.app",
-        "https://repo-1red-jipate-bonus.onrender.com",
-        "http://localhost:3000",
-        "http://localhost:8000"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-users = {}
-investments = {}
-login_attempts = {}
-
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin4857"
-
-class User(BaseModel):
-    username: str
-    number: str
-    password_hash: str
-    approved: bool = False
-    referral: str = None
-    referred_users: list = []
-    balance: float = 0.0
-    earnings: float = 0.0
-    last_earning_time: float = time.time()
-
-class Investment(BaseModel):
-    username: str
-    amount: float
-    transaction_ref: str
-    approved: bool = False
-    timestamp: datetime
-
-def hash_pwd(pw): return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
-def check_pwd(pw, h): return bcrypt.checkpw(pw.encode(), h.encode())
-
-def admin_auth(username: str = Form(...), password: str = Form(...)):
-    if username != ADMIN_USERNAME or password != ADMIN_PASSWORD:
-        raise HTTPException(status_code=403, detail="Invalid admin credentials")
-    return True
-
-@app.post("/admin/approve_user")
-def approve_user(username: str = Form(...), _: bool = Depends(admin_auth)):
-    u = users.get(username)
-    if not u:
-        raise HTTPException(404, "User not found")
-    u["approved"] = True
-    return {"message": f"{username} approved successfully"}
-
-@app.post("/admin/approve_investment")
-def approve_investment(username: str = Form(...), _: bool = Depends(admin_auth)):
-    inv = investments.get(username)
-    if not inv:
-        raise HTTPException(404, "Investment not found")
-    if inv["approved"]:
-        return {"message": "Investment already approved"}
-
-    inv["approved"] = True
-    users[username]["balance"] += inv["amount"]
-
-    ref = users[username].get("referral")
-    if ref in users:
-        users[ref]["balance"] += inv["amount"] * 0.05  # Referral bonus
-
-    return {"message": f"Investment for {username} approved"}
-
-@app.post("/bonus/grab")
-def grab_bonus(username: str = Form(...)):
-    u = users.get(username)
-    if not u:
-        raise HTTPException(404, "User not found")
-    now = time.time()
-    if now - u["last_earning_time"] < 86400:
-        raise HTTPException(400, "Bonus already claimed today")
-
-    daily_bonus = 0
-    inv = investments.get(username)
-    if inv and inv["approved"]:
-        daily_bonus = inv["amount"] * 0.10
-        u["balance"] += daily_bonus
-        u["earnings"] += daily_bonus
-        u["last_earning_time"] = now
-
-    return {
-        "message": f"Bonus of KES {daily_bonus:.2f} claimed successfully",
-        "bonus": daily_bonus,
-        "balance": u["balance"],
-        "link": "/dashboard.html"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard - Jipate Bonus</title>
+  <style>
+    body {
+      background: #f5f5f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
     }
 
-@app.get("/dashboard")
-def dashboard(username: str):
-    u = users.get(username)
-    if not u:
-        raise HTTPException(404, "User not found")
-    return {
-        "username": username,
-        "balance": u["balance"],
-        "earnings": u["earnings"],
-        "last_bonus_time": datetime.fromtimestamp(u["last_earning_time"]).isoformat()
+    .dashboard {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
     }
 
-# ✅ NEW: user details for frontend dashboard
-@app.get("/user/{username}")
-def get_user(username: str):
-    u = users.get(username)
-    if not u:
-        raise HTTPException(404, "User not found")
-    return {
-        "username": username,
-        "balance": u["balance"],
-        "earnings": u["earnings"],
-        "last_bonus_time": datetime.fromtimestamp(u["last_earning_time"]).isoformat(),
-        "is_admin": username == ADMIN_USERNAME,
-        "total_invested": investments.get(username, {}).get("amount", 0)
+    h2 {
+      color: #1e88e5;
     }
+
+    .info {
+      margin: 20px 0;
+      font-size: 18px;
+    }
+
+    #message {
+      color: green;
+      margin-top: 15px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #43a047;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2e7d32;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard">
+    <h2>Welcome, <span id="username">User</span></h2>
+    <div class="info">Balance: KES <span id="balance">0.00</span></div>
+    <div class="info">Earnings: KES <span id="earnings">0.00</span></div>
+    <div class="info">Last Bonus Time: <span id="lastBonus">--</span></div>
+    
+    <button id="grabBonusBtn">Grab Bonus</button>
+    <div id="message"></div>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    const username = localStorage.getItem("username");
+    const apiBase = "https://repo-1red-jipate-bonus.onrender.com";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!username) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      document.getElementById("username").textContent = username;
+
+      try {
+        const res = await fetch(`${apiBase}/user/${username}`);
+        if (!res.ok) throw new Error("User not found");
+
+        const data = await res.json();
+        document.getElementById("balance").textContent = data.balance.toFixed(2);
+        document.getElementById("earnings").textContent = data.earnings.toFixed(2);
+        document.getElementById("lastBonus").textContent = new Date(data.last_bonus_time).toLocaleString();
+      } catch (err) {
+        document.getElementById("errorMsg").textContent = err.message;
+      }
+    });
+
+    document.getElementById("grabBonusBtn").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${apiBase}/bonus/grab`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ username })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || "Failed to grab bonus");
+
+        document.getElementById("message").textContent = data.message;
+        document.getElementById("balance").textContent = data.balance.toFixed(2);
+        document.getElementById("errorMsg").textContent = "";
+      } catch (err) {
+        document.getElementById("errorMsg").textContent = err.message;
+        document.getElementById("message").textContent = "";
+      }
+    });
+  </script>
+
+</body>
+</html>
