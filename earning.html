@@ -47,21 +47,32 @@
       text-align: center;
       color: #333;
     }
+
+    .error {
+      color: red;
+    }
+
+    .success {
+      color: green;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Trigger Daily Earnings</h2>
-    <div class="message" id="messageBox">Only approved investments above KES 500 will earn.</div>
+    <div class="message" id="messageBox">
+      Only approved investments above KES 500 will earn.<br/>
+      Daily bonus will be added to each eligible user's earnings.
+    </div>
     <button onclick="triggerEarnings()">Run Earnings Distribution</button>
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const isAdmin = localStorage.getItem("is_admin");
+      const isAdmin = localStorage.getItem("is_admin") === "true";
       const token = localStorage.getItem("adminToken");
 
-      if (!isAdmin || isAdmin !== "true" || !token) {
+      if (!isAdmin || !token) {
         alert("Access denied. Admin login required.");
         window.location.href = "login.html";
       }
@@ -89,13 +100,17 @@
         const data = await res.json();
 
         if (res.ok) {
-          messageBox.innerText = "✅ Daily earnings distributed successfully!";
+          let message = "✅ Daily earnings distributed successfully!";
+          if (data?.distributed_amount) {
+            message += ` Total: KES ${parseFloat(data.distributed_amount).toFixed(2)}`;
+          }
+          messageBox.innerHTML = `<span class="success">${message}</span>`;
         } else {
-          messageBox.innerText = "❌ Failed: " + (data?.detail || "Unknown error from server");
+          messageBox.innerHTML = `<span class="error">❌ Failed: ${data?.detail || "Unknown error from server"}</span>`;
         }
       } catch (err) {
         console.error("Trigger error:", err);
-        messageBox.innerText = "❌ Error: Could not connect to server.";
+        messageBox.innerHTML = `<span class="error">❌ Error: Could not connect to server.</span>`;
       }
     }
   </script>
