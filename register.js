@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch("/register", {
+      const res = await fetch("http://localhost:8000/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
@@ -51,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       alert(data.message || "Registered successfully!");
       localStorage.setItem("username", username);
-
       window.location.href = "/dashboard.html";
 
     } catch (err) {
