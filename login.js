@@ -33,15 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.detail || "Login failed");
       }
 
-      // Save login info to localStorage
+      // Save login info
       localStorage.setItem("username", username);
       localStorage.setItem("is_admin", data.is_admin);
-      
-      // Redirect logic
+      localStorage.setItem("is_approved", data.is_approved);
+
+      // Redirect based on role/approval
       if (data.is_admin === true) {
-        window.location.href = "admin.html";  // Admin dashboard
+        window.location.href = "admin_dashboard.html";
+      } else if (data.is_approved === true) {
+        window.location.href = "dashboard.html";
       } else {
-        window.location.href = "dashboard.html"; // User dashboard
+        errorMsg.textContent = "Your account is not yet approved by the admin.";
       }
 
     } catch (err) {
