@@ -106,20 +106,13 @@
 
   async function loadUserData() {
     try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users");
+      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/user/${username}`);
 
       if (!res.ok) {
         throw new Error("Failed to fetch user data");
       }
 
-      const data = await res.json();
-      const user = data[username];
-
-      if (!user) {
-        alert("User not found. Logging out.");
-        logout();
-        return;
-      }
+      const user = await res.json();
 
       document.getElementById("balanceDisplay").textContent = parseFloat(user.balance || 0).toFixed(2);
       document.getElementById("earningsDisplay").textContent = parseFloat(user.earnings || 0).toFixed(2);
