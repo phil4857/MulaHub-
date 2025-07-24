@@ -14,13 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const formData = new URLSearchParams();
+    formData.append("username", username);
+    formData.append("password", password);
+
     try {
       const response = await fetch("https://your-backend-url.onrender.com/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({ username, password })
+        body: formData.toString()
       });
 
       const data = await response.json();
