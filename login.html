@@ -87,13 +87,17 @@
           return;
         }
 
+        const formData = new URLSearchParams();
+        formData.append("username", username);
+        formData.append("password", password);
+
         try {
           const res = await fetch("/login", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: JSON.stringify({ username, password })
+            body: formData.toString()
           });
 
           const data = await res.json();
@@ -107,7 +111,6 @@
           localStorage.setItem("is_admin", data.is_admin);
           localStorage.setItem("is_approved", data.is_approved);
 
-          // Redirect logic
           if (data.is_admin) {
             window.location.href = "/admin_dashboard.html";
           } else if (data.is_approved) {
