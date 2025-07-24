@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append("password", password);
 
     try {
-      const response = await fetch("https://your-backend-url.onrender.com/login", {
+      const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
@@ -36,15 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Save login info to localStorage
       localStorage.setItem("username", username);
       localStorage.setItem("is_admin", data.is_admin);
-      localStorage.setItem("is_approved", data.is_approved);
-
+      
       // Redirect logic
-      if (data.is_admin) {
-        window.location.href = "/admin_dashboard.html";  // change if needed
-      } else if (data.is_approved) {
-        window.location.href = "/dashboard.html";        // change if needed
+      if (data.is_admin === true) {
+        window.location.href = "admin.html";  // Admin dashboard
       } else {
-        errorMsg.textContent = "Account not yet approved by admin.";
+        window.location.href = "dashboard.html"; // User dashboard
       }
 
     } catch (err) {
