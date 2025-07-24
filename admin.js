@@ -50,14 +50,18 @@ async function fetchUsers() {
             const approveBtn = !user.approved
                 ? `<button onclick="approveUser('${user.username}')">Approve</button>`
                 : '';
+
             const resetBtn = `<button onclick="resetPassword('${user.username}')">Reset Password</button>`;
 
             return `
-                <div style="margin-bottom:10px">
-                    <strong>${user.username}</strong> - ${user.number || "N/A"}
-                    | Approved: ${user.approved ? '✅' : '❌'}
+                <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #ccc;">
+                    <strong>Username:</strong> ${user.username}<br>
+                    <strong>Phone:</strong> ${user.number || "N/A"}<br>
+                    <strong>Referral:</strong> ${user.referral || "None"}<br>
+                    <strong>Approved:</strong> ${user.approved ? '✅' : '❌'}<br>
                     ${approveBtn} ${resetBtn}
-                </div>`;
+                </div>
+            `;
         }).join('');
 
         document.getElementById("userData").innerHTML = output || "<p>No users found.</p>";
