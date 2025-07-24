@@ -20,13 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = await res.json();
 
-            if (!res.ok) {
-                throw new Error(data.detail || "Login failed");
-            }
-
-            if (!data.token) {
-                throw new Error("No token received from server.");
-            }
+            if (!res.ok) throw new Error(data.detail || "Login failed");
+            if (!data.token) throw new Error("No token received from server.");
 
             localStorage.setItem("adminToken", data.token);
             fetchUsers();
@@ -49,10 +44,7 @@ async function fetchUsers() {
         });
 
         const users = await res.json();
-
-        if (!res.ok) {
-            throw new Error(users.detail || "Failed to fetch users");
-        }
+        if (!res.ok) throw new Error(users.detail || "Failed to fetch users");
 
         const output = users.map(user => {
             const approveBtn = !user.approved
@@ -78,13 +70,13 @@ async function fetchUsers() {
 async function approveUser(username) {
     const token = localStorage.getItem("adminToken");
     try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/approve-user", {
+        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/approve_user", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ target_username: username })
+            body: new URLSearchParams({ username })
         });
 
         const data = await res.json();
@@ -106,10 +98,10 @@ async function resetPassword(username) {
         const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({
+            body: new URLSearchParams({
                 target_username: username,
                 new_password: newPassword
             })
