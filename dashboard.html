@@ -38,7 +38,11 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
+    button[disabled] {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    button:hover:enabled {
       background-color: orangered;
     }
   </style>
@@ -57,6 +61,9 @@
     <div class="info"><strong>Balance:</strong> KES <span id="balance">0.00</span></div>
     <div class="info"><strong>Total Earnings:</strong> KES <span id="earnings">0.00</span></div>
     <div class="info"><strong>Last Bonus Time:</strong> <span id="lastBonus">--</span></div>
+    <div class="info"><strong>Bonus Status:</strong> <span id="bonusMessage">--</span></div>
+    <div class="info"><strong>Bonus Days Left:</strong> <span id="daysLeft">--</span></div>
+    <div class="info"><strong>Investment:</strong> KES <span id="investmentAmount">0</span></div>
 
     <button id="grabBonusBtn">Grab Bonus</button>
 
@@ -68,6 +75,8 @@
     const username = localStorage.getItem("username");
     const apiBase = "https://repo-1red-jipate-bonus.onrender.com";
 
+    const grabBtn = document.getElementById("grabBonusBtn");
+
     document.addEventListener("DOMContentLoaded", async () => {
       if (!username) {
         window.location.href = "login.html";
@@ -77,35 +86,47 @@
       document.getElementById("username").textContent = username;
 
       try {
-        const res = await fetch(`${apiBase}/user/${username}`);
-        if (!res.ok) throw new Error("User not found");
+        const res = await fetch(`${apiBase}/dashboard?username=${encodeURIComponent(username)}`);
+        if (!res.ok) throw new Error("Failed to fetch dashboard");
 
         const data = await res.json();
+
         document.getElementById("balance").textContent = data.balance.toFixed(2);
         document.getElementById("earnings").textContent = data.earnings.toFixed(2);
-        document.getElementById("lastBonus").textContent = new Date(data.last_bonus_time).toLocaleString();
+        document.getElementById("lastBonus").textContent = data.last_bonus_time || "--";
+        document.getElementById("bonusMessage").textContent = data.bonus_message || "--";
+        document.getElementById("daysLeft").textContent = data.bonus_days_remaining;
+        document.getElementById("investmentAmount").textContent = data.investment_amount;
+
+        // Enable/Disable Bonus Button
+        if (data.bonus_available) {
+          grabBtn.disabled = false;
+        } else {
+          grabBtn.disabled = true;
+        }
+
       } catch (err) {
         document.getElementById("errorMsg").textContent = err.message;
       }
     });
 
-    document.getElementById("grabBonusBtn").addEventListener("click", async () => {
+    grabBtn.addEventListener("click", async () => {
       try {
         const res = await fetch(`${apiBase}/bonus/grab`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({ username })
         });
 
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.detail || "Failed to grab bonus");
+        if (!res.ok) throw new Error(data.detail || "Bonus grab failed");
 
         document.getElementById("message").textContent = data.message;
         document.getElementById("balance").textContent = data.balance.toFixed(2);
+        document.getElementById("daysLeft").textContent = data.days_remaining;
         document.getElementById("errorMsg").textContent = "";
+        grabBtn.disabled = true;
       } catch (err) {
         document.getElementById("errorMsg").textContent = err.message;
         document.getElementById("message").textContent = "";
