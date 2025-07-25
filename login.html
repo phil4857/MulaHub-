@@ -72,7 +72,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const API = "https://repo-1red-jipate-bonus.onrender.com"; // your backend base URL
+      const API = "https://repo-1red-jipate-bonus.onrender.com";
 
       const form = document.getElementById('loginForm');
       const errorMsg = document.getElementById('errorMsg');
@@ -113,9 +113,10 @@
           localStorage.setItem("username", username);
           localStorage.setItem("is_admin", data.is_admin);
           localStorage.setItem("is_approved", data.is_approved);
+          localStorage.setItem("password", password); // Needed for investment
 
           if (data.is_admin) {
-            window.location.href = "/admin_dashboard.html";
+            window.location.href = "/admin.html";
           } else if (data.is_approved) {
             window.location.href = "/dashboard.html";
           } else {
