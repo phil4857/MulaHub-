@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const username = localStorage.getItem('username');
-  const password = localStorage.getItem('password'); // Make sure this is stored at login
+  const password = localStorage.getItem('password'); // Ensure it's stored at login
 
   if (!username || !password) {
     alert('Please log in first.');
@@ -17,8 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
   investForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const amount = parseFloat(document.getElementById('amount').value);
-    if (!amount || isNaN(amount) || amount <= 0) {
+    const amountInput = document.getElementById('amount');
+    if (!amountInput) {
+      alert("Amount input field not found.");
+      return;
+    }
+
+    const amount = parseFloat(amountInput.value);
+    if (isNaN(amount) || amount <= 0) {
       alert("Please enter a valid investment amount greater than zero.");
       return;
     }
@@ -42,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(result.detail || "Investment failed. Try again.");
       }
 
-      alert(result.message);
+      alert(result.message || "Investment successful.");
       window.location.href = "dashboard.html";
 
     } catch (error) {
