@@ -35,12 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Save login info to localStorage
       localStorage.setItem("username", username);
+      localStorage.setItem("password", password);  // Required for investing
       localStorage.setItem("is_admin", data.is_admin);
       localStorage.setItem("is_approved", data.is_approved);
 
       // Redirect based on user role and approval
       if (data.is_admin === true) {
-        window.location.href = "admin.html";
+        window.location.href = "admin_dashboard.html";
       } else if (data.is_approved === true) {
         window.location.href = "dashboard.html";
       } else {
