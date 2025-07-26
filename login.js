@@ -33,14 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.detail || "Login failed");
       }
 
-      // Save login info
+      // Save login info to localStorage
       localStorage.setItem("username", username);
       localStorage.setItem("is_admin", data.is_admin);
       localStorage.setItem("is_approved", data.is_approved);
 
-      // Redirect based on role/approval
+      // Redirect based on user role and approval
       if (data.is_admin === true) {
-        window.location.href = "admin_dashboard.html";
+        window.location.href = "admin.html";
       } else if (data.is_approved === true) {
         window.location.href = "dashboard.html";
       } else {
