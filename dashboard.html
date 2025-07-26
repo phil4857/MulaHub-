@@ -98,15 +98,10 @@
         document.getElementById("daysLeft").textContent = data.bonus_days_remaining;
         document.getElementById("investmentAmount").textContent = data.investment_amount;
 
-        // Enable/Disable Bonus Button
-        if (data.bonus_available) {
-          grabBtn.disabled = false;
-        } else {
-          grabBtn.disabled = true;
-        }
+        grabBtn.disabled = !data.bonus_available;
 
       } catch (err) {
-        document.getElementById("errorMsg").textContent = err.message;
+        document.getElementById("errorMsg").textContent = err.message || "Something went wrong loading your dashboard.";
       }
     });
 
