@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username, password })
       });
 
       const data = await res.json();
@@ -38,13 +38,25 @@ async function fetchUsers() {
   const token = localStorage.getItem("adminToken");
   try {
     const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/users", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     const users = await res.json();
     if (!res.ok) throw new Error(users.detail || "Failed to fetch users");
+
+    const userDataDiv = document.getElementById("userData");
+
+    // Show payment number at the top
+    let headerInfo = `
+      <div style="margin-bottom:15px; padding:10px; background:#eef; border-radius:6px;">
+        <strong>📌 Payment Number:</strong> <span style="font-size:16px; color:darkgreen;">MPESA: 0739075065</span>
+      </div>
+    `;
+
+    if (users.length === 0) {
+      userDataDiv.innerHTML = headerInfo + "<p>No users found.</p>";
+      return;
+    }
 
     const output = users.map(user => {
       const approveBtn = !user.approved
@@ -59,15 +71,15 @@ async function fetchUsers() {
           <strong>Phone:</strong> ${user.number || "N/A"}<br>
           <strong>Referral:</strong> ${user.referral || "None"}<br>
           <strong>Balance:</strong> KES ${user.balance || 0}<br>
+          <strong>Earnings:</strong> KES ${user.earnings || 0}<br>
+          <strong>Investment:</strong> KES ${user.total_invested || 0}<br>
           <strong>Approved:</strong> ${user.approved ? '✅' : '❌'}<br>
-          <strong>Investment:</strong> KES ${user.investment || 0}<br>
-          <strong>Registered:</strong> ${user.registered_at ? new Date(user.registered_at).toLocaleDateString() : 'Unknown'}<br>
           ${approveBtn} ${resetBtn}
         </div>
       `;
     }).join('');
 
-    document.getElementById("userData").innerHTML = output || "<p>No users found.</p>";
+    userDataDiv.innerHTML = headerInfo + output;
   } catch (err) {
     alert("Error loading users: " + err.message);
     document.getElementById("userData").innerHTML = "<p>❌ Failed to load users.</p>";
