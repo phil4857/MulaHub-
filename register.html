@@ -14,6 +14,21 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      flex-direction: column;
+    }
+
+    /* Banner */
+    #paymentBanner {
+      background:#003366;
+      color:#fff;
+      width:100%;
+      padding:10px;
+      text-align:center;
+      font-weight:bold;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
     }
 
     .register-container {
@@ -23,6 +38,7 @@
       box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
       width: 90%;
       max-width: 420px;
+      margin-top: 60px; /* push below banner */
     }
 
     .register-container h2 {
@@ -74,18 +90,10 @@
       text-align: center;
     }
 
-    .error-message {
-      color: red;
-    }
+    .error-message { color: red; }
+    .success-message { color: green; }
 
-    .success-message {
-      color: green;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-    }
+    label { display: block; margin-top: 10px; }
 
     .checkbox-label {
       font-size: 14px;
@@ -94,12 +102,13 @@
       align-items: center;
     }
 
-    .checkbox-label input {
-      margin-right: 8px;
-    }
+    .checkbox-label input { margin-right: 8px; }
   </style>
 </head>
 <body>
+
+  <!-- Payment Number Banner -->
+  <div id="paymentBanner">Send Investments to MPESA Number: 0739075065</div>
 
   <div class="register-container">
     <h2>Create Account</h2>
@@ -179,9 +188,7 @@
       try {
         const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/register", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData.toString()
         });
 
@@ -190,11 +197,12 @@
         if (!res.ok) {
           errorMsg.textContent = data.detail || data.message || "Registration failed.";
         } else {
-          successMsg.textContent = data.message || "Registration successful!";
+          successMsg.textContent = (data.message || "Registration successful!") + 
+            ` Please send your investment to MPESA ${data.payment_number}.`;
           localStorage.setItem("username", username);
           setTimeout(() => {
             window.location.href = "dashboard.html";
-          }, 2000);
+          }, 3000);
         }
 
       } catch (err) {
