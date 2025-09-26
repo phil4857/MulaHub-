@@ -33,15 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.detail || "Login failed");
       }
 
-      // ✅ Save login info to localStorage
+      // ✅ Save safe info to localStorage
       localStorage.setItem("username", data.username || username);
-      localStorage.setItem("password", password);  // Required for investing
+      if (data.token) {
+        localStorage.setItem("userToken", data.token); // Use token instead of password
+      }
       localStorage.setItem("is_admin", data.is_admin);
       localStorage.setItem("is_approved", data.is_approved);
 
-      // ✅ Redirect based on user role and approval
+      // ✅ Redirect based on role/approval
       if (data.is_admin) {
-        window.location.href = "admin_dashboard.html";
+        window.location.href = "admin.html";   // fixed redirect
       } else if (data.is_approved) {
         window.location.href = "dashboard.html";
       } else {
