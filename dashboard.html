@@ -54,7 +54,7 @@
 
     <!-- Payment Number Info -->
     <div class="info">
-      <strong>Pay Investment Fee To:</strong><br>
+      <strong>Pay Investment Fee To Mkoba Wallet:</strong><br>
       <span style="font-size: 18px; color: darkgreen;">MPESA: 0739075065</span>
     </div>
 
@@ -99,11 +99,7 @@
         document.getElementById("investmentAmount").textContent = data.investment_amount;
 
         // Enable/Disable Bonus Button
-        if (data.bonus_available) {
-          grabBtn.disabled = false;
-        } else {
-          grabBtn.disabled = true;
-        }
+        grabBtn.disabled = !data.bonus_available;
 
       } catch (err) {
         document.getElementById("errorMsg").textContent = err.message;
