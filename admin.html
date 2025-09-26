@@ -12,6 +12,23 @@
       padding: 0;
     }
 
+    header {
+      background: #003366;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .payment-info {
+      background: #f0f8ff;
+      color: #003366;
+      text-align: center;
+      padding: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      border-bottom: 2px solid #003366;
+    }
+
     .container {
       max-width: 900px;
       margin: 30px auto;
@@ -71,15 +88,22 @@
 </head>
 <body>
 
+  <header>
+    <h1>Admin Dashboard - Mkoba Wallet</h1>
+  </header>
+
+  <div class="payment-info">
+    💳 Pay Investment Fee To: <strong>MPESA 0739075065</strong>
+  </div>
+
   <div class="container">
-    <h2>Admin Dashboard - Mkoba Wallet</h2>
     <button id="logoutBtn" onclick="logout()">Logout</button>
     <div id="loginError" class="error-message"></div>
     <div id="userData">Loading users...</div>
   </div>
 
   <script>
-    const API_BASE = "https://repo-1red-jipate-bonus.onrender.com"; // keep this same unless redeployed
+    const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
 
     document.addEventListener('DOMContentLoaded', () => {
       const token = localStorage.getItem("adminToken");
@@ -128,8 +152,8 @@
               <strong>Approved:</strong> ${user.approved ? '✅' : '❌'}<br>
               <strong>Total Invested:</strong> KES ${user.total_invested || 0}<br>
               <strong>Investment Approved:</strong> ${user.investment_approved ? '✅' : '❌'}<br>
-              <strong>Balance:</strong> KES ${user.balance.toFixed(2)}<br>
-              <strong>Earnings:</strong> KES ${user.earnings.toFixed(2)}<br>
+              <strong>Balance:</strong> KES ${(user.balance || 0).toFixed(2)}<br>
+              <strong>Earnings:</strong> KES ${(user.earnings || 0).toFixed(2)}<br>
               ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn}
             </div>
           `;
