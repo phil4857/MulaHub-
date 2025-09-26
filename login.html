@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - Jipate Bonus</title>
+  <title>Login - Mkoba Wallet</title>
   <style>
     body {
       background-color: gold;
@@ -72,7 +72,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const API = "https://repo-1red-jipate-bonus.onrender.com";
+      const API = "https://repo-1red-mkoba-wallet.onrender.com"; // Update if backend URL changed
 
       const form = document.getElementById('loginForm');
       const errorMsg = document.getElementById('errorMsg');
@@ -107,12 +107,12 @@
 
           // Save user session
           localStorage.setItem("username", username);
-          localStorage.setItem("password", password);  // Needed for invest endpoint
+          localStorage.setItem("password", password); // Needed for investment
           localStorage.setItem("is_admin", data.is_admin);
           localStorage.setItem("is_approved", data.is_approved);
 
           if (data.is_admin) {
-            window.location.href = "admin_dashboard.html";
+            window.location.href = "admin.html";
           } else if (data.is_approved) {
             window.location.href = "dashboard.html";
           } else {
