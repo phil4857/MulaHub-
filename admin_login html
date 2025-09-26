@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Login - Jipate Bonus</title>
+  <title>Admin Login - Mkoba Wallet</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -65,7 +65,7 @@
 <body>
 
   <div class="login-container">
-    <h2>Admin Login</h2>
+    <h2>Admin Login - Mkoba Wallet</h2>
     <form id="adminLoginForm">
       <input type="text" id="username" placeholder="Username" required />
       <input type="password" id="password" placeholder="Password" required />
@@ -92,8 +92,8 @@
       try {
         const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/login", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ username, password })
         });
 
         const data = await res.json();
@@ -107,8 +107,7 @@
         }
 
         localStorage.setItem("adminToken", data.token);
-        alert("Admin login successful!");
-        window.location.href = "admin.html";
+        window.location.href = "admin.html"; // go straight to dashboard
       } catch (err) {
         console.error(err);
         errorMsg.textContent = err.message || "Server error. Try again later.";
