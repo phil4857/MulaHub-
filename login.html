@@ -70,62 +70,7 @@
     </form>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const API = "https://repo-1red-mkoba-wallet.onrender.com"; // Update if backend URL changed
-
-      const form = document.getElementById('loginForm');
-      const errorMsg = document.getElementById('errorMsg');
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        errorMsg.textContent = '';
-
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-
-        if (!username || !password) {
-          errorMsg.textContent = "Please fill in both fields.";
-          return;
-        }
-
-        try {
-          const response = await fetch(`${API}/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({ username, password }).toString()
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            errorMsg.textContent = data.detail || "Login failed.";
-            return;
-          }
-
-          // Save user session
-          localStorage.setItem("username", username);
-          localStorage.setItem("password", password); // Needed for investment
-          localStorage.setItem("is_admin", data.is_admin);
-          localStorage.setItem("is_approved", data.is_approved);
-
-          if (data.is_admin) {
-            window.location.href = "admin.html";
-          } else if (data.is_approved) {
-            window.location.href = "dashboard.html";
-          } else {
-            errorMsg.textContent = "Your account is not yet approved by the admin.";
-          }
-
-        } catch (error) {
-          console.error("Login error:", error);
-          errorMsg.textContent = "Login failed. Please check your connection.";
-        }
-      });
-    });
-  </script>
-
+  <!-- ✅ Use external JS -->
+  <script src="login.js"></script>
 </body>
 </html>
