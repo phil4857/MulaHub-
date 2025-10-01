@@ -89,11 +89,11 @@
 <body>
 
   <header>
-    <h1>Admin Dashboard - Mkoba Wallet</h1>
+    <h1 id="dashboardTitle">Admin Dashboard - Mkoba Wallet</h1>
   </header>
 
-  <div class="payment-info">
-    💳 Pay Investment Fee To: <strong>MPESA 0739075065</strong>
+  <div class="payment-info" id="paymentInfo">
+    💳 Pay Investment Fee To: <strong>Loading...</strong>
   </div>
 
   <div class="container">
@@ -105,14 +105,38 @@
   <script>
     const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const token = localStorage.getItem("adminToken");
       if (!token) {
         window.location.href = "login.html";
         return;
       }
+
+      // Load platform/payment number dynamically
+      await fetchPlatformInfo();
+
+      // Fetch users
       fetchUsers();
     });
+
+    async function fetchPlatformInfo() {
+      try {
+        const res = await fetch(`${API_BASE}/platform/info`);
+        if (!res.ok) throw new Error("Failed to fetch platform info");
+
+        const data = await res.json();
+
+        // Update platform title + payment number dynamically
+        document.title = `Admin Dashboard - ${data.platform}`;
+        document.getElementById("dashboardTitle").textContent = `Admin Dashboard - ${data.platform}`;
+        document.getElementById("paymentInfo").innerHTML =
+          `💳 Pay Investment Fee To: <strong>${data.platform} ${data.payment_number}</strong>`;
+      } catch (err) {
+        console.error(err);
+        document.getElementById("paymentInfo").innerHTML =
+          "💳 Pay Investment Fee To: <strong>Mkoba Wallet 0739075065</strong> (default)";
+      }
+    }
 
     async function fetchUsers() {
       const token = localStorage.getItem("adminToken");
@@ -141,7 +165,6 @@
             : '';
 
           const approveWithdrawalBtn = `<button onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>`;
-
           const resetBtn = `<button onclick="resetPassword('${user.username}')">Reset Password</button>`;
 
           return `
