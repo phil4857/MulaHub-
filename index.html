@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title id="platformTitle">Loading...</title>
+  <title>Mkoba Wallet 💸🎉💵</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -86,7 +86,7 @@
 </head>
 <body>
 
-  <h1 id="welcomeText">Loading...</h1>
+  <h1>Welcome to Mkoba Wallet 💸🎉💵</h1>
   <h2>Grow your money, earn daily bonuses, and refer friends!</h2>
 
   <div class="container">
@@ -110,32 +110,8 @@
   </div>
 
   <footer>
-    <p>📱 MPESA SEND MONEY: <strong id="paymentNumber">Loading...</strong> 
-    | 💰 Daily earnings: <strong>10%</strong> 
-    | 🎁 Sunday 5% bonus 
-    | 💸 Withdraw limits vary with investment</p>
+    <p>📱 MPESA SEND MONEY: <strong>0739075065</strong> | 💰 Daily earnings: <strong>10%</strong> | 🎁 Sunday 5% bonus | 💸 Withdraw limits vary with investment</p>
   </footer>
-
-  <script>
-    const API_BASE = "https://repo-1red-jipate-bonus-6.onrender.com";
-
-    async function loadPlatformConfig() {
-      try {
-        const res = await fetch(`${API_BASE}/dashboard?username=admin`);
-        const data = await res.json();
-
-        document.getElementById("platformTitle").innerText = data.platform;
-        document.getElementById("welcomeText").innerText = `Welcome to ${data.platform} 💸🎉💵`;
-        document.getElementById("paymentNumber").innerText = data.payment_number;
-      } catch (err) {
-        console.error("Failed to load platform config", err);
-        document.getElementById("welcomeText").innerText = "Welcome to Mkoba Wallet";
-        document.getElementById("paymentNumber").innerText = "0739075065";
-      }
-    }
-
-    loadPlatformConfig();
-  </script>
 
 </body>
 </html>
