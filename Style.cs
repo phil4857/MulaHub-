@@ -1,5 +1,5 @@
 /* ----------------------------------------
-   Global Styles – Light Blue UI Theme
+   Global Styles – Mkoba Wallet Light Blue Theme
 ---------------------------------------- */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -11,10 +11,10 @@ body {
 }
 
 /* ----------------------------------------
-   Container Styling
+   Layout Containers
 ---------------------------------------- */
 .container {
-  max-width: 600px;
+  max-width: 700px;
   margin: 40px auto;
   padding: 30px;
   background-color: #fff;
@@ -23,13 +23,43 @@ body {
   transition: all 0.3s ease-in-out;
 }
 
+/* Small containers (login forms, cards) */
+.small-container {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
 /* ----------------------------------------
-   Headings
+   Headers & Titles
 ---------------------------------------- */
+header {
+  background: #003366;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
 h1, h2, h3 {
   color: #003366;
   margin-bottom: 20px;
   text-align: center;
+}
+
+/* ----------------------------------------
+   Payment Info Banner
+---------------------------------------- */
+.payment-info {
+  background: #f0f8ff;
+  color: #003366;
+  text-align: center;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-bottom: 2px solid #003366;
 }
 
 /* ----------------------------------------
@@ -70,6 +100,31 @@ button:hover {
   background-color: #0056b3;
 }
 
+button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Danger button (logout, delete) */
+.btn-danger {
+  background-color: #cc0000;
+}
+
+.btn-danger:hover {
+  background-color: #990000;
+}
+
+/* ----------------------------------------
+   Cards & User Data
+---------------------------------------- */
+.user-card {
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
 /* ----------------------------------------
    Messages
 ---------------------------------------- */
@@ -79,6 +134,7 @@ button:hover {
   margin-top: -5px;
   margin-bottom: 10px;
   display: block;
+  text-align: center;
 }
 
 .success {
@@ -87,6 +143,7 @@ button:hover {
   margin-top: -5px;
   margin-bottom: 10px;
   display: block;
+  text-align: center;
 }
 
 /* ----------------------------------------
