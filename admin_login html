@@ -56,7 +56,7 @@
     }
 
     .error {
-      color: red;
+      color: orange;
       text-align: center;
       margin-top: 10px;
     }
@@ -106,8 +106,11 @@
           throw new Error("Token not received. Try again.");
         }
 
+        // ✅ Save the admin token
         localStorage.setItem("adminToken", data.token);
-        window.location.href = "admin.html"; // go straight to dashboard
+
+        // ✅ Redirect to Admin Dashboard
+        window.location.href = "admin.html";
       } catch (err) {
         console.error(err);
         errorMsg.textContent = err.message || "Server error. Try again later.";
