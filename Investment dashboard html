@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investment Dashboard</title>
+  <script src="investment.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-indigo-600 text-white shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Mkoba Wallet - Investment Dashboard</h1>
+    <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded hover:bg-red-600">Logout</button>
+  </header>
+
+  <!-- Dashboard Content -->
+  <main class="flex-1 container mx-auto p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Account Summary -->
+      <div class="bg-white rounded-2xl shadow-md p-6">
+        <h2 class="text-lg font-semibold mb-4">Account Summary</h2>
+        <p><strong>Username:</strong> <span id="username"></span></p>
+        <p><strong>Balance:</strong> KES <span id="balance">0</span></p>
+        <p><strong>Earnings:</strong> KES <span id="earnings">0</span></p>
+        <p><strong>Investment Amount:</strong> KES <span id="investment">0</span></p>
+        <p><strong>Bonus Days Left:</strong> <span id="bonusDays">0</span></p>
+        <p><strong>Bonus Status:</strong> <span id="bonusMessage"></span></p>
+      </div>
+
+      <!-- Actions -->
+      <div class="bg-white rounded-2xl shadow-md p-6">
+        <h2 class="text-lg font-semibold mb-4">Actions</h2>
+        
+        <!-- Invest -->
+        <div class="mb-4">
+          <h3 class="font-medium mb-2">Invest</h3>
+          <input id="investAmount" type="number" placeholder="Amount (min 500)" class="border p-2 w-full rounded mb-2">
+          <input id="txRef" type="text" placeholder="Transaction Reference" class="border p-2 w-full rounded mb-2">
+          <button onclick="makeInvestment()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Submit Investment</button>
+        </div>
+
+        <!-- Grab Bonus -->
+        <div class="mb-4">
+          <h3 class="font-medium mb-2">Daily Bonus</h3>
+          <button onclick="grabBonus()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Grab Bonus</button>
+        </div>
+
+        <!-- Withdraw -->
+        <div>
+          <h3 class="font-medium mb-2">Withdraw</h3>
+          <input id="withdrawAmount" type="number" placeholder="Amount" class="border p-2 w-full rounded mb-2">
+          <button onclick="requestWithdrawal()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Request Withdrawal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referrals -->
+    <div class="bg-white rounded-2xl shadow-md p-6 mt-6">
+      <h2 class="text-lg font-semibold mb-4">Referrals</h2>
+      <ul id="referralsList" class="list-disc pl-6 text-gray-700"></ul>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-gray-300 text-center p-3">
+    &copy; 2025 Mkoba Wallet. All rights reserved.
+  </footer>
+</body>
+</html>
