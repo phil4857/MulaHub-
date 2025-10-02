@@ -1,93 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login - Mkoba Wallet</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
+      background: #f4f6f9;
     }
-
-    .login-container {
-      background: #fff;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 400px;
+    .login-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 300px;
     }
-
-    h2 {
+    .login-box h2 {
+      margin-bottom: 1rem;
       text-align: center;
-      color: #a25c00;
-      margin-bottom: 25px;
     }
-
     input {
       width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
       border-radius: 6px;
-      font-size: 16px;
+      border: 1px solid #ccc;
     }
-
     button {
       width: 100%;
-      padding: 12px;
-      background-color: #a25c00;
-      color: white;
+      padding: 0.7rem;
+      background: #007bff;
       border: none;
       border-radius: 6px;
-      font-size: 16px;
+      color: white;
       cursor: pointer;
-      margin-top: 15px;
     }
-
     button:hover {
-      background-color: #884800;
+      background: #0056b3;
     }
-
     .error {
-      color: orange;
-      text-align: center;
-      margin-top: 10px;
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
-
-  <div class="login-container">
-    <h2>Admin Login - Mkoba Wallet</h2>
+  <div class="login-box">
+    <h2>Admin Login</h2>
     <form id="adminLoginForm">
-      <input type="text" id="username" placeholder="Username" required />
-      <input type="password" id="password" placeholder="Password" required />
+      <input type="text" id="username" placeholder="Admin Username" required>
+      <input type="password" id="password" placeholder="Password" required>
       <button type="submit">Login</button>
-      <div class="error" id="errorMsg"></div>
+      <p class="error" id="errorMsg"></p>
     </form>
   </div>
-
   <script>
     document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const errorMsg = document.getElementById("errorMsg");
-
-      errorMsg.textContent = "";
-
-      if (!username || !password) {
-        errorMsg.textContent = "Both fields are required.";
-        return;
-      }
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
 
       try {
         const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/login", {
@@ -97,26 +74,14 @@
         });
 
         const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Login failed");
 
-        if (!res.ok) {
-          throw new Error(data.detail || "Invalid credentials.");
-        }
-
-        if (!data.token) {
-          throw new Error("Token not received. Try again.");
-        }
-
-        // ✅ Save the admin token
         localStorage.setItem("adminToken", data.token);
-
-        // ✅ Redirect to Admin Dashboard
-        window.location.href = "admin.html";
+        window.location.href = "admin_dashboard.html"; // redirect to dashboard
       } catch (err) {
-        console.error(err);
-        errorMsg.textContent = err.message || "Server error. Try again later.";
+        document.getElementById("errorMsg").innerText = err.message;
       }
     });
   </script>
-
 </body>
 </html>
