@@ -6,15 +6,49 @@
   <title>Admin Dashboard - Mkoba Wallet</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
       margin: 0;
-      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1c1e22;
+      color: #eaeaea;
+      display: flex;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #111317;
+      height: 100vh;
+      padding: 1rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      color: #f05454;
+      margin-bottom: 2rem;
+    }
+    .sidebar button {
+      background: none;
+      border: none;
+      color: #eaeaea;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      margin: 0.25rem 0;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .sidebar button:hover {
+      background: #2b2f36;
+    }
+    /* Main content */
+    .main {
+      margin-left: 240px;
+      padding: 2rem;
+      flex: 1;
     }
     header {
-      background: #343a40;
-      color: #fff;
-      padding: 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -22,24 +56,26 @@
     header h1 {
       margin: 0;
       font-size: 1.5rem;
+      color: #f05454;
     }
     .logout-btn {
-      background: #dc3545;
+      background: #f05454;
       border: none;
       color: #fff;
       padding: 0.5rem 1rem;
       border-radius: 6px;
       cursor: pointer;
     }
-    .container {
-      padding: 1rem;
-    }
+    /* User cards */
     .user-card {
-      background: #fff;
+      background: #2b2f36;
       border-radius: 8px;
       padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin: 1rem 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .user-card strong {
+      color: #f1f1f1;
     }
     .user-card button {
       margin: 0.25rem;
@@ -47,6 +83,7 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 0.9rem;
     }
     .approve-btn { background: #28a745; color: white; }
     .withdraw-btn { background: #007bff; color: white; }
@@ -55,14 +92,22 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Admin Dashboard</h1>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-  </header>
-  <div class="container">
-    <h2>Registered Users</h2>
-    <div id="userData">Loading users...</div>
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <button onclick="fetchUsers()">📋 Manage Users</button>
+    <button onclick="logout()">🚪 Logout</button>
   </div>
+
+  <div class="main">
+    <header>
+      <h1>Admin Dashboard</h1>
+    </header>
+    <section>
+      <h2>Registered Users</h2>
+      <div id="userData">Loading users...</div>
+    </section>
+  </div>
+
   <script src="admin.js"></script>
 </body>
 </html>
