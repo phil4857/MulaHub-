@@ -24,11 +24,16 @@ async function fetchUsers() {
       return;
     }
 
-    const output = users.map(user => {
-      const approveBtn = !user.approved
-        ? `<button onclick="approveUser('${user.username}')">Approve</button>`
+    userDataDiv.innerHTML = users.map(user => {
+      const approveUserBtn = !user.approved
+        ? `<button onclick="approveUser('${user.username}')">Approve User</button>`
         : '';
 
+      const approveInvestmentBtn = !user.investment_approved && user.total_invested > 0
+        ? `<button onclick="approveInvestment('${user.username}')">Approve Investment</button>`
+        : '';
+
+      const approveWithdrawalBtn = `<button onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>`;
       const resetBtn = `<button onclick="resetPassword('${user.username}')">Reset Password</button>`;
 
       return `
@@ -36,68 +41,59 @@ async function fetchUsers() {
           <strong>Username:</strong> ${user.username}<br>
           <strong>Phone:</strong> ${user.number || "N/A"}<br>
           <strong>Referral:</strong> ${user.referral || "None"}<br>
+          <strong>Total Invested:</strong> KES ${(user.total_invested || 0).toFixed(2)}<br>
           <strong>Balance:</strong> KES ${(user.balance || 0).toFixed(2)}<br>
           <strong>Earnings:</strong> KES ${(user.earnings || 0).toFixed(2)}<br>
-          <strong>Investment:</strong> KES ${(user.total_invested || 0).toFixed(2)}<br>
           <strong>Approved:</strong> ${user.approved ? '✅' : '❌'}<br>
-          ${approveBtn} ${resetBtn}
+          <strong>Investment Approved:</strong> ${user.investment_approved ? '✅' : '❌'}<br>
+          ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn}
         </div>
       `;
     }).join('');
-
-    userDataDiv.innerHTML = output;
   } catch (err) {
-    alert("Error loading users: " + err.message);
+    console.error("User fetch error:", err);
     document.getElementById("userData").innerHTML = "<p>❌ Failed to load users.</p>";
   }
 }
 
 async function approveUser(username) {
-  const token = localStorage.getItem("adminToken");
-  try {
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/approve_user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Bearer ${token}`
-      },
-      body: new URLSearchParams({ username })
-    });
+  await postAdminAction("approve_user", { username }, `✅ ${username} approved`);
+}
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Approval failed");
+async function approveInvestment(username) {
+  await postAdminAction("approve_investment", { username }, `✅ Investment approved for ${username}`);
+}
 
-    alert(data.message || `✅ ${username} approved`);
-    fetchUsers();
-  } catch (err) {
-    alert("Approval error: " + err.message);
-  }
+async function approveWithdrawal(username) {
+  await postAdminAction("approve_withdrawal", { username }, `✅ Withdrawal approved for ${username}`);
 }
 
 async function resetPassword(username) {
-  const token = localStorage.getItem("adminToken");
   const newPassword = prompt(`Enter new password for ${username}:`);
   if (!newPassword?.trim()) return;
 
+  await postAdminAction("reset-password", { target_username: username, new_password: newPassword }, "Password reset successfully");
+}
+
+async function postAdminAction(endpoint, body, successMsg) {
+  const token = localStorage.getItem("adminToken");
   try {
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/reset-password", {
+    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/admin/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         Authorization: `Bearer ${token}`
       },
-      body: new URLSearchParams({
-        target_username: username,
-        new_password: newPassword
-      })
+      body: new URLSearchParams(body)
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Reset failed");
+    if (!res.ok) throw new Error(data.detail || "Action failed");
 
-    alert("Password reset successfully.");
+    alert(data.message || successMsg);
+    fetchUsers();
   } catch (err) {
-    alert("Reset error: " + err.message);
+    alert("Error: " + err.message);
   }
 }
 
