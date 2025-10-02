@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - Mkoba Wallet</title>
+  <title>Mkoba Wallet - Login</title>
   <style>
     body {
-      background-color: gold;
+      background: linear-gradient(135deg, #28a745, #007bff);
       font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
@@ -14,18 +14,54 @@
       margin: 0;
     }
 
-    .login-container {
-      background-color: blue;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      width: 300px;
+    .login-box {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 340px;
       text-align: center;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     h2 {
-      color: white;
       margin-bottom: 20px;
+      color: #28a745;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 15px;
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      background: #f0f0f0;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .tabs button.active {
+      background: #28a745;
+      color: white;
+      border-radius: 8px 8px 0 0;
+    }
+
+    form {
+      display: none;
+    }
+
+    form.active {
+      display: block;
     }
 
     input {
@@ -33,26 +69,27 @@
       padding: 10px;
       margin: 10px 0;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 6px;
     }
 
-    button {
+    button[type="submit"] {
       width: 100%;
       padding: 10px;
-      background-color: darkorange;
+      background: #007bff;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
+      margin-top: 10px;
     }
 
-    button:hover {
-      background-color: orangered;
+    button[type="submit"]:hover {
+      background: #0056b3;
     }
 
     .error-message {
-      color: yellow;
+      color: red;
       font-size: 14px;
       margin-top: 10px;
     }
@@ -60,17 +97,97 @@
 </head>
 <body>
 
-  <div class="login-container">
-    <h2>Login</h2>
-    <form id="loginForm">
-      <input type="text" id="username" placeholder="Username" required><br>
-      <input type="password" id="password" placeholder="Password" required><br>
-      <button type="submit">Login</button>
-      <div class="error-message" id="errorMsg"></div>
-    </form>
+<div class="login-box">
+  <h2>Mkoba Wallet Login</h2>
+
+  <!-- Role Tabs -->
+  <div class="tabs">
+    <button id="userTab" class="active" onclick="showForm('user')">User</button>
+    <button id="adminTab" onclick="showForm('admin')">Admin</button>
   </div>
 
-  <!-- ✅ Use external JS -->
-  <script src="login.js"></script>
+  <!-- User Login -->
+  <form id="userForm" class="active">
+    <input type="text" id="username" placeholder="Username" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Login as User</button>
+    <div class="error-message" id="userError"></div>
+  </form>
+
+  <!-- Admin Login -->
+  <form id="adminForm">
+    <input type="text" id="adminUsername" placeholder="Admin Username" required><br>
+    <input type="password" id="adminPassword" placeholder="Admin Password" required><br>
+    <button type="submit">Login as Admin</button>
+    <div class="error-message" id="adminError"></div>
+  </form>
+</div>
+
+<script>
+  function showForm(role) {
+    document.getElementById('userForm').classList.remove('active');
+    document.getElementById('adminForm').classList.remove('active');
+    document.getElementById('userTab').classList.remove('active');
+    document.getElementById('adminTab').classList.remove('active');
+
+    if (role === 'user') {
+      document.getElementById('userForm').classList.add('active');
+      document.getElementById('userTab').classList.add('active');
+    } else {
+      document.getElementById('adminForm').classList.add('active');
+      document.getElementById('adminTab').classList.add('active');
+    }
+  }
+
+  // ✅ Handle User Login
+  document.getElementById('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('userError');
+
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Login failed");
+
+      localStorage.setItem("username", data.username || username);
+      localStorage.setItem("userToken", data.token);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      errorMsg.textContent = err.message;
+    }
+  });
+
+  // ✅ Handle Admin Login
+  document.getElementById('adminForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('adminUsername').value.trim();
+    const password = document.getElementById('adminPassword').value;
+    const errorMsg = document.getElementById('adminError');
+
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Admin login failed");
+
+      localStorage.setItem("adminToken", data.token);
+      window.location.href = "admin_dashboard.html";
+    } catch (err) {
+      errorMsg.textContent = err.message;
+    }
+  });
+</script>
+
 </body>
 </html>
