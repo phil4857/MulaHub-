@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Mkoba Wallet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #343a40;
+      color: #fff;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .logout-btn {
+      background: #dc3545;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .container {
+      padding: 1rem;
+    }
+    .user-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .user-card button {
+      margin: 0.25rem;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .approve-btn { background: #28a745; color: white; }
+    .withdraw-btn { background: #007bff; color: white; }
+    .reset-btn { background: #ffc107; color: black; }
+    .terminate-btn { background: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </header>
+  <div class="container">
+    <h2>Registered Users</h2>
+    <div id="userData">Loading users...</div>
+  </div>
+  <script src="admin.js"></script>
+</body>
+</html>
