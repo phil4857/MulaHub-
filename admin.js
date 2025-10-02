@@ -33,8 +33,12 @@ async function fetchUsers() {
         ? `<button onclick="approveInvestment('${user.username}')">Approve Investment</button>`
         : '';
 
-      const approveWithdrawalBtn = `<button onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>`;
+      const approveWithdrawalBtn = user.pending_withdrawal > 0
+        ? `<button onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>`
+        : '';
+
       const resetBtn = `<button onclick="resetPassword('${user.username}')">Reset Password</button>`;
+      const terminateBtn = `<button onclick="terminateUser('${user.username}')">❌ Terminate User</button>`;
 
       return `
         <div class="user-card">
@@ -46,7 +50,8 @@ async function fetchUsers() {
           <strong>Earnings:</strong> KES ${(user.earnings || 0).toFixed(2)}<br>
           <strong>Approved:</strong> ${user.approved ? '✅' : '❌'}<br>
           <strong>Investment Approved:</strong> ${user.investment_approved ? '✅' : '❌'}<br>
-          ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn}
+          <strong>Pending Withdrawal:</strong> KES ${(user.pending_withdrawal || 0).toFixed(2)}<br>
+          ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn} ${terminateBtn}
         </div>
       `;
     }).join('');
@@ -73,6 +78,11 @@ async function resetPassword(username) {
   if (!newPassword?.trim()) return;
 
   await postAdminAction("reset-password", { target_username: username, new_password: newPassword }, "Password reset successfully");
+}
+
+async function terminateUser(username) {
+  if (!confirm(`⚠️ Are you sure you want to TERMINATE user ${username}? This cannot be undone.`)) return;
+  await postAdminAction("terminate-user", { username }, `❌ User ${username} terminated`);
 }
 
 async function postAdminAction(endpoint, body, successMsg) {
