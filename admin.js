@@ -82,7 +82,7 @@ async function resetPassword(username) {
 
 async function terminateUser(username) {
   if (!confirm(`⚠️ Are you sure you want to TERMINATE user ${username}? This cannot be undone.`)) return;
-  await postAdminAction("terminate-user", { username }, `❌ User ${username} terminated`);
+  await postAdminAction("terminate_user", { username }, `❌ User ${username} terminated`);
 }
 
 async function postAdminAction(endpoint, body, successMsg) {
