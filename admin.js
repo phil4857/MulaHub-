@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('adminToken');
   if (!token) {
-    window.location.href = "admin_login.html"; // enforce login page
+    window.location.href = "admin_login.html"; // enforce login
     return;
   }
   fetchUsers();
@@ -18,7 +18,6 @@ async function fetchUsers() {
     if (!res.ok) throw new Error(users.detail || "Failed to fetch users");
 
     const userDataDiv = document.getElementById("userData");
-
     if (users.length === 0) {
       userDataDiv.innerHTML = "<p>No users found.</p>";
       return;
@@ -26,19 +25,19 @@ async function fetchUsers() {
 
     userDataDiv.innerHTML = users.map(user => {
       const approveUserBtn = !user.approved
-        ? `<button onclick="approveUser('${user.username}')">Approve User</button>`
+        ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve User</button>`
         : '';
 
       const approveInvestmentBtn = !user.investment_approved && user.total_invested > 0
-        ? `<button onclick="approveInvestment('${user.username}')">Approve Investment</button>`
+        ? `<button class="approve-btn" onclick="approveInvestment('${user.username}')">Approve Investment</button>`
         : '';
 
       const approveWithdrawalBtn = user.pending_withdrawal > 0
-        ? `<button onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>`
+        ? `<button class="withdraw-btn" onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>`
         : '';
 
-      const resetBtn = `<button onclick="resetPassword('${user.username}')">Reset Password</button>`;
-      const terminateBtn = `<button onclick="terminateUser('${user.username}')">❌ Terminate User</button>`;
+      const resetBtn = `<button class="reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>`;
+      const terminateBtn = `<button class="terminate-btn" onclick="terminateUser('${user.username}')">❌ Terminate</button>`;
 
       return `
         <div class="user-card">
@@ -82,7 +81,7 @@ async function resetPassword(username) {
 
 async function terminateUser(username) {
   if (!confirm(`⚠️ Are you sure you want to TERMINATE user ${username}? This cannot be undone.`)) return;
-  await postAdminAction("terminate_user", { username }, `❌ User ${username} terminated`);
+  await postAdminAction("terminate-user", { username }, `❌ User ${username} terminated`);
 }
 
 async function postAdminAction(endpoint, body, successMsg) {
