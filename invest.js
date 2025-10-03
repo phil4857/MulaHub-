@@ -1,81 +1,75 @@
-document.addEventListener('DOMContentLoaded', async () => {
-  const username = localStorage.getItem('username');
+// invest.js
+(async () => {
+  const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
+  const username = localStorage.getItem("username");
+  const amountEl = document.getElementById("amount");
+  const txRefEl = document.getElementById("txRef");
+  const msgEl = document.getElementById("investMessage");
+  const usernameDisplay = document.getElementById("usernameDisplay");
+  const balanceDisplay = document.getElementById("balanceDisplay");
+  const pendingInv = document.getElementById("pendingInv");
+  const paymentNumberEl = document.getElementById("paymentNumber");
 
   if (!username) {
-    alert('Please log in first.');
-    window.location.href = 'login.html';
+    alert("Please log in to invest.");
+    window.location.href = "login.html";
     return;
   }
 
-  // Load user dashboard data
-  await loadDashboard(username);
+  usernameDisplay.textContent = username;
 
-  // Handle new investment form
-  const investForm = document.getElementById('investForm');
-  if (investForm) {
-    investForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const amountInput = document.getElementById('amount');
-      const amount = parseFloat(amountInput.value);
-
-      if (isNaN(amount) || amount <= 0) {
-        alert("Please enter a valid investment amount greater than zero.");
-        return;
-      }
-
-      try {
-        const response = await fetch('https://repo-1red-jipate-bonus.onrender.com/invest', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username,
-            amount
-          })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.detail || "Investment failed. Try again.");
-        }
-
-        alert(result.message || "Investment successful.");
-        await loadDashboard(username); // refresh dashboard after investing
-
-      } catch (error) {
-        console.error("Investment error:", error);
-        alert(error.message || "An unexpected error occurred. Please try again.");
-      }
-    });
+  // load user dashboard info to show balance/pending
+  async function refreshUser() {
+    try {
+      const res = await fetch(`${API_BASE}/dashboard?username=${encodeURIComponent(username)}`);
+      if (!res.ok) throw new Error("Failed to load user info");
+      const data = await res.json();
+      balanceDisplay.textContent = Number(data.balance || 0).toFixed(2);
+      pendingInv.textContent = Number(data.investment_amount || 0).toFixed(2);
+      // platform info
+      paymentNumberEl.textContent = data.payment_number || paymentNumberEl.textContent;
+    } catch (err) {
+      console.warn("refresh user error", err);
+    }
   }
-});
 
-// Fetch and display dashboard info
-async function loadDashboard(username) {
-  try {
-    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${username}`);
-    const data = await res.json();
+  await refreshUser();
 
-    if (!res.ok) throw new Error(data.detail || "Failed to load dashboard");
+  document.getElementById("investForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msgEl.textContent = "";
 
-    const dashDiv = document.getElementById('dashboardData');
-    if (!dashDiv) return;
+    const amount = Number(amountEl.value);
+    const txRef = (txRefEl.value || "").trim() || `tx-${Date.now()}`;
 
-    dashDiv.innerHTML = `
-      <div class="card">
-        <h3>Welcome, ${data.username}</h3>
-        <p><strong>Balance:</strong> KES ${data.balance.toFixed(2)}</p>
-        <p><strong>Total Earnings:</strong> KES ${data.earnings.toFixed(2)}</p>
-        <p><strong>Investment Amount:</strong> KES ${data.investment_amount}</p>
-        <p><strong>Bonus Days Remaining:</strong> ${data.bonus_days_remaining}</p>
-        <p><strong>Bonus Status:</strong> ${data.bonus_message}</p>
-      </div>
-    `;
-  } catch (err) {
-    console.error("Dashboard error:", err);
-    alert("Failed to load dashboard. Please try again.");
-  }
-}
+    if (!amount || amount < 500) {
+      msgEl.textContent = "Please enter a valid amount (minimum KES 500).";
+      return;
+    }
+
+    msgEl.textContent = "Submitting investment…";
+
+    try {
+      const res = await fetch(`${API_BASE}/invest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, amount, transaction_ref: txRef })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.message || "Investment failed");
+      msgEl.textContent = data.message || "Investment submitted. Awaiting admin approval.";
+      amountEl.value = "";
+      txRefEl.value = "";
+      await refreshUser();
+    } catch (err) {
+      console.error("investment error", err);
+      msgEl.textContent = err.message || "Error submitting investment. Try again.";
+    }
+  });
+
+  document.getElementById("cancelBtn").addEventListener("click", () => {
+    amountEl.value = "";
+    txRefEl.value = "";
+    msgEl.textContent = "";
+  });
+})();
