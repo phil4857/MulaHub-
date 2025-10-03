@@ -126,7 +126,6 @@
 
         const data = await res.json();
 
-        // Update platform title + payment number dynamically
         document.title = `Admin Dashboard - ${data.platform}`;
         document.getElementById("dashboardTitle").textContent = `Admin Dashboard - ${data.platform}`;
         document.getElementById("paymentInfo").innerHTML =
@@ -166,6 +165,7 @@
 
           const approveWithdrawalBtn = `<button onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>`;
           const resetBtn = `<button onclick="resetPassword('${user.username}')">Reset Password</button>`;
+          const terminateBtn = `<button onclick="terminateUser('${user.username}')">Terminate User</button>`;
 
           return `
             <div class="user-card">
@@ -177,7 +177,7 @@
               <strong>Investment Approved:</strong> ${user.investment_approved ? '✅' : '❌'}<br>
               <strong>Balance:</strong> KES ${(user.balance || 0).toFixed(2)}<br>
               <strong>Earnings:</strong> KES ${(user.earnings || 0).toFixed(2)}<br>
-              ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn}
+              ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn} ${terminateBtn}
             </div>
           `;
         }).join('');
@@ -205,6 +205,11 @@
       await postAdminAction("reset-password", { target_username: username, new_password: newPassword }, "Password reset successfully");
     }
 
+    async function terminateUser(username) {
+      if (!confirm(`Are you sure you want to terminate ${username}? This action is irreversible.`)) return;
+      await postAdminAction("terminate_user", { username }, `User ${username} terminated successfully`);
+    }
+
     async function postAdminAction(endpoint, body, successMsg) {
       const token = localStorage.getItem("adminToken");
       try {
@@ -229,6 +234,7 @@
 
     function logout() {
       localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUsername"); // also clear username
       window.location.href = "login.html";
     }
   </script>
