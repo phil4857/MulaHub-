@@ -1,263 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Dashboard - Mkoba Wallet</title>
   <style>
-    :root{
-      --bg:#f5f5dc;
-      --card:#fff;
-      --accent:#003366;
-      --positive:#28a745;
-      --danger:#dc3545;
-    }
-    body{
+    body {
       font-family: Arial, sans-serif;
-      background: var(--bg);
-      margin:0;
-      padding:20px;
-      color:#222;
+      background: #f4fff7;
+      margin: 0;
+      padding: 0;
     }
-    .container{
-      max-width:720px;
-      margin:20px auto;
-      background:var(--card);
-      border-radius:10px;
-      padding:18px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+
+    header {
+      background: #28a745;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
     }
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:12px;
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    header h1{ margin:0; font-size:20px; color:var(--accent); }
-    .payment-banner{
-      background:#eef6ff;
-      border:1px solid #d6e9ff;
-      padding:10px;
-      border-radius:8px;
-      text-align:center;
-      margin-bottom:14px;
-      font-weight:600;
-      color:var(--accent);
+
+    h2 {
+      color: #28a745;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 5px;
     }
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-      gap:12px;
+
+    .info {
+      margin-bottom: 15px;
+      padding: 15px;
+      background: #f0f8f0;
+      border-left: 5px solid #28a745;
     }
-    .card{
-      padding:12px;
-      border-radius:8px;
-      background:#fcfeff;
-      border:1px solid #eee;
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
-    .card h3{ margin:0 0 8px 0; font-size:14px; color:var(--accent); }
-    .muted{ color:#666; font-size:13px; }
-    .big{ font-size:18px; font-weight:700; color:#111; }
-    button{
-      padding:10px 12px;
-      border-radius:8px;
-      border:none;
-      cursor:pointer;
-      background:var(--accent);
-      color:white;
-      font-weight:600;
-      margin-top:10px;
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
     }
-    button[disabled]{ background:#ccc; cursor:not-allowed; }
-    .actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-    .secondary{ background:#6c757d; }
-    .danger{ background:var(--danger); }
-    .note{ font-size:13px; color:#444; margin-top:8px; }
-    footer{ text-align:center; margin-top:18px; color:#666; font-size:13px; }
-    a.referral{ color:var(--accent); word-break:break-all; }
-    .error{ color:var(--danger); font-weight:600; }
-    .success{ color:var(--positive); font-weight:700; }
+
+    .invest-btn { background: #28a745; color: white; }
+    .withdraw-btn { background: #007bff; color: white; }
+    .bonus-btn { background: #ff9800; color: white; }
+    .logout-btn { background: #dc3545; color: white; }
+
+    button:hover { opacity: 0.85; }
+
+    .form-section {
+      margin-top: 20px;
+      background: #fafafa;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    input {
+      padding: 8px;
+      margin: 5px 0;
+      width: 90%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
-  <div class="container" id="app">
-    <header>
-      <h1 id="platformName">Mkoba Wallet</h1>
-      <div>
-        <small id="minInvestNote" class="muted">Minimum investment: KES 500</small>
-      </div>
-    </header>
 
-    <div class="payment-banner" id="paymentBanner">
-      Pay Investment Fee To: <strong id="paymentNumber">0739075065</strong>
-    </div>
+<header>💵 Mkoba Wallet - User Dashboard</header>
 
-    <div class="grid">
-      <div class="card">
-        <h3>Account</h3>
-        <div class="muted">Username</div>
-        <div class="big" id="usernameDisplay">—</div>
-
-        <div class="muted" style="margin-top:10px">Referral link</div>
-        <a id="referralLink" class="referral" href="#">—</a>
-      </div>
-
-      <div class="card">
-        <h3>Financials</h3>
-        <div class="muted">Balance</div>
-        <div class="big" id="balanceDisplay">KES 0.00</div>
-
-        <div class="muted" style="margin-top:10px">Total earnings</div>
-        <div id="earningsDisplay" class="big">KES 0.00</div>
-
-        <div class="muted" style="margin-top:10px">Investment</div>
-        <div id="investmentAmount" class="big">KES 0</div>
-      </div>
-
-      <div class="card">
-        <h3>Daily Bonus</h3>
-        <div class="muted">Last bonus time</div>
-        <div id="lastBonus">--</div>
-
-        <div class="muted" style="margin-top:8px">Status</div>
-        <div id="bonusMessage">--</div>
-
-        <div class="muted" style="margin-top:8px">Days remaining</div>
-        <div id="daysLeft">0</div>
-
-        <div class="actions">
-          <button id="grabBonusBtn">Grab Bonus</button>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px" class="card">
-      <div class="actions">
-        <button onclick="location.href='invest.html'">💰 Invest</button>
-        <button onclick="location.href='withdraw.html'">📤 Withdraw</button>
-        <button onclick="logout()" class="secondary">🚪 Logout</button>
-        <button id="adminPanelBtn" style="display:none" class="danger" onclick="location.href='admin.html'">Admin Panel</button>
-      </div>
-
-      <div class="note" style="margin-top:12px">
-        Payment number above should be used when sending investment fees. After sending, use the transaction reference on the Invest form.
-      </div>
-
-      <div id="message" class="success"></div>
-      <div id="errorMsg" class="error"></div>
-    </div>
-
-    <footer>
-      &copy; <span id="year"></span> <span id="platformFooter">Mkoba Wallet</span>
-    </footer>
+<div class="container">
+  <h2>Welcome, <span id="usernameDisplay"></span></h2>
+  <div class="info">
+    <p><strong>Balance:</strong> KES <span id="balanceDisplay">0.00</span></p>
+    <p><strong>Total Earnings:</strong> KES <span id="earningsDisplay">0.00</span></p>
+    <p><strong>Referral Link:</strong> 
+      <input type="text" id="referralLink" readonly style="width:80%"> 
+      <button onclick="copyReferral()">📋 Copy</button>
+    </p>
+    <p><strong>Payment Number:</strong> <span id="payNumber">0739075065</span></p>
   </div>
 
-  <script>
-    (function(){
-      const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
-      const username = localStorage.getItem("username");
-      const isAdmin = localStorage.getItem("is_admin") === "true";
+  <div class="form-section">
+    <h3>💰 Make Investment</h3>
+    <input type="number" id="amount" placeholder="Enter amount (min 500)">
+    <input type="text" id="tx_ref" placeholder="Transaction Reference (optional)">
+    <button class="invest-btn" onclick="makeInvestment()">Invest</button>
+  </div>
 
-      const el = id => document.getElementById(id);
-      el('year').textContent = new Date().getFullYear();
+  <div class="form-section">
+    <h3>📤 Request Withdrawal</h3>
+    <input type="number" id="withdrawAmount" placeholder="Enter amount">
+    <button class="withdraw-btn" onclick="requestWithdrawal()">Request Withdrawal</button>
+  </div>
 
-      if (!username) {
-        // Not logged in — send to login
-        window.location.href = "login.html";
-        return;
-      }
+  <div class="form-section">
+    <h3>🎁 Daily Bonus</h3>
+    <button class="bonus-btn" onclick="grabBonus()">Grab Bonus</button>
+    <p id="bonusStatus">Status: Checking...</p>
+  </div>
 
-      // Fill username immediately
-      el('usernameDisplay').textContent = username;
+  <div class="actions">
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
 
-      if (isAdmin) {
-        el('adminPanelBtn').style.display = 'inline-block';
-      }
+<script>
+  const username = localStorage.getItem("username");
+  if (!username) {
+    alert("Please log in first.");
+    window.location.href = "login.html";
+  }
 
-      // Fetch dashboard data from backend (includes payment number and platform)
-      async function loadDashboard(){
-        try {
-          const res = await fetch(`${API_BASE}/dashboard?username=${encodeURIComponent(username)}`);
-          if (!res.ok) {
-            const body = await res.json().catch(()=>({detail:'Server error'}));
-            throw new Error(body.detail || body.message || 'Failed to load dashboard');
-          }
-          const data = await res.json();
+  document.getElementById("usernameDisplay").textContent = username;
+  document.getElementById("referralLink").value = 
+    `https://mkobawallet.com/register.html?ref=${username}`;
 
-          // Platform + Payment number (fallbacks included)
-          const platform = data.platform || 'Mkoba Wallet';
-          const paymentNumber = data.payment_number || data.paymentNumber || '0739075065';
+  async function loadUserData() {
+    try {
+      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${username}`);
+      if (!res.ok) throw new Error("Failed to fetch user data");
+      const user = await res.json();
+      document.getElementById("balanceDisplay").textContent = parseFloat(user.balance || 0).toFixed(2);
+      document.getElementById("earningsDisplay").textContent = parseFloat(user.earnings || 0).toFixed(2);
+      document.getElementById("bonusStatus").textContent = user.bonus_message || "Unknown";
+    } catch (err) {
+      alert("Error loading dashboard: " + err.message);
+    }
+  }
 
-          el('platformName').textContent = platform;
-          el('platformFooter').textContent = platform;
-          el('paymentNumber').textContent = paymentNumber;
-          el('paymentBanner').style.display = 'block';
+  async function makeInvestment() {
+    const amount = document.getElementById("amount").value;
+    const tx_ref = document.getElementById("tx_ref").value;
+    if (!amount || amount < 500) {
+      return alert("Minimum investment is KES 500.");
+    }
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, amount, transaction_ref: tx_ref })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail);
+      alert(data.message);
+      loadUserData();
+    } catch (err) {
+      alert("Investment failed: " + err.message);
+    }
+  }
 
-          // Referral link: use current origin unless server returns something else
-          const referralUrl = `${location.origin}/register.html?ref=${encodeURIComponent(username)}`;
-          el('referralLink').href = referralUrl;
-          el('referralLink').textContent = referralUrl;
+  async function requestWithdrawal() {
+    const amount = document.getElementById("withdrawAmount").value;
+    if (!amount || amount <= 0) return alert("Enter valid amount.");
+    try {
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+      formData.append("amount", amount);
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail);
+      alert(data.message);
+      loadUserData();
+    } catch (err) {
+      alert("Withdrawal failed: " + err.message);
+    }
+  }
 
-          el('balanceDisplay').textContent = 'KES ' + (Number(data.balance || 0)).toFixed(2);
-          el('earningsDisplay').textContent = 'KES ' + (Number(data.earnings || 0)).toFixed(2);
-          el('investmentAmount').textContent = 'KES ' + (Number(data.investment_amount || 0)).toFixed(2);
+  async function grabBonus() {
+    try {
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/bonus/grab", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail);
+      alert(data.message);
+      loadUserData();
+    } catch (err) {
+      alert("Bonus grab failed: " + err.message);
+    }
+  }
 
-          el('lastBonus').textContent = data.last_bonus_time ? new Date(data.last_bonus_time).toLocaleString() : '--';
-          el('bonusMessage').textContent = data.bonus_message || (data.bonus_available ? 'Bonus available' : 'No approved investment');
-          el('daysLeft').textContent = data.bonus_days_remaining ?? 0;
+  function copyReferral() {
+    const input = document.getElementById("referralLink");
+    input.select();
+    document.execCommand("copy");
+    alert("Referral link copied!");
+  }
 
-          // Enable/disable grab button
-          const grabBtn = el('grabBonusBtn');
-          grabBtn.disabled = !data.bonus_available;
-          grabBtn.textContent = data.bonus_available ? 'Grab Bonus' : 'Grab Bonus (unavailable)';
+  function logout() {
+    localStorage.removeItem("username");
+    window.location.href = "login.html";
+  }
 
-        } catch (err) {
-          el('errorMsg').textContent = err.message || 'Could not load dashboard';
-        }
-      }
+  loadUserData();
+</script>
 
-      // Grab bonus action
-      async function grabBonus(){
-        el('message').textContent = '';
-        el('errorMsg').textContent = '';
-        try {
-          const res = await fetch(`${API_BASE}/bonus/grab`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ username })
-          });
-          const body = await res.json().catch(()=>({ detail: 'Invalid response' }));
-          if (!res.ok) throw new Error(body.detail || body.message || 'Bonus grab failed');
-
-          el('message').textContent = body.message || `Bonus credited: KES ${Number(body.bonus || 0).toFixed(2)}`;
-          // Update balance and days
-          if (typeof body.balance !== 'undefined') {
-            el('balanceDisplay').textContent = 'KES ' + Number(body.balance).toFixed(2);
-          }
-          el('daysLeft').textContent = body.days_remaining ?? el('daysLeft').textContent;
-          el('grabBonusBtn').disabled = true;
-        } catch (err) {
-          el('errorMsg').textContent = err.message || 'Could not grab bonus';
-        }
-      }
-
-      // Logout
-      window.logout = function(){
-        localStorage.removeItem('username');
-        localStorage.removeItem('password');
-        localStorage.removeItem('is_admin');
-        window.location.href = 'login.html';
-      };
-
-      // Wire events
-      document.addEventListener('DOMContentLoaded', loadDashboard); // extra safety
-      document.getElementById('grabBonusBtn').addEventListener('click', grabBonus);
-
-      // Initial load
-      loadDashboard();
-
-    })();
-  </script>
 </body>
 </html>
