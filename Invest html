@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Invest — Mkoba Wallet</title>
+  <style>
+    :root{--accent:#a25c00}
+    body{font-family:Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#f0f9f7 0%,#fff 100%);margin:0;padding:30px;display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .panel{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:26px;box-shadow:0 12px 30px rgba(3,3,3,0.06)}
+    .row{display:flex;gap:18px;flex-wrap:wrap}
+    .left{flex:1;min-width:260px}
+    .right{flex:1;min-width:260px}
+    h2{color:var(--accent);margin:0 0 8px}
+    .info{background:#f8faf9;border-radius:10px;padding:12px;margin-bottom:12px}
+    input[type="number"]{width:100%;padding:12px;border-radius:10px;border:1px solid #e5e7eb;font-size:16px}
+    button{background:var(--accent);color:#fff;border:none;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:700}
+    .small{font-size:13px;color:#666}
+    .note{margin-top:10px;color:#2d3748}
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <div class="row">
+      <div class="left">
+        <h2>Invest with Mkoba Wallet</h2>
+        <p class="small">Send your investment to the payment number shown and enter the transaction reference below.</p>
+
+        <div class="info">
+          <div><strong>Platform:</strong> Mkoba Wallet</div>
+          <div><strong>Payment Number:</strong> <span id="paymentNumber">0739075065</span></div>
+          <div class="small">Minimum investment: KES 500</div>
+        </div>
+
+        <form id="investForm">
+          <label>Investment amount (KES)</label>
+          <input id="amount" name="amount" type="number" min="500" step="1" required />
+
+          <label style="margin-top:10px">Transaction reference (MPESA/ID)</label>
+          <input id="txRef" name="txRef" placeholder="e.g. AB12CD34" />
+
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button type="submit">Submit Investment</button>
+            <button type="button" id="cancelBtn" style="background:#f3f4f6;color:#111">Cancel</button>
+          </div>
+
+          <p id="investMessage" class="note"></p>
+        </form>
+      </div>
+
+      <div class="right">
+        <h3>Quick Tips</h3>
+        <ul class="small">
+          <li>Make sure you are logged in before submitting an investment.</li>
+          <li>Use the exact MPESA transaction reference in the form so admin can approve faster.</li>
+          <li>Admin will credit your account once the investment is approved.</li>
+        </ul>
+
+        <div style="margin-top:18px">
+          <h4>Your Account</h4>
+          <div class="info">
+            <div><strong>Username:</strong> <span id="usernameDisplay">—</span></div>
+            <div><strong>Balance:</strong> KES <span id="balanceDisplay">0.00</span></div>
+            <div><strong>Pending Investment:</strong> KES <span id="pendingInv">0.00</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="invest.js"></script>
+</body>
+</html>
