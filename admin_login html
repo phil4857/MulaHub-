@@ -12,6 +12,7 @@
       align-items: center;
       height: 100vh;
       background: #f4f4f9;
+      margin: 0;
     }
     .login-container {
       background: white;
@@ -63,7 +64,46 @@
     </form>
   </div>
 
-  <!-- Link JS -->
-  <script src="admin_login.js"></script>
+  <script>
+    (() => {
+      const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
+
+      document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const errorDiv = document.getElementById("errorMessage");
+
+        if (!username || !password) {
+          errorDiv.textContent = "Please enter both username and password.";
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/admin/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ username, password })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.detail || data.message || "Login failed");
+          }
+
+          // Save admin token + username
+          localStorage.setItem("adminToken", data.access_token);
+          localStorage.setItem("adminUsername", username);
+
+          // Redirect to dashboard
+          window.location.href = "admin_dashboard.html";
+        } catch (err) {
+          errorDiv.textContent = err.message;
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
