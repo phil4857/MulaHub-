@@ -1,5 +1,5 @@
 // admin_dashboard.js
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("adminToken");
 
   if (!token) {
@@ -8,10 +8,36 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // 🔒 Validate token with backend before fetching users
+  const isValid = await validateToken(token);
+  if (!isValid) {
+    alert("Session expired or invalid. Please log in again.");
+    localStorage.removeItem("adminToken");
+    window.location.href = "admin_login.html";
+    return;
+  }
+
   fetchUsers();
 });
 
-// Fetch all users and display
+// ---------------- Token Validation ----------------
+async function validateToken(token) {
+  try {
+    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/users", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // If unauthorized, backend will respond 401/403
+    if (!res.ok) return false;
+
+    return true;
+  } catch (err) {
+    console.error("Token validation error:", err);
+    return false;
+  }
+}
+
+// ---------------- Fetch all users and display ----------------
 async function fetchUsers() {
   const token = localStorage.getItem("adminToken");
   const userDataDiv = document.getElementById("userData");
@@ -119,6 +145,9 @@ async function postAdminAction(endpoint, body, successMsg) {
     fetchUsers(); // Refresh user list
   } catch (err) {
     alert("❌ Error: " + err.message);
+    if (err.message.includes("Invalid admin token") || err.message.includes("Unauthorized")) {
+      logout();
+    }
   }
 }
 
