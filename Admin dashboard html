@@ -108,6 +108,7 @@
     </section>
   </div>
 
-  <script src="admin.js"></script>
+  <!-- Corrected script reference -->
+  <script src="admin_dashboard.js"></script>
 </body>
 </html>
