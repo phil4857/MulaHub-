@@ -1,6 +1,5 @@
-// admin.js
 (() => {
-  const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
+  const API_BASE = "https://repo-1red-jipate-bonus-6.onrender.com";
 
   // ---------------- PLATFORM INFO ----------------
   async function fetchPlatformInfo() {
@@ -31,6 +30,21 @@
     return token;
   }
 
+  // ---------------- TOKEN VALIDATION ----------------
+  async function validateAdminToken() {
+    const token = localStorage.getItem("adminToken");
+    if (!token) return false;
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/validate`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
   // ---------------- FETCH USERS ----------------
   async function fetchUsers() {
     const token = await requireAuth();
@@ -49,7 +63,6 @@
         return;
       }
 
-      // Optional: filter with search
       const search = (document.getElementById("searchInput")?.value || "").toLowerCase();
 
       container.innerHTML = data
@@ -111,7 +124,7 @@
     }
   }
 
-  // Expose functions globally
+  // Expose globally
   window.approveUser = (username) =>
     confirm(`Approve user ${username}?`) &&
     postAdminAction("approve_user", { username }, `User ${username} approved`);
@@ -144,6 +157,14 @@
 
   // ---------------- INIT ----------------
   (async function init() {
+    const isValid = await validateAdminToken();
+    if (!isValid) {
+      alert("⚠️ Unauthorized access. Please log in as admin first.");
+      localStorage.removeItem("adminToken");
+      window.location.href = "admin_login.html";
+      return;
+    }
+
     const adminUser = localStorage.getItem("adminUsername");
     if (adminUser && document.getElementById("adminWelcome")) {
       document.getElementById("adminWelcome").textContent = `Signed in as ${adminUser}`;
@@ -151,7 +172,6 @@
     await fetchPlatformInfo();
     await fetchUsers();
 
-    // Search binding
     const searchInput = document.getElementById("searchInput");
     if (searchInput) {
       searchInput.addEventListener("input", fetchUsers);
