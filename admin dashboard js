@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 🔒 Validate token with backend before fetching users
+  // 🔒 Validate token before loading
   const isValid = await validateToken(token);
   if (!isValid) {
     alert("Session expired or invalid. Please log in again.");
@@ -23,13 +23,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ---------------- Token Validation ----------------
 async function validateToken(token) {
   try {
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/users", {
+    const res = await fetch("https://repo-1red-jipate-bonus-6.onrender.com/admin/users", {
       headers: { Authorization: `Bearer ${token}` }
     });
 
     // If unauthorized, backend will respond 401/403
     if (!res.ok) return false;
-
     return true;
   } catch (err) {
     console.error("Token validation error:", err);
@@ -44,7 +43,7 @@ async function fetchUsers() {
   userDataDiv.innerHTML = "<p>Loading users...</p>";
 
   try {
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/users", {
+    const res = await fetch("https://repo-1red-jipate-bonus-6.onrender.com/admin/users", {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -59,11 +58,11 @@ async function fetchUsers() {
     userDataDiv.innerHTML = users.map(user => {
       const approveUserBtn = !user.approved
         ? `<button onclick="approveUser('${user.username}')">✅ Approve User</button>`
-        : `<span style="color:green;">User Approved</span>`;
+        : `<span style='color:green;'>User Approved</span>`;
 
       const approveInvestmentBtn = !user.investment_approved && user.total_invested > 0
         ? `<button onclick="approveInvestment('${user.username}')">💰 Approve Investment</button>`
-        : (user.total_invested > 0 ? `<span style="color:green;">Investment Approved</span>` : "");
+        : (user.total_invested > 0 ? `<span style='color:green;'>Investment Approved</span>` : "");
 
       const approveWithdrawalBtn = user.pending_withdrawal > 0
         ? `<button onclick="approveWithdrawal('${user.username}')">📤 Approve Withdrawal</button>`
@@ -91,7 +90,7 @@ async function fetchUsers() {
     }).join('');
   } catch (err) {
     console.error("User fetch error:", err);
-    userDataDiv.innerHTML = `<p style="color:red;">❌ Failed to load users: ${err.message}</p>`;
+    userDataDiv.innerHTML = `<p style='color:red;'>❌ Failed to load users: ${err.message}</p>`;
   }
 }
 
@@ -129,7 +128,7 @@ async function terminateUser(username) {
 async function postAdminAction(endpoint, body, successMsg) {
   const token = localStorage.getItem("adminToken");
   try {
-    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/admin/${endpoint}`, {
+    const res = await fetch(`https://repo-1red-jipate-bonus-6.onrender.com/admin/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
