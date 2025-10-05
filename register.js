@@ -30,12 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append("username", username);
     formData.append("number", phone);
     formData.append("password", password);
-    if (referral) {
-      formData.append("referral", referral);
-    }
+    if (referral) formData.append("referral", referral);
 
     try {
-      const res = await fetch("http://localhost:8000/register", {
+      const res = await fetch("https://repo-1red-jipate-bonus-6.onrender.com/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
@@ -51,8 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       alert(data.message || "Registered successfully!");
       localStorage.setItem("username", username);
-      window.location.href = "/dashboard.html";
-
+      window.location.href = "dashboard.html";
     } catch (err) {
       console.error("Registration error:", err);
       alert(err.message || "An error occurred. Please try again.");
