@@ -2,13 +2,14 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("adminToken");
 
+  // Redirect if no token
   if (!token) {
     alert("Please log in as admin first.");
     window.location.href = "admin_login.html";
     return;
   }
 
-  // 🔒 Validate token before loading
+  // 🔒 Validate token with backend
   const isValid = await validateToken(token);
   if (!isValid) {
     alert("Session expired or invalid. Please log in again.");
@@ -17,18 +18,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // ✅ If token valid, load data
   fetchUsers();
 });
 
 // ---------------- Token Validation ----------------
 async function validateToken(token) {
   try {
-    const res = await fetch("https://repo-1red-jipate-bonus-6.onrender.com/admin/users", {
+    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/users", {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    // If unauthorized, backend will respond 401/403
     if (!res.ok) return false;
+
+    const data = await res.json();
+
+    // Only admin tokens can access this endpoint successfully
+    if (!Array.isArray(data)) return false;
+
     return true;
   } catch (err) {
     console.error("Token validation error:", err);
@@ -43,7 +50,7 @@ async function fetchUsers() {
   userDataDiv.innerHTML = "<p>Loading users...</p>";
 
   try {
-    const res = await fetch("https://repo-1red-jipate-bonus-6.onrender.com/admin/users", {
+    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/users", {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -128,7 +135,7 @@ async function terminateUser(username) {
 async function postAdminAction(endpoint, body, successMsg) {
   const token = localStorage.getItem("adminToken");
   try {
-    const res = await fetch(`https://repo-1red-jipate-bonus-6.onrender.com/admin/${endpoint}`, {
+    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/admin/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
