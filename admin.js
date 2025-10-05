@@ -1,27 +1,8 @@
 (() => {
-  const API_BASE = "https://repo-1red-jipate-bonus-6.onrender.com";
-
-  // ---------------- PLATFORM INFO ----------------
-  async function fetchPlatformInfo() {
-    try {
-      const res = await fetch(`${API_BASE}/platform/info`);
-      if (!res.ok) throw new Error("Failed to fetch platform info");
-      const data = await res.json();
-
-      document.getElementById("paymentBanner").textContent =
-        `💳 Pay Investment Fee To: ${data.platform} ${data.payment_number}`;
-      document.title = `Admin Dashboard - ${data.platform}`;
-      document.getElementById("dashboardTitle").textContent =
-        `Admin Dashboard - ${data.platform}`;
-    } catch (err) {
-      console.warn("Platform info error:", err);
-      document.getElementById("paymentBanner").textContent =
-        "💳 Pay Investment Fee To: Mkoba Wallet 0739075065 (default)";
-    }
-  }
+  const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
 
   // ---------------- AUTH CHECK ----------------
-  async function requireAuth() {
+  function requireAuth() {
     const token = localStorage.getItem("adminToken");
     if (!token) {
       window.location.href = "admin_login.html";
@@ -45,15 +26,34 @@
     }
   }
 
+  // ---------------- PLATFORM INFO ----------------
+  async function fetchPlatformInfo() {
+    try {
+      const res = await fetch(`${API_BASE}/platform/info`);
+      if (!res.ok) throw new Error("Failed to fetch platform info");
+      const data = await res.json();
+
+      document.getElementById("paymentBanner").textContent =
+        `💳 Pay Investment Fee To: ${data.platform} ${data.payment_number}`;
+      document.title = `Admin Dashboard - ${data.platform}`;
+      document.getElementById("dashboardTitle").textContent =
+        `Admin Dashboard - ${data.platform}`;
+    } catch (err) {
+      console.warn("Platform info error:", err);
+      document.getElementById("paymentBanner").textContent =
+        "💳 Pay Investment Fee To: Mkoba Wallet 0739075065 (default)";
+    }
+  }
+
   // ---------------- FETCH USERS ----------------
   async function fetchUsers() {
-    const token = await requireAuth();
+    const token = requireAuth();
     const container = document.getElementById("userData");
     container.innerHTML = "Loading users...";
 
     try {
       const res = await fetch(`${API_BASE}/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
 
@@ -69,7 +69,7 @@
         .filter(u => !search || (u.username || "").toLowerCase().includes(search))
         .map(u => {
           const approveBtn = !u.approved
-            ? `<button class="btn-approve" onclick="approveUser('${u.username}')">Approve User</button>`
+            ? `<button class="btn-approve" onclick="approveUser('${u.username}')">Approve</button>`
             : "";
           const investBtn = (!u.investment_approved && u.total_invested > 0)
             ? `<button class="btn-invest" onclick="approveInvestment('${u.username}')">Approve Investment</button>`
@@ -78,7 +78,7 @@
             ? `<button class="btn-withdraw" onclick="approveWithdrawal('${u.username}')">Approve Withdrawal</button>`
             : "";
           const resetBtn = `<button class="btn-reset" onclick="resetPassword('${u.username}')">Reset Password</button>`;
-          const termBtn = `<button class="btn-term" onclick="terminateUser('${u.username}')">Terminate User</button>`;
+          const termBtn = `<button class="btn-term" onclick="terminateUser('${u.username}')">Terminate</button>`;
 
           return `
             <article class="user-card">
@@ -103,17 +103,17 @@
     }
   }
 
-  // ---------------- ACTIONS ----------------
+  // ---------------- ADMIN ACTIONS ----------------
   async function postAdminAction(endpoint, body, successMsg) {
     try {
-      const token = await requireAuth();
+      const token = requireAuth();
       const res = await fetch(`${API_BASE}/admin/${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: new URLSearchParams(body)
+        body: new URLSearchParams(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.message || "Action failed");
@@ -124,18 +124,18 @@
     }
   }
 
-  // Expose globally
+  // ---------------- GLOBAL FUNCTIONS ----------------
   window.approveUser = (username) =>
     confirm(`Approve user ${username}?`) &&
-    postAdminAction("approve_user", { username }, `User ${username} approved`);
+    postAdminAction("approve_user", { username }, `User ${username} approved.`);
 
   window.approveInvestment = (username) =>
     confirm(`Approve investment for ${username}?`) &&
-    postAdminAction("approve_investment", { username }, `Investment approved for ${username}`);
+    postAdminAction("approve_investment", { username }, `Investment approved for ${username}.`);
 
   window.approveWithdrawal = (username) =>
     confirm(`Approve withdrawal for ${username}?`) &&
-    postAdminAction("approve_withdrawal", { username }, `Withdrawal approved for ${username}`);
+    postAdminAction("approve_withdrawal", { username }, `Withdrawal approved for ${username}.`);
 
   window.resetPassword = (username) => {
     const newPassword = prompt(`Enter new password for ${username}:`);
@@ -146,17 +146,18 @@
 
   window.terminateUser = async (username) => {
     if (!confirm(`⚠️ Terminate user ${username}? This cannot be undone.`)) return;
-    await postAdminAction("terminate_user", { username }, `User ${username} terminated`);
+    await postAdminAction("terminate_user", { username }, `User ${username} terminated.`);
   };
 
-  // ---------------- LOGOUT ----------------
   window.logout = () => {
     localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUsername");
     window.location.href = "admin_login.html";
   };
 
   // ---------------- INIT ----------------
   (async function init() {
+    // ✅ Strict early validation before anything renders
     const isValid = await validateAdminToken();
     if (!isValid) {
       alert("⚠️ Unauthorized access. Please log in as admin first.");
@@ -165,16 +166,18 @@
       return;
     }
 
+    // ✅ Setup admin info
     const adminUser = localStorage.getItem("adminUsername");
     if (adminUser && document.getElementById("adminWelcome")) {
       document.getElementById("adminWelcome").textContent = `Signed in as ${adminUser}`;
     }
+
+    // ✅ Load core data
     await fetchPlatformInfo();
     await fetchUsers();
 
+    // ✅ Enable live search
     const searchInput = document.getElementById("searchInput");
-    if (searchInput) {
-      searchInput.addEventListener("input", fetchUsers);
-    }
+    if (searchInput) searchInput.addEventListener("input", fetchUsers);
   })();
 })();
