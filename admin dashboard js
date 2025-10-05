@@ -2,24 +2,24 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("adminToken");
 
-  // Redirect if no token
+  // 🔒 Redirect if no token
   if (!token) {
-    alert("Please log in as admin first.");
     window.location.href = "admin_login.html";
     return;
   }
 
-  // 🔒 Validate token with backend
+  // Validate token before showing anything
   const isValid = await validateToken(token);
   if (!isValid) {
     alert("Session expired or invalid. Please log in again.");
     localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUsername");
     window.location.href = "admin_login.html";
     return;
   }
 
-  // ✅ If token valid, load data
-  fetchUsers();
+  // ✅ Load users only if token is valid
+  await fetchUsers();
 });
 
 // ---------------- Token Validation ----------------
@@ -32,21 +32,18 @@ async function validateToken(token) {
     if (!res.ok) return false;
 
     const data = await res.json();
-
-    // Only admin tokens can access this endpoint successfully
-    if (!Array.isArray(data)) return false;
-
-    return true;
+    return Array.isArray(data);
   } catch (err) {
     console.error("Token validation error:", err);
     return false;
   }
 }
 
-// ---------------- Fetch all users and display ----------------
+// ---------------- Fetch Users ----------------
 async function fetchUsers() {
   const token = localStorage.getItem("adminToken");
   const userDataDiv = document.getElementById("userData");
+
   userDataDiv.innerHTML = "<p>Loading users...</p>";
 
   try {
@@ -62,76 +59,73 @@ async function fetchUsers() {
       return;
     }
 
-    userDataDiv.innerHTML = users.map(user => {
-      const approveUserBtn = !user.approved
-        ? `<button onclick="approveUser('${user.username}')">✅ Approve User</button>`
-        : `<span style='color:green;'>User Approved</span>`;
-
-      const approveInvestmentBtn = !user.investment_approved && user.total_invested > 0
-        ? `<button onclick="approveInvestment('${user.username}')">💰 Approve Investment</button>`
-        : (user.total_invested > 0 ? `<span style='color:green;'>Investment Approved</span>` : "");
-
-      const approveWithdrawalBtn = user.pending_withdrawal > 0
-        ? `<button onclick="approveWithdrawal('${user.username}')">📤 Approve Withdrawal</button>`
-        : "";
-
-      const resetBtn = `<button onclick="resetPassword('${user.username}')">🔑 Reset Password</button>`;
-      const terminateBtn = `<button onclick="terminateUser('${user.username}')">❌ Terminate User</button>`;
-
-      return `
-        <div class="user-card">
-          <p><strong>👤 Username:</strong> ${user.username}</p>
-          <p><strong>📞 Phone:</strong> ${user.number || "N/A"}</p>
-          <p><strong>🤝 Referral:</strong> ${user.referral || "None"}</p>
-          <p><strong>💵 Total Invested:</strong> KES ${(user.total_invested || 0).toFixed(2)}</p>
-          <p><strong>💰 Balance:</strong> KES ${(user.balance || 0).toFixed(2)}</p>
-          <p><strong>📈 Earnings:</strong> KES ${(user.earnings || 0).toFixed(2)}</p>
-          <p><strong>✅ Approved:</strong> ${user.approved ? "Yes" : "No"}</p>
-          <p><strong>📊 Investment Approved:</strong> ${user.investment_approved ? "Yes" : "No"}</p>
-          <p><strong>⏳ Pending Withdrawal:</strong> KES ${(user.pending_withdrawal || 0).toFixed(2)}</p>
-          <div class="actions">
-            ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn} ${terminateBtn}
-          </div>
-        </div>
-      `;
-    }).join('');
+    userDataDiv.innerHTML = users.map(user => renderUserCard(user)).join('');
   } catch (err) {
     console.error("User fetch error:", err);
     userDataDiv.innerHTML = `<p style='color:red;'>❌ Failed to load users: ${err.message}</p>`;
   }
 }
 
-// ------------------ Admin Actions ------------------
+// ---------------- Render User Card ----------------
+function renderUserCard(user) {
+  const approveUserBtn = !user.approved
+    ? `<button onclick="approveUser('${user.username}')">✅ Approve User</button>`
+    : `<span style='color:green;'>User Approved</span>`;
 
-// Approve user
+  const approveInvestmentBtn = !user.investment_approved && user.total_invested > 0
+    ? `<button onclick="approveInvestment('${user.username}')">💰 Approve Investment</button>`
+    : (user.total_invested > 0 ? `<span style='color:green;'>Investment Approved</span>` : "");
+
+  const approveWithdrawalBtn = user.pending_withdrawal > 0
+    ? `<button onclick="approveWithdrawal('${user.username}')">📤 Approve Withdrawal</button>`
+    : "";
+
+  const resetBtn = `<button onclick="resetPassword('${user.username}')">🔑 Reset Password</button>`;
+  const terminateBtn = `<button onclick="terminateUser('${user.username}')">❌ Terminate User</button>`;
+
+  return `
+    <div class="user-card">
+      <p><strong>👤 Username:</strong> ${user.username}</p>
+      <p><strong>📞 Phone:</strong> ${user.number || "N/A"}</p>
+      <p><strong>🤝 Referral:</strong> ${user.referral || "None"}</p>
+      <p><strong>💵 Total Invested:</strong> KES ${(user.total_invested || 0).toFixed(2)}</p>
+      <p><strong>💰 Balance:</strong> KES ${(user.balance || 0).toFixed(2)}</p>
+      <p><strong>📈 Earnings:</strong> KES ${(user.earnings || 0).toFixed(2)}</p>
+      <p><strong>✅ Approved:</strong> ${user.approved ? "Yes" : "No"}</p>
+      <p><strong>📊 Investment Approved:</strong> ${user.investment_approved ? "Yes" : "No"}</p>
+      <p><strong>⏳ Pending Withdrawal:</strong> KES ${(user.pending_withdrawal || 0).toFixed(2)}</p>
+      <div class="actions">
+        ${approveUserBtn} ${approveInvestmentBtn} ${approveWithdrawalBtn} ${resetBtn} ${terminateBtn}
+      </div>
+    </div>
+  `;
+}
+
+// ---------------- Admin Actions ----------------
 async function approveUser(username) {
   await postAdminAction("approve_user", { username }, `✅ User ${username} approved`);
 }
 
-// Approve investment
 async function approveInvestment(username) {
   await postAdminAction("approve_investment", { username }, `💰 Investment approved for ${username}`);
 }
 
-// Approve withdrawal
 async function approveWithdrawal(username) {
   await postAdminAction("approve_withdrawal", { username }, `📤 Withdrawal approved for ${username}`);
 }
 
-// Reset password
 async function resetPassword(username) {
   const newPassword = prompt(`Enter new password for ${username}:`);
   if (!newPassword?.trim()) return;
   await postAdminAction("reset-password", { target_username: username, new_password: newPassword }, `🔑 Password reset for ${username}`);
 }
 
-// Terminate user
 async function terminateUser(username) {
   if (!confirm(`⚠️ Are you sure you want to TERMINATE user ${username}? This cannot be undone.`)) return;
   await postAdminAction("terminate_user", { username }, `❌ User ${username} terminated`);
 }
 
-// Shared function to send POST requests to admin actions
+// ---------------- Shared POST Function ----------------
 async function postAdminAction(endpoint, body, successMsg) {
   const token = localStorage.getItem("adminToken");
   try {
@@ -157,8 +151,9 @@ async function postAdminAction(endpoint, body, successMsg) {
   }
 }
 
-// Logout
+// ---------------- Logout ----------------
 function logout() {
   localStorage.removeItem("adminToken");
+  localStorage.removeItem("adminUsername");
   window.location.href = "admin_login.html";
 }
