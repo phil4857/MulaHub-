@@ -17,24 +17,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // ✅ Use correct deployed backend
-      const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/login", {
+      // ✅ Correct backend route for both admin & users
+      const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Login failed");
 
-      if (!response.ok) throw new Error(data.detail || "Invalid login credentials");
-
-      // ✅ Save token and redirect
-      if (data.token) {
+      // ✅ Check if admin
+      if (data.is_admin && data.token) {
         localStorage.setItem("adminToken", data.token);
-        localStorage.setItem("adminUsername", username);
+        localStorage.setItem("adminUsername", data.username);
         window.location.href = "admin_dashboard.html";
       } else {
-        throw new Error("Invalid server response — no token received.");
+        throw new Error("Access denied: not an admin account.");
       }
     } catch (err) {
       console.error("Admin login error:", err);
