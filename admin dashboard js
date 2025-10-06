@@ -1,39 +1,65 @@
 // admin_dashboard.js
 document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("adminToken");
+  const username = localStorage.getItem("adminUsername");
 
-  // 🔒 Redirect if no token
-  if (!token) {
-    window.location.href = "admin_login.html";
+  // 🔒 Redirect immediately if no session
+  if (!token || !username) {
+    logout();
     return;
   }
 
-  // Validate token before showing anything
+  // 🔒 Validate token using backend route
   const isValid = await validateToken(token);
   if (!isValid) {
     alert("Session expired or invalid. Please log in again.");
-    clearAdminSession();
-    window.location.href = "admin_login.html";
+    logout();
     return;
   }
 
-  // ✅ Load users only if token is valid
+  // 🕐 Auto-refresh session token every 5 minutes
+  setInterval(refreshToken, 5 * 60 * 1000);
+
+  // ✅ Load users once everything checks out
   await fetchUsers();
 });
 
 // ---------------- Token Validation ----------------
 async function validateToken(token) {
   try {
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/users", {
+    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/validate", {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (!res.ok) return false;
     const data = await res.json();
-    return Array.isArray(data);
+    return res.ok && data.valid === true;
   } catch (err) {
     console.error("Token validation error:", err);
     return false;
+  }
+}
+
+// ---------------- Token Refresh ----------------
+async function refreshToken() {
+  const token = localStorage.getItem("adminToken");
+  if (!token) return;
+
+  try {
+    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/refresh", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+    if (res.ok && data.new_token) {
+      localStorage.setItem("adminToken", data.new_token);
+      console.log("🔄 Admin token refreshed");
+    } else {
+      console.warn("⚠️ Token refresh failed, logging out soon...");
+      logout();
+    }
+  } catch (err) {
+    console.error("Token refresh error:", err);
+    logout();
   }
 }
 
@@ -159,10 +185,10 @@ function logout() {
   window.location.href = "admin_login.html";
 }
 
-// Auto-lock admin session when leaving page
+// 🔒 Auto-logout when leaving page
 window.addEventListener("beforeunload", clearAdminSession);
 
-// Prevent back button from reopening dashboard after logout
+// Prevent browser back from reopening dashboard after logout
 window.history.pushState(null, "", window.location.href);
 window.addEventListener("popstate", () => {
   window.history.pushState(null, "", window.location.href);
