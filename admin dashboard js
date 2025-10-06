@@ -12,8 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const isValid = await validateToken(token);
   if (!isValid) {
     alert("Session expired or invalid. Please log in again.");
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUsername");
+    clearAdminSession();
     window.location.href = "admin_login.html";
     return;
   }
@@ -30,7 +29,6 @@ async function validateToken(token) {
     });
 
     if (!res.ok) return false;
-
     const data = await res.json();
     return Array.isArray(data);
   } catch (err) {
@@ -43,7 +41,6 @@ async function validateToken(token) {
 async function fetchUsers() {
   const token = localStorage.getItem("adminToken");
   const userDataDiv = document.getElementById("userData");
-
   userDataDiv.innerHTML = "<p>Loading users...</p>";
 
   try {
@@ -151,9 +148,22 @@ async function postAdminAction(endpoint, body, successMsg) {
   }
 }
 
-// ---------------- Logout ----------------
-function logout() {
+// ---------------- Session & Logout Handling ----------------
+function clearAdminSession() {
   localStorage.removeItem("adminToken");
   localStorage.removeItem("adminUsername");
+}
+
+function logout() {
+  clearAdminSession();
   window.location.href = "admin_login.html";
 }
+
+// Auto-lock admin session when leaving page
+window.addEventListener("beforeunload", clearAdminSession);
+
+// Prevent back button from reopening dashboard after logout
+window.history.pushState(null, "", window.location.href);
+window.addEventListener("popstate", () => {
+  window.history.pushState(null, "", window.location.href);
+});
