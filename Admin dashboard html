@@ -149,3 +149,39 @@
   <script src="admin_dashboard.js"></script>
 </body>
 </html>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const REFRESH_INTERVAL = 8 * 60 * 1000; // every 8 minutes (before 10-min expiry)
+  const backendUrl = "https://repo-1red-jipate-bonus.onrender.com";
+
+  async function refreshAdminToken() {
+    const token = localStorage.getItem("adminToken");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${backendUrl}/admin/refresh`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        console.warn("Admin token refresh failed");
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUsername");
+        alert("Your admin session has expired. Please log in again.");
+        window.location.href = "admin_login.html";
+        return;
+      }
+
+      const data = await res.json();
+      console.log("✅ Admin token refreshed:", new Date().toLocaleTimeString());
+    } catch (err) {
+      console.error("Error refreshing token:", err);
+    }
+  }
+
+  // Run once on load and then periodically
+  refreshAdminToken();
+  setInterval(refreshAdminToken, REFRESH_INTERVAL);
+});
+</script>
