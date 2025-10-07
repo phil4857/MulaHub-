@@ -11,14 +11,12 @@
       margin: 0;
       padding: 0;
     }
-
     header {
       background: #28a745;
       color: gold;
       padding: 15px;
       text-align: center;
     }
-
     .container {
       max-width: 700px;
       margin: 20px auto;
@@ -27,29 +25,24 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     h2 {
       margin-top: 0;
       color: #28a745;
     }
-
     .info {
       margin-bottom: 15px;
       padding: 10px;
       background: #f0f8f0;
       border-left: 4px solid #28a745;
     }
-
     .info span {
       font-weight: bold;
     }
-
     .actions {
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
     }
-
     .actions button {
       margin: 10px 5px;
       padding: 10px 20px;
@@ -60,11 +53,9 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     .actions button:hover {
       background: #1e7e34;
     }
-
     .logout {
       background: #dc3545 !important;
     }
@@ -94,28 +85,34 @@
 
 <script>
   const username = localStorage.getItem("username");
+  const userToken = localStorage.getItem("userToken");
 
-  if (!username) {
+  if (!username || !userToken) {
     alert("Please log in first.");
     window.location.href = "login.html";
   }
 
+  // Display username & referral link
   document.getElementById("usernameDisplay").textContent = username;
   document.getElementById("referralLink").textContent =
     `https://mkobawallet.com/register.html?ref=${username}`;
 
   async function loadUserData() {
     try {
-      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${username}`);
+      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${encodeURIComponent(username)}`, {
+        headers: {
+          "Authorization": `Bearer ${userToken}`
+        }
+      });
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch user data");
-      }
+      if (!res.ok) throw new Error("Failed to fetch user data");
 
       const user = await res.json();
 
       document.getElementById("balanceDisplay").textContent = parseFloat(user.balance || 0).toFixed(2);
       document.getElementById("earningsDisplay").textContent = parseFloat(user.earnings || 0).toFixed(2);
+      if (user.payment_number) document.getElementById("payNumber").textContent = user.payment_number;
+
     } catch (err) {
       console.error("Error loading user data:", err);
       alert("Unable to load user info. Try again later.");
@@ -124,6 +121,7 @@
 
   function logout() {
     localStorage.removeItem("username");
+    localStorage.removeItem("userToken");
     window.location.href = "login.html";
   }
 
