@@ -1,214 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - Mkoba Wallet</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard — Hidden</title>
   <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #1c1e22;
-      color: #eaeaea;
-      display: flex;
-      min-height: 100vh;
+    /* Minimal styling derived from your original design */
+    :root {
+      --bg:#1c1e22; --panel:#2b2f36; --muted:#ccc; --accent:#f05454; --card:#2b2f36;
     }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: #111317;
-      height: 100vh;
-      padding: 1rem;
-      position: fixed;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .sidebar h2 {
-      color: #f05454;
-      margin-bottom: 2rem;
-    }
-
-    .sidebar button {
-      background: none;
-      border: none;
-      color: #eaeaea;
-      text-align: left;
-      padding: 0.75rem 1rem;
-      margin: 0.25rem 0;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-
-    .sidebar button:hover {
-      background: #2b2f36;
-    }
-
-    /* Main content */
-    .main {
-      margin-left: 240px;
-      padding: 2rem;
-      flex: 1;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #f05454;
-    }
-
-    .logout-btn {
-      background: #f05454;
-      border: none;
-      color: #fff;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    #paymentBanner {
-      margin-top: 10px;
-      color: #ccc;
-      font-style: italic;
-    }
-
-    /* User cards */
-    .user-card {
-      background: #2b2f36;
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 1rem 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-
-    .user-card strong {
-      color: #f1f1f1;
-    }
-
-    .user-card button {
-      margin: 0.25rem;
-      padding: 0.4rem 0.8rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    .btn-approve { background: #28a745; color: white; }
-    .btn-withdraw { background: #007bff; color: white; }
-    .btn-reset { background: #ffc107; color: black; }
-    .btn-term { background: #dc3545; color: white; }
-
-    #searchInput {
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 1rem;
-      background: #2b2f36;
-      color: #eaeaea;
-    }
+    html,body { height:100%; margin:0; font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#eaeaea; }
+    .layout { display:flex; min-height:100vh; }
+    .sidebar { width:220px; background:#111317; padding:1rem; position:fixed; height:100vh; box-sizing:border-box; }
+    .sidebar h2 { color:var(--accent); margin:0 0 1.2rem 0; }
+    .sidebar button { width:100%; text-align:left; padding:.6rem .75rem; margin:.25rem 0; background:none; border:none; color:inherit; border-radius:6px; cursor:pointer; }
+    .main { margin-left:240px; padding:2rem; flex:1; }
+    header { display:flex; justify-content:space-between; align-items:center; }
+    header h1 { margin:0; color:var(--accent); }
+    .logout-btn { background:var(--accent); border:none; color:#fff; padding:.4rem .8rem; border-radius:6px; cursor:pointer; }
+    #paymentBanner { margin-top:10px; color:var(--muted); font-style:italic; }
+    .user-card { background:var(--card); border-radius:8px; padding:1rem; margin:1rem 0; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+    .user-card strong { color:#fff; }
+    .user-card button { margin:.25rem; padding:.35rem .6rem; border-radius:6px; border:none; cursor:pointer; }
+    .btn-approve { background:#28a745; color:#fff; } .btn-term { background:#dc3545; color:#fff; }
+    #searchInput { width:100%; padding:.5rem; border-radius:6px; border:none; background:var(--panel); color:#eaeaea; margin-bottom:1rem; }
+    .small { color: var(--muted); font-size:.9rem; }
+    .center { text-align:center; color:var(--muted); margin-top:2rem; }
+    /* secret prompt */
+    #secretPrompt { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.7); z-index:999; }
+    #secretBox { background:#141517; padding:1.2rem; border-radius:8px; width:min(460px,90%); box-shadow:0 8px 30px rgba(0,0,0,.6); }
+    #secretBox label, #secretBox input { display:block; width:100%; }
+    #secretBox input { margin:.35rem 0 1rem 0; padding:.6rem .8rem; border-radius:6px; border:1px solid #232526; background:#0f1112; color:#fff; }
+    #secretBox .row { display:flex; gap:.5rem; }
+    #secretBox .row input { flex:1; }
+    #secretBox button { padding:.5rem .8rem; border-radius:6px; border:none; cursor:pointer; background:var(--accent); color:#fff; }
+    .hidden { display:none; }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>Admin Panel</h2>
-    <button onclick="fetchUsers()">📋 Manage Users</button>
-    <button onclick="logout()">🚪 Logout</button>
+  <div id="secretPrompt">
+    <div id="secretBox" role="dialog" aria-modal="true" aria-label="Admin secrets">
+      <h3 style="margin:0 0 .5rem 0; color: #f05454">Hidden Admin Access</h3>
+      <p class="small">Enter your admin route token (the <code>ADMIN_PATH_TOKEN</code> part) and the developer secret (<code>ADMIN_SECRET</code>). This info is stored only for this browser session.</p>
+
+      <label>Admin Route Token (example: <code>dev-9fa83b27-panel</code>)</label>
+      <input id="inputAdminPath" placeholder="dev-xxxxxxxx-panel" autocomplete="off" />
+
+      <label>Developer Secret (X-ADMIN-SECRET header)</label>
+      <input id="inputAdminSecret" placeholder="superstrongsecret" autocomplete="off" />
+
+      <div style="display:flex; gap:.5rem; margin-top:.5rem;">
+        <button id="btnEnter">Enter</button>
+        <button id="btnCancel" style="background:#444">Cancel</button>
+      </div>
+    </div>
   </div>
 
-  <div class="main">
-    <header>
-      <h1 id="dashboardTitle">Admin Dashboard</h1>
-      <div>
-        <span id="adminWelcome"></span>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-      </div>
-    </header>
+  <div class="layout">
+    <div class="sidebar">
+      <h2>Admin Panel</h2>
+      <button id="btnUsers" onclick="fetchUsers()">📋 Manage Users</button>
+      <button id="btnClearSecrets" onclick="clearSecrets()">🔒 Clear Secrets</button>
+      <button id="btnLogout" onclick="logout()">🚪 Logout</button>
+      <div style="margin-top:1rem" class="small">Session: <span id="sessionInfo">not set</span></div>
+    </div>
 
-    <div id="paymentBanner">Loading platform info...</div>
+    <main class="main">
+      <header>
+        <h1 id="dashboardTitle">Admin Dashboard</h1>
+        <div>
+          <span id="adminWelcome">Developer</span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </header>
 
-    <section>
-      <h2>Registered Users</h2>
-      <input id="searchInput" type="text" placeholder="🔍 Search user by name..." />
-      <div id="userData">Loading users...</div>
-    </section>
+      <div id="paymentBanner">Loading platform info...</div>
+
+      <section>
+        <h2>Registered Users</h2>
+        <input id="searchInput" type="text" placeholder="🔍 Search user by name..." />
+        <div id="userData" class="center">No data loaded.</div>
+      </section>
+    </main>
   </div>
 
   <script>
-    const backendUrl = "https://repo-1red-jipate-bonus.onrender.com";
+    // ============================
+    // CONFIG - set your API root
+    // ============================
+    // IMPORTANT: This file intentionally DOES NOT contain the admin path or admin secret.
+    // You will type them once in the prompt that appears on load.
+    const backendUrl = "https://repo-1red-jipate-bonus.onrender.com"; // keep this correct for your backend
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const token = localStorage.getItem("adminToken");
-      const adminName = localStorage.getItem("adminUsername");
-      if (!token) {
-        alert("No admin session found. Please log in again.");
-        window.location.href = "admin_login.html";
-        return;
-      }
-      document.getElementById("adminWelcome").textContent = `Welcome, ${adminName || "Admin"}`;
-      fetchPlatformInfo();
-      fetchUsers();
-      setupSearch();
-      setInterval(refreshAdminToken, 8 * 60 * 1000);
-    });
-
-    async function refreshAdminToken() {
-      const token = localStorage.getItem("adminToken");
-      if (!token) return;
-      try {
-        const res = await fetch(`${backendUrl}/admin/refresh`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          throw new Error("Token expired");
-        }
-        console.log("✅ Token refreshed", new Date().toLocaleTimeString());
-      } catch {
-        alert("Session expired. Please log in again.");
-        logout();
-      }
+    // ============================
+    // Helpers & Session secrets
+    // ============================
+    function getAdminPath() {
+      return sessionStorage.getItem("adminPath"); // expected full prefix, e.g. dev-9fa83b27-panel
+    }
+    function getAdminSecret() {
+      return sessionStorage.getItem("adminSecret");
+    }
+    function setAdminSecrets(path, secret) {
+      sessionStorage.setItem("adminPath", path);
+      sessionStorage.setItem("adminSecret", secret);
+      document.getElementById("sessionInfo").textContent = "set";
+      document.getElementById("adminWelcome").textContent = "Developer (private)";
+    }
+    function clearSecrets() {
+      sessionStorage.removeItem("adminPath");
+      sessionStorage.removeItem("adminSecret");
+      document.getElementById("sessionInfo").textContent = "cleared";
+      // show prompt again
+      showSecretPrompt();
+    }
+    function logout() {
+      clearSecrets();
+      // optionally navigate away
+      alert("Admin secrets cleared from session.");
+      // if you have a dedicated login page, redirect there; otherwise stay
     }
 
+    // ============================
+    // Secret prompt handling
+    // ============================
+    const secretPrompt = document.getElementById("secretPrompt");
+    const inputAdminPath = document.getElementById("inputAdminPath");
+    const inputAdminSecret = document.getElementById("inputAdminSecret");
+    document.getElementById("btnEnter").addEventListener("click", () => {
+      const p = inputAdminPath.value && inputAdminPath.value.trim();
+      const s = inputAdminSecret.value && inputAdminSecret.value.trim();
+      if (!p || !s) {
+        alert("Both fields are required.");
+        return;
+      }
+      setAdminSecrets(p, s);
+      secretPrompt.style.display = "none";
+      initAfterSecrets();
+    });
+    document.getElementById("btnCancel").addEventListener("click", () => {
+      secretPrompt.style.display = "none";
+      // if you want to block the UI until the secrets are entered, instead don't hide
+    });
+
+    function showSecretPrompt() {
+      secretPrompt.style.display = "flex";
+      inputAdminPath.value = "";
+      inputAdminSecret.value = "";
+    }
+
+    // If secrets are already in sessionStorage, auto hide the prompt
+    (function checkSecretsOnLoad() {
+      if (getAdminPath() && getAdminSecret()) {
+        document.getElementById("sessionInfo").textContent = "set";
+        secretPrompt.style.display = "none";
+        initAfterSecrets();
+      } else {
+        showSecretPrompt();
+      }
+    })();
+
+    // ============================
+    // Low-level fetch wrapper for admin endpoints
+    // ============================
+    function adminUrl(pathSuffix) {
+      // pathSuffix should start with a slash, e.g. "/users"
+      const adminPath = getAdminPath();
+      if (!adminPath) throw new Error("Admin path not configured in this session.");
+      // Build final URL: backendUrl / {adminPath} / {suffix without duplicate slashes}
+      const cleanedSuffix = pathSuffix.startsWith("/") ? pathSuffix.substring(1) : pathSuffix;
+      return `${backendUrl}/${adminPath}/${cleanedSuffix}`;
+    }
+
+    async function adminFetch(pathSuffix, opts = {}) {
+      const secret = getAdminSecret();
+      if (!secret) throw new Error("Admin secret not configured in this session.");
+      const headers = Object.assign({}, opts.headers || {}, { "X-ADMIN-SECRET": secret });
+      // default to JSON where appropriate (caller controls)
+      const res = await fetch(adminUrl(pathSuffix), Object.assign({}, opts, { headers }));
+      if (res.status === 404) {
+        // keep it quiet; look like not found / invalid
+        throw new Error("Not Found or unauthorized (admin path or secret invalid).");
+      }
+      return res;
+    }
+
+    // ============================
+    // Platform info (public) - no admin secret required
+    // ============================
     async function fetchPlatformInfo() {
       try {
         const res = await fetch(`${backendUrl}/platform/info`);
         const data = await res.json();
         document.getElementById("paymentBanner").textContent =
-          `Payments via ${data.payment_number} (${data.platform})`;
-      } catch {
+          `Payments via ${data.payment_number || data.paymentNumber || data.payment_number} (${data.platform})`;
+      } catch (e) {
         document.getElementById("paymentBanner").textContent = "Failed to load platform info.";
       }
     }
 
+    // ============================
+    // Admin actions
+    // ============================
     async function fetchUsers() {
-      const token = localStorage.getItem("adminToken");
       const userDataDiv = document.getElementById("userData");
       userDataDiv.textContent = "Loading users...";
-
       try {
-        const res = await fetch(`${backendUrl}/admin/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          if (res.status === 403 || res.status === 401) logout();
-          throw new Error("Failed to fetch users");
-        }
-        const users = await res.json();
+        const res = await adminFetch("/users", { method: "GET" });
+        if (!res.ok) throw new Error("Failed to fetch");
+        const payload = await res.json();
+        // The backend's admin_list_users returned { count, users: [ {username, number, approved, ...} ] }
+        const users = payload.users || payload;
         renderUsers(users);
       } catch (err) {
-        userDataDiv.textContent = "⚠️ Error fetching users.";
+        userDataDiv.textContent = "⚠️ Error fetching users. Check admin token/path.";
         console.error(err);
       }
     }
@@ -216,84 +221,94 @@
     function renderUsers(users) {
       const container = document.getElementById("userData");
       container.innerHTML = "";
-      if (!users.length) {
+      if (!users || users.length === 0) {
         container.textContent = "No users found.";
         return;
       }
-
       for (const u of users) {
         const card = document.createElement("div");
         card.className = "user-card";
         card.innerHTML = `
-          <strong>${u.username}</strong><br>
-          Number: ${u.number}<br>
+          <strong>${escapeHtml(u.username)}</strong><br>
+          Number: ${escapeHtml(u.number || "—")}<br>
           Approved: ${u.approved ? "✅" : "❌"}<br>
-          Balance: ${u.balance}<br>
-          Earnings: ${u.earnings}<br>
-          Principal: ${u.principal}<br>
-          Referral: ${u.referral || "—"}<br>
-          <button class="btn-approve" onclick="approveUser('${u.username}')">Approve</button>
-          <button class="btn-term" onclick="terminateUser('${u.username}')">Terminate</button>
+          Balance: ${u.balance ?? 0}<br>
+          Earnings: ${u.earnings ?? 0}<br>
+          Principal: ${u.principal ?? 0}<br>
+          Referral: ${escapeHtml(u.referral || "—")}<br>
+          <button class="btn-approve" onclick="approveUser('${encodeURIComponent(u.username)}')">Approve</button>
+          <button class="btn-term" onclick="revokeUser('${encodeURIComponent(u.username)}')">Revoke</button>
         `;
         container.appendChild(card);
       }
     }
 
+    async function approveUser(encodedUsername) {
+      try {
+        const username = decodeURIComponent(encodedUsername);
+        const form = new FormData();
+        form.append("username", username);
+        const res = await adminFetch("/user/approve", { method: "POST", body: form });
+        if (!res.ok) throw new Error("Approval failed");
+        alert(`${username} approved`);
+        fetchUsers();
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function revokeUser(encodedUsername) {
+      if (!confirm("Are you sure you want to revoke this user?")) return;
+      try {
+        const username = decodeURIComponent(encodedUsername);
+        const form = new FormData();
+        form.append("username", username);
+        const res = await adminFetch("/user/revoke", { method: "POST", body: form });
+        if (!res.ok) throw new Error("Failed to revoke");
+        alert(`${username} revoked`);
+        fetchUsers();
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    // ============================
+    // Search setup
+    // ============================
     function setupSearch() {
       const input = document.getElementById("searchInput");
       input.addEventListener("input", () => {
-        const query = input.value.toLowerCase();
+        const query = input.value.toLowerCase().trim();
         const cards = document.querySelectorAll(".user-card");
         cards.forEach(card => {
-          card.style.display = card.innerText.toLowerCase().includes(query)
-            ? "block"
-            : "none";
+          card.style.display = card.innerText.toLowerCase().includes(query) ? "block" : "none";
         });
       });
     }
 
-    async function approveUser(username) {
-      const token = localStorage.getItem("adminToken");
-      try {
-        const form = new FormData();
-        form.append("username", username);
-        const res = await fetch(`${backendUrl}/admin/approve_user`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        });
-        if (!res.ok) throw new Error("Approval failed");
-        alert(`✅ ${username} approved`);
-        fetchUsers();
-      } catch (err) {
-        alert(err.message);
-      }
+    // ============================
+    // Utilities
+    // ============================
+    function escapeHtml(s) {
+      if (!s && s !== 0) return "";
+      return String(s).replace(/[&<>"'`=\/]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c;
+      });
     }
 
-    async function terminateUser(username) {
-      if (!confirm(`Are you sure you want to remove ${username}?`)) return;
-      const token = localStorage.getItem("adminToken");
-      try {
-        const form = new FormData();
-        form.append("username", username);
-        const res = await fetch(`${backendUrl}/admin/terminate_user`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        });
-        if (!res.ok) throw new Error("Failed to terminate user");
-        alert(`❌ ${username} deleted`);
-        fetchUsers();
-      } catch (err) {
-        alert(err.message);
-      }
+    // Initialize things after secrets are entered
+    async function initAfterSecrets() {
+      setupSearch();
+      fetchPlatformInfo();
+      try { await fetchUsers(); } catch (e) { /* already handled in fetchUsers */ }
     }
 
-    function logout() {
-      localStorage.removeItem("adminToken");
-      localStorage.removeItem("adminUsername");
-      window.location.href = "admin_login.html";
-    }
+    // Prevent accidental leaking: do not log secrets
+    // All secret-handling is kept in sessionStorage and header "X-ADMIN-SECRET"
+
+    // ============================
+    // End of script
+    // ============================
   </script>
 </body>
 </html>
