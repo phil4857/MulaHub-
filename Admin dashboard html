@@ -145,43 +145,155 @@
     </section>
   </div>
 
-  <!-- Ensure this matches your backend -->
-  <script src="admin_dashboard.js"></script>
-</body>
-</html>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const REFRESH_INTERVAL = 8 * 60 * 1000; // every 8 minutes (before 10-min expiry)
-  const backendUrl = "https://repo-1red-jipate-bonus.onrender.com";
+  <script>
+    const backendUrl = "https://repo-1red-jipate-bonus.onrender.com";
 
-  async function refreshAdminToken() {
-    const token = localStorage.getItem("adminToken");
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${backendUrl}/admin/refresh`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        console.warn("Admin token refresh failed");
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminUsername");
-        alert("Your admin session has expired. Please log in again.");
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("adminToken");
+      const adminName = localStorage.getItem("adminUsername");
+      if (!token) {
+        alert("No admin session found. Please log in again.");
         window.location.href = "admin_login.html";
         return;
       }
+      document.getElementById("adminWelcome").textContent = `Welcome, ${adminName || "Admin"}`;
+      fetchPlatformInfo();
+      fetchUsers();
+      setupSearch();
+      setInterval(refreshAdminToken, 8 * 60 * 1000);
+    });
 
-      const data = await res.json();
-      console.log("✅ Admin token refreshed:", new Date().toLocaleTimeString());
-    } catch (err) {
-      console.error("Error refreshing token:", err);
+    async function refreshAdminToken() {
+      const token = localStorage.getItem("adminToken");
+      if (!token) return;
+      try {
+        const res = await fetch(`${backendUrl}/admin/refresh`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          throw new Error("Token expired");
+        }
+        console.log("✅ Token refreshed", new Date().toLocaleTimeString());
+      } catch {
+        alert("Session expired. Please log in again.");
+        logout();
+      }
     }
-  }
 
-  // Run once on load and then periodically
-  refreshAdminToken();
-  setInterval(refreshAdminToken, REFRESH_INTERVAL);
-});
-</script>
+    async function fetchPlatformInfo() {
+      try {
+        const res = await fetch(`${backendUrl}/platform/info`);
+        const data = await res.json();
+        document.getElementById("paymentBanner").textContent =
+          `Payments via ${data.payment_number} (${data.platform})`;
+      } catch {
+        document.getElementById("paymentBanner").textContent = "Failed to load platform info.";
+      }
+    }
+
+    async function fetchUsers() {
+      const token = localStorage.getItem("adminToken");
+      const userDataDiv = document.getElementById("userData");
+      userDataDiv.textContent = "Loading users...";
+
+      try {
+        const res = await fetch(`${backendUrl}/admin/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          if (res.status === 403 || res.status === 401) logout();
+          throw new Error("Failed to fetch users");
+        }
+        const users = await res.json();
+        renderUsers(users);
+      } catch (err) {
+        userDataDiv.textContent = "⚠️ Error fetching users.";
+        console.error(err);
+      }
+    }
+
+    function renderUsers(users) {
+      const container = document.getElementById("userData");
+      container.innerHTML = "";
+      if (!users.length) {
+        container.textContent = "No users found.";
+        return;
+      }
+
+      for (const u of users) {
+        const card = document.createElement("div");
+        card.className = "user-card";
+        card.innerHTML = `
+          <strong>${u.username}</strong><br>
+          Number: ${u.number}<br>
+          Approved: ${u.approved ? "✅" : "❌"}<br>
+          Balance: ${u.balance}<br>
+          Earnings: ${u.earnings}<br>
+          Principal: ${u.principal}<br>
+          Referral: ${u.referral || "—"}<br>
+          <button class="btn-approve" onclick="approveUser('${u.username}')">Approve</button>
+          <button class="btn-term" onclick="terminateUser('${u.username}')">Terminate</button>
+        `;
+        container.appendChild(card);
+      }
+    }
+
+    function setupSearch() {
+      const input = document.getElementById("searchInput");
+      input.addEventListener("input", () => {
+        const query = input.value.toLowerCase();
+        const cards = document.querySelectorAll(".user-card");
+        cards.forEach(card => {
+          card.style.display = card.innerText.toLowerCase().includes(query)
+            ? "block"
+            : "none";
+        });
+      });
+    }
+
+    async function approveUser(username) {
+      const token = localStorage.getItem("adminToken");
+      try {
+        const form = new FormData();
+        form.append("username", username);
+        const res = await fetch(`${backendUrl}/admin/approve_user`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        if (!res.ok) throw new Error("Approval failed");
+        alert(`✅ ${username} approved`);
+        fetchUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function terminateUser(username) {
+      if (!confirm(`Are you sure you want to remove ${username}?`)) return;
+      const token = localStorage.getItem("adminToken");
+      try {
+        const form = new FormData();
+        form.append("username", username);
+        const res = await fetch(`${backendUrl}/admin/terminate_user`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        });
+        if (!res.ok) throw new Error("Failed to terminate user");
+        alert(`❌ ${username} deleted`);
+        fetchUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUsername");
+      window.location.href = "admin_login.html";
+    }
+  </script>
+</body>
+</html>
