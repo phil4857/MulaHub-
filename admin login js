@@ -19,22 +19,30 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
       console.log("Admin login response:", data);
 
-      if (!response.ok) throw new Error(data.detail || "Login failed");
+      if (!response.ok) {
+        throw new Error(data.detail || "Login failed. Please try again.");
+      }
 
       if (data.is_admin === true && data.token) {
+        // ✅ Store admin session info
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("adminUsername", data.username);
-        window.location.href = "admin_dashboard.html";
+
+        // ✅ Redirect to admin dashboard (same domain)
+        window.location.href = "/admin_dashboard.html";
       } else {
-        throw new Error("Access denied: not an admin account.");
+        throw new Error("Access denied — this is not an admin account.");
       }
+
     } catch (err) {
       console.error("Admin login error:", err);
       errorMessage.textContent = "❌ " + (err.message || "Login failed. Try again.");
