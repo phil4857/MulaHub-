@@ -1,55 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1.0' />
   <title>Investment Dashboard - Mkoba Wallet</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src='https://cdn.tailwindcss.com'></script>
+  <style>
+    body {
+      background: linear-gradient(to right, #f0f9f7, #fff);
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class='min-h-screen'>
   <!-- Navbar -->
-  <nav class="bg-indigo-600 text-white p-4 flex justify-between items-center">
-    <h1 class="text-lg font-bold">💰 Mkoba Wallet - Investment Dashboard</h1>
-    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm">
+  <nav class='bg-indigo-600 text-white p-4 flex justify-between items-center'>
+    <h1 class='text-lg font-bold'>💰 Mkoba Wallet - Investment Dashboard</h1>
+    <button onclick='logout()' class='bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm'>
       Logout
     </button>
   </nav>
 
   <!-- Main Content -->
-  <div class="max-w-5xl mx-auto mt-6 p-4">
+  <div class='max-w-5xl mx-auto mt-6 p-4'>
     <!-- User Overview -->
-    <div class="grid md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white shadow rounded-lg p-4 text-center">
-        <h2 class="text-gray-500 text-sm">Balance</h2>
-        <p id="balance" class="text-2xl font-bold text-indigo-600">KES 0.00</p>
+    <div class='grid md:grid-cols-3 gap-4 mb-6'>
+      <div class='bg-white shadow-lg rounded-lg p-4 text-center'>
+        <h2 class='text-gray-500 text-sm'>Balance</h2>
+        <p id='balance' class='text-2xl font-bold text-indigo-600'>KES 0.00</p>
       </div>
-      <div class="bg-white shadow rounded-lg p-4 text-center">
-        <h2 class="text-gray-500 text-sm">Earnings</h2>
-        <p id="earnings" class="text-2xl font-bold text-green-600">KES 0.00</p>
+      <div class='bg-white shadow-lg rounded-lg p-4 text-center'>
+        <h2 class='text-gray-500 text-sm'>Earnings</h2>
+        <p id='earnings' class='text-2xl font-bold text-green-600'>KES 0.00</p>
       </div>
-      <div class="bg-white shadow rounded-lg p-4 text-center">
-        <h2 class="text-gray-500 text-sm">Investment</h2>
-        <p id="investment" class="text-2xl font-bold text-purple-600">KES 0.00</p>
+      <div class='bg-white shadow-lg rounded-lg p-4 text-center'>
+        <h2 class='text-gray-500 text-sm'>Investment</h2>
+        <p id='investment' class='text-2xl font-bold text-purple-600'>KES 0.00</p>
       </div>
     </div>
 
     <!-- Bonus Section -->
-    <div id="bonusSection" class="bg-green-50 border-l-4 border-green-400 p-4 mb-6 hidden">
-      <h3 id="bonusMessage" class="text-yellow-700 font-medium">Bonus Available!</h3>
-      <button onclick="claimBonus()" class="mt-2 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md text-white">
+    <div id='bonusSection' class='bg-green-50 border-l-4 border-green-400 p-4 mb-6 hidden'>
+      <h3 id='bonusMessage' class='text-yellow-700 font-medium'>Bonus Available!</h3>
+      <button onclick='claimBonus()' class='mt-2 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md text-white'>
         Grab Bonus
       </button>
     </div>
 
     <!-- Investment Form -->
-    <div class="bg-white shadow rounded-lg p-6">
-      <h2 class="text-lg font-bold mb-4">📈 Make a New Investment</h2>
-      <form id="investForm" class="space-y-4">
+    <div class='bg-white shadow-lg rounded-lg p-6'>
+      <h2 class='text-lg font-bold mb-4'>📈 Make a New Investment</h2>
+      <form id='investForm' class='space-y-4'>
         <div>
-          <label for="amount" class="block text-gray-700 text-sm font-medium">Amount (KES)</label>
-          <input type="number" id="amount" class="mt-1 block w-full p-2 border rounded-md" required min="500">
+          <label for='amount' class='block text-gray-700 text-sm font-medium'>Amount (KES)</label>
+          <input type='number' id='amount' class='mt-1 block w-full p-2 border rounded-md' required min='500' />
         </div>
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full">
+        <button type='submit' class='bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full'>
           Invest Now
         </button>
       </form>
@@ -58,35 +63,35 @@
 
   <!-- Script -->
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const username = localStorage.getItem("username");
+    document.addEventListener('DOMContentLoaded', async () => {
+      const username = localStorage.getItem('username');
       if (!username) {
-        alert("Please log in first.");
-        window.location.href = "login.html";
+        alert('Please log in first.');
+        window.location.href = 'login.html';
         return;
       }
       await loadDashboard(username);
 
-      const investForm = document.getElementById("investForm");
-      investForm.addEventListener("submit", async (e) => {
+      const investForm = document.getElementById('investForm');
+      investForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const amount = document.getElementById("amount").value;
+        const amount = document.getElementById('amount').value;
         if (!amount || amount < 500) {
-          alert("Minimum investment is KES 500");
+          alert('Minimum investment is KES 500');
           return;
         }
         try {
-          const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          const res = await fetch('https://repo-1red-jipate-bonus.onrender.com/invest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({ username, amount })
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.detail || "Investment failed");
+          if (!res.ok) throw new Error(data.detail || 'Investment failed');
           alert(data.message);
           await loadDashboard(username);
         } catch (err) {
-          alert("❌ " + err.message);
+          alert('❌ ' + err.message);
         }
       });
     });
@@ -95,43 +100,43 @@
       try {
         const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${username}`);
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || "Failed to load dashboard");
+        if (!res.ok) throw new Error(data.detail || 'Failed to load dashboard');
 
-        document.getElementById("balance").innerText = "KES " + (data.balance || 0).toFixed(2);
-        document.getElementById("earnings").innerText = "KES " + (data.earnings || 0).toFixed(2);
-        document.getElementById("investment").innerText = "KES " + (data.investment_amount || 0).toFixed(2);
+        document.getElementById('balance').innerText = 'KES ' + (data.balance || 0).toFixed(2);
+        document.getElementById('earnings').innerText = 'KES ' + (data.earnings || 0).toFixed(2);
+        document.getElementById('investment').innerText = 'KES ' + (data.investment_amount || 0).toFixed(2);
 
         if (data.bonus_available) {
-          document.getElementById("bonusSection").classList.remove("hidden");
-          document.getElementById("bonusMessage").innerText = data.bonus_message;
+          document.getElementById('bonusSection').classList.remove('hidden');
+          document.getElementById('bonusMessage').innerText = data.bonus_message;
         } else {
-          document.getElementById("bonusSection").classList.add("hidden");
+          document.getElementById('bonusSection').classList.add('hidden');
         }
       } catch (err) {
-        console.error("Dashboard load error:", err);
+        console.error('Dashboard load error:', err);
       }
     }
 
     async function claimBonus() {
-      const username = localStorage.getItem("username");
+      const username = localStorage.getItem('username');
       try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/bonus/grab", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        const res = await fetch('https://repo-1red-jipate-bonus.onrender.com/bonus/grab', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({ username })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || "Bonus claim failed");
+        if (!res.ok) throw new Error(data.detail || 'Bonus claim failed');
         alert(data.message);
         await loadDashboard(username);
       } catch (err) {
-        alert("❌ " + err.message);
+        alert('❌ ' + err.message);
       }
     }
 
     function logout() {
       localStorage.clear();
-      window.location.href = "login.html";
+      window.location.href = 'login.html';
     }
   </script>
 </body>
