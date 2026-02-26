@@ -1,18 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
   const username = localStorage.getItem("username");
-  if (!username) {
-    alert("Please log in first.");
-    window.location.href = "login.html";
-    return;
+  if (!username) { 
+    alert("Please log in first."); 
+    window.location.href = "login.html"; 
+    return; 
   }
 
   const balanceEl = document.getElementById("balanceDisplay");
   const investmentListEl = document.getElementById("investmentList");
   const investOtpSection = document.getElementById("investOtpSection");
   const investOtpInput = document.getElementById("investOtp");
+  const investOtpDisplay = document.getElementById("investOtpDisplay"); // display OTP for client
   const withdrawAmountInput = document.getElementById("withdrawAmount");
   const withdrawOtpSection = document.getElementById("withdrawOtpSection");
   const withdrawOtpInput = document.getElementById("withdrawOtp");
+  const withdrawOtpDisplay = document.getElementById("withdrawOtpDisplay"); // display OTP for client
 
   let investmentsData = {};
   let fakeInvestOTP = null;
@@ -48,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const now = new Date();
       const expiry = new Date(inv.expiry_date);
       const diff = expiry - now;
-      let timeText = diff > 0 ? `${Math.floor(diff/3600000)}h ${Math.floor((diff%3600000)/60000)}m ${Math.floor((diff%60000)/1000)}s` : "Expired";
+      const timeText = diff > 0 ? `${Math.floor(diff/3600000)}h ${Math.floor((diff%3600000)/60000)}m ${Math.floor((diff%60000)/1000)}s` : "Expired";
       div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${timeText}`;
       div.className = "investment-item";
       investmentListEl.appendChild(div);
@@ -64,8 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (amount > user.balance) return alert("Insufficient balance");
 
     fakeInvestOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log(`Investment OTP: ${fakeInvestOTP}`);
-    alert("OTP sent for investment (check console in test mode)");
+    investOtpDisplay.textContent = `Your OTP: ${fakeInvestOTP}`; // display OTP on page
     investOtpSection.style.display = "block";
 
     user.pendingInvestment = { commodity, amount, expiry_date: new Date(Date.now() + 3600*1000*24).toISOString() };
@@ -90,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fakeInvestOTP = null;
     investOtpInput.value = "";
     investOtpSection.style.display = "none";
+    investOtpDisplay.textContent = "";
     alert("Investment successful!");
     loadDashboard();
   });
@@ -102,12 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (amount > user.balance) return alert("Insufficient balance");
 
     fakeWithdrawOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log(`Withdrawal OTP: ${fakeWithdrawOTP}`);
-    alert("OTP sent for withdrawal (check console in test mode)");
+    withdrawOtpDisplay.textContent = `Your OTP: ${fakeWithdrawOTP}`; // display OTP on page
     withdrawOtpSection.style.display = "block";
-
-    user.pendingWithdrawal = amount;
-    saveUser(user);
   });
 
   // Withdrawal confirm
@@ -116,18 +114,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (otp !== fakeWithdrawOTP) return alert("Incorrect OTP");
 
     const user = getUser();
-    user.balance -= user.pendingWithdrawal;
-    delete user.pendingWithdrawal;
+    const amount = parseFloat(withdrawAmountInput.value);
+    user.balance -= amount;
     saveUser(user);
 
     fakeWithdrawOTP = null;
     withdrawOtpInput.value = "";
     withdrawOtpSection.style.display = "none";
+    withdrawOtpDisplay.textContent = "";
     alert("Withdrawal successful!");
     loadDashboard();
   });
 
-  // Investment countdown updater
-  setInterval(renderInvestments, 1000);
   loadDashboard();
 });
