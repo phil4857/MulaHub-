@@ -3,120 +3,215 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daily Earnings - Mkoba Wallet 💵</title>
+  <title>User Dashboard - Mkoba Wallet 💵</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2fff5;
+      background: #f4fff7;
       margin: 0;
       padding: 0;
     }
-
-    .container {
-      max-width: 500px;
-      margin: 60px auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      color: #28a745;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #28a745;
+    header {
+      background: #28a745;
       color: white;
-      border: none;
-      border-radius: 5px;
-      margin-top: 20px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #1e7e34;
-    }
-
-    .message {
-      margin-top: 20px;
+      padding: 15px;
       text-align: center;
-      color: #333;
+      font-size: 20px;
+      font-weight: bold;
     }
-
-    .error {
-      color: red;
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-
-    .success {
-      color: green;
-    }
+    h2 { color: #28a745; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    .info { margin-bottom: 15px; padding: 15px; background: #f0f8f0; border-left: 5px solid #28a745; }
+    .form-section { margin-top: 20px; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
+    input { padding: 8px; margin: 5px 0; width: 90%; border: 1px solid #ccc; border-radius: 5px; }
+    button { padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .invest-btn { background: #28a745; color: white; }
+    .withdraw-btn { background: #007bff; color: white; }
+    .logout-btn { background: #dc3545; color: white; }
+    button:hover { opacity: 0.85; }
+    .investment-item { margin: 5px 0; padding: 8px; background: #f8fff8; border-radius: 5px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Trigger Daily Earnings - Mkoba Wallet 💵</h2>
-    <div class="message" id="messageBox">
-      Only approved investments above KES 500 will earn.<br/>
-      Daily bonus will be added to each eligible user's earnings.
-    </div>
-    <button id="triggerBtn">Run Earnings Distribution</button>
+<header>💵 Mkoba Wallet - User Dashboard</header>
+
+<div class="container">
+  <h2>Welcome, <span id="usernameDisplay"></span></h2>
+  <div class="info">
+    <p><strong>Balance:</strong> KES <span id="balanceDisplay">0.00</span></p>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const isAdmin = localStorage.getItem("is_admin") === "true";
-      const token = localStorage.getItem("adminToken");
+  <div class="form-section">
+    <h3>💰 Active Investments</h3>
+    <div id="investmentList">Loading investments...</div>
+  </div>
 
-      if (!isAdmin || !token) {
-        alert("Access denied. Admin login required.");
-        window.location.href = "login.html";
-      }
+  <div class="form-section">
+    <h3>📈 Make Investment</h3>
+    <select id="commodity">
+      <option value="silver">Silver</option>
+      <option value="marble">Marble</option>
+      <option value="uranium">Uranium</option>
+      <option value="diamond">Diamond</option>
+      <option value="gold">Gold</option>
+    </select>
+    <button class="invest-btn" id="investBtn">Request Investment OTP</button>
+    <div id="investOtpSection" style="display:none; margin-top:10px;">
+      <input type="text" id="investOtp" placeholder="Enter investment OTP" />
+      <button class="invest-btn" id="investConfirmBtn">Confirm Investment</button>
+    </div>
+  </div>
 
-      const btn = document.getElementById("triggerBtn");
-      btn.addEventListener("click", triggerEarnings);
-    });
+  <div class="form-section">
+    <h3>📤 Request Withdrawal</h3>
+    <input type="number" id="withdrawAmount" placeholder="Enter amount" />
+    <button class="withdraw-btn" id="withdrawBtn">Request Withdrawal OTP</button>
+    <div id="withdrawOtpSection" style="display:none; margin-top:10px;">
+      <input type="text" id="withdrawOtp" placeholder="Enter withdrawal OTP" />
+      <button class="withdraw-btn" id="withdrawConfirmBtn">Confirm Withdrawal</button>
+    </div>
+  </div>
 
-    async function triggerEarnings() {
-      const token = localStorage.getItem("adminToken");
-      const messageBox = document.getElementById("messageBox");
+  <div class="form-section">
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
 
-      if (!token) {
-        alert("You must be logged in as admin.");
-        window.location.href = "login.html";
-        return;
-      }
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const username = localStorage.getItem("username");
+  if(!username){ alert("Please log in."); window.location.href="login.html"; return; }
+  document.getElementById("usernameDisplay").textContent = username;
 
-      try {
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/admin/distribute-earnings", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          }
-        });
+  const balanceEl = document.getElementById("balanceDisplay");
+  const investmentListEl = document.getElementById("investmentList");
+  const commoditySelect = document.getElementById("commodity");
+  const investOtpSection = document.getElementById("investOtpSection");
+  const investOtpInput = document.getElementById("investOtp");
+  const withdrawAmountInput = document.getElementById("withdrawAmount");
+  const withdrawOtpSection = document.getElementById("withdrawOtpSection");
+  const withdrawOtpInput = document.getElementById("withdrawOtp");
 
-        const data = await res.json();
+  let investmentsData = {};
 
-        if (res.ok) {
-          let message = "✅ Daily earnings distributed successfully!";
-          if (data?.distributed_amount) {
-            message += ` Total: KES ${parseFloat(data.distributed_amount).toFixed(2)}`;
-          }
-          messageBox.innerHTML = `<span class="success">${message}</span>`;
-        } else {
-          messageBox.innerHTML = `<span class="error">❌ Failed: ${data?.detail || "Unknown server error"}</span>`;
-        }
-      } catch (err) {
-        console.error("Trigger error:", err);
-        messageBox.innerHTML = `<span class="error">❌ Error: Could not connect to server.</span>`;
+  async function loadDashboard() {
+    try {
+      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${encodeURIComponent(username)}`);
+      if(!res.ok) throw new Error("Failed to load dashboard");
+      const data = await res.json();
+      balanceEl.textContent = `KES ${parseFloat(data.balance||0).toFixed(2)}`;
+      investmentsData = data.investments || {};
+      renderInvestments();
+    } catch(err){
+      console.error(err);
+      alert("Error loading dashboard: "+err.message);
+    }
+  }
+
+  function renderInvestments(){
+    investmentListEl.innerHTML = "";
+    if(Object.keys(investmentsData).length===0){
+      investmentListEl.textContent = "No active investments.";
+      return;
+    }
+    for(const [commodity, inv] of Object.entries(investmentsData)){
+      const div = document.createElement("div");
+      div.id = `invest-${commodity}`;
+      div.className = "investment-item";
+      div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${inv.time_remaining}`;
+      investmentListEl.appendChild(div);
+    }
+  }
+
+  // Investment request
+  document.getElementById("investBtn")?.addEventListener("click", async () => {
+    const commodity = commoditySelect.value;
+    const form = new URLSearchParams({ username, commodity });
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest/request", { method:"POST", body:form });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.detail);
+      alert(data.message + " Enter OTP to confirm investment.");
+      investOtpSection.style.display = "block";
+    } catch(err){ alert("Investment request failed: "+err.message); }
+  });
+
+  // Investment confirm
+  document.getElementById("investConfirmBtn")?.addEventListener("click", async () => {
+    const otp = investOtpInput.value;
+    if(!otp) return alert("Enter OTP");
+    const form = new URLSearchParams({ username, otp });
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest/confirm", { method:"POST", body:form });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.detail);
+      alert(data.message);
+      investOtpSection.style.display="none";
+      investOtpInput.value="";
+      await loadDashboard();
+    } catch(err){ alert("Investment confirmation failed: "+err.message); }
+  });
+
+  // Withdrawal request
+  document.getElementById("withdrawBtn")?.addEventListener("click", async () => {
+    const amount = withdrawAmountInput.value;
+    if(!amount || isNaN(amount) || Number(amount)<=0) return alert("Enter valid amount");
+    const form = new URLSearchParams({ username, amount });
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/request", { method:"POST", body:form });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.detail);
+      alert(data.message + " Enter OTP to confirm withdrawal.");
+      withdrawOtpSection.style.display="block";
+    } catch(err){ alert("Withdrawal request failed: "+err.message); }
+  });
+
+  // Withdrawal confirm
+  document.getElementById("withdrawConfirmBtn")?.addEventListener("click", async () => {
+    const otp = withdrawOtpInput.value;
+    if(!otp) return alert("Enter OTP");
+    const form = new URLSearchParams({ username, otp });
+    try {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/confirm", { method:"POST", body:form });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.detail);
+      alert(data.message);
+      withdrawOtpSection.style.display="none";
+      withdrawOtpInput.value="";
+      await loadDashboard();
+    } catch(err){ alert("Withdrawal confirmation failed: "+err.message); }
+  });
+
+  // Update countdown timers every second
+  setInterval(()=>{
+    for(const [commodity, inv] of Object.entries(investmentsData)){
+      const div = document.getElementById(`invest-${commodity}`);
+      if(!div) continue;
+      const expiry = new Date(inv.expiry_date);
+      const now = new Date();
+      const diff = expiry-now;
+      if(diff>0){
+        const h=Math.floor(diff/3600000);
+        const m=Math.floor((diff%3600000)/60000);
+        const s=Math.floor((diff%60000)/1000);
+        div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${h}h ${m}m ${s}s`;
+      }else{
+        div.textContent = `${commodity}: KES ${inv.amount} | Expired`;
       }
     }
-  </script>
+  },1000);
+
+  function logout(){ localStorage.removeItem("username"); window.location.href="login.html"; }
+
+  await loadDashboard();
+});
+</script>
 </body>
 </html>
