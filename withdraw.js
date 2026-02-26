@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Monday check
   const today = new Date();
-  if (today.getDay() !== 1) {
+  if (today.getDay() !== 1) { // 1 = Monday
     alert("Withdrawals are only allowed on Mondays.");
     window.location.href = "dashboard.html";
     return;
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const withdrawForm = document.getElementById("withdrawForm");
   const otpSection = document.getElementById("otpSection");
   const withdrawOtpInput = document.getElementById("withdrawOtp");
-  const otpDisplay = document.getElementById("otpDisplay");
+  const otpDisplay = document.getElementById("otpDisplay"); // Ensure this exists in HTML
   let fakeOTP = null;
 
   function getUser() {
@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("users", JSON.stringify(users));
   }
 
+  // Step 1: Request withdrawal and generate OTP
   withdrawForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const amount = parseFloat(document.getElementById("amount").value);
@@ -42,12 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const minAllowed = Math.floor(invested * 0.3);
     const maxAllowed = balance;
 
-    if (amount < minAllowed) return alert(`Minimum withdrawal is 30% of investment: KES ${minAllowed}`);
+    if (amount < minAllowed) return alert(`Minimum withdrawal is 30% of your investment: KES ${minAllowed}`);
     if (amount > maxAllowed) return alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
 
-    // ✅ Generate OTP and display on page
+    // ✅ Generate OTP and show it on page for client to see
     fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
+    if (otpDisplay) otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
     alert("OTP generated! Enter it below to confirm withdrawal.");
 
     user.pendingWithdrawal = amount;
@@ -55,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     otpSection.style.display = "block";
   });
 
+  // Step 2: Confirm withdrawal with OTP
   document.getElementById("confirmWithdrawBtn").addEventListener("click", () => {
     const otp = withdrawOtpInput.value.trim();
     if (otp !== fakeOTP) return alert("Incorrect OTP");
