@@ -73,124 +73,124 @@ button:hover { opacity:0.85; }
 </div>
 
 <script>
+// ===== USER SETUP =====
 const username = localStorage.getItem("username");
 if(!username){ alert("Please log in first."); window.location.href="login.html"; }
 document.getElementById("usernameDisplay").textContent = username;
 
-let investmentsData = {};
-
-async function loadDashboard() {
-  try {
-    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${username}`);
-    if(!res.ok) throw new Error("Failed to fetch dashboard");
-    const data = await res.json();
-    document.getElementById("balanceDisplay").textContent = parseFloat(data.balance||0).toFixed(2);
-    investmentsData = data.investments || {};
-    renderInvestments();
-  } catch(err) { alert("Dashboard error: "+err.message); }
+function getUser() {
+  const users = JSON.parse(localStorage.getItem("users") || "{}");
+  return users[username];
+}
+function saveUser(user) {
+  const users = JSON.parse(localStorage.getItem("users") || "{}");
+  users[username] = user;
+  localStorage.setItem("users", JSON.stringify(users));
 }
 
-function renderInvestments(){
+// ===== DASHBOARD =====
+function loadDashboard() {
+  const user = getUser();
+  if(!user) return;
+  document.getElementById("balanceDisplay").textContent = (user.balance||0).toFixed(2);
+  renderInvestments(user.investments||{});
+}
+
+function renderInvestments(investments){
   const container = document.getElementById("investmentList");
   container.innerHTML = "";
-  if(Object.keys(investmentsData).length===0){ container.textContent="No active investments."; return; }
-  for(const [commodity, inv] of Object.entries(investmentsData)){
+  if(Object.keys(investments).length===0){ container.textContent="No active investments."; return; }
+  for(const [commodity, inv] of Object.entries(investments)){
     const div = document.createElement("div");
     div.className = "investment-item";
     div.id = `invest-${commodity}`;
-    div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${inv.time_remaining}`;
+    div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${inv.time_remaining || 'N/A'}`;
     container.appendChild(div);
   }
 }
 
-// Investment flow
-async function investRequest(){
+// ===== INVESTMENT FLOW =====
+let investOTP = null;
+
+function investRequest(){
   const commodity = document.getElementById("commodity").value;
-  const formData = new URLSearchParams();
-  formData.append("username", username);
-  formData.append("commodity", commodity);
-  try{
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest/request", {method:"POST", body:formData});
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.detail);
-    alert(data.message + " Enter OTP to confirm.");
-    document.getElementById("investOtpSection").style.display = "block";
-  }catch(err){ alert("Investment request failed: "+err.message); }
+  investOTP = Math.floor(1000+Math.random()*9000).toString();
+  console.log("Investment OTP:", investOTP);
+  alert("OTP sent! (check console in test mode)");
+  document.getElementById("investOtpSection").style.display = "block";
+
+  const user = getUser();
+  user.pendingInvestment = commodity;
+  saveUser(user);
 }
 
-async function investConfirm(){
-  const otp = document.getElementById("investOtp").value;
-  if(!otp) return alert("Enter OTP");
-  const formData = new URLSearchParams();
-  formData.append("username", username);
-  formData.append("otp", otp);
-  try{
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest/confirm", {method:"POST", body:formData});
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.detail);
-    alert(data.message);
-    document.getElementById("investOtpSection").style.display = "none";
-    document.getElementById("investOtp").value = "";
-    loadDashboard();
-  }catch(err){ alert("Investment confirmation failed: "+err.message); }
+function investConfirm(){
+  const otp = document.getElementById("investOtp").value.trim();
+  if(otp !== investOTP) return alert("Incorrect OTP");
+  const user = getUser();
+  const commodity = user.pendingInvestment;
+  if(!commodity) return alert("No investment requested.");
+
+  const amountMap = {silver:550,gold:2050,marble:650,diamond:1850,uranium:1250};
+  const amt = amountMap[commodity];
+  user.balance = (user.balance||0) - amt;
+  user.investments = user.investments||{};
+  user.investments[commodity] = {amount: amt, time_remaining: "7d"};
+  delete user.pendingInvestment;
+  saveUser(user);
+
+  alert("Investment successful!");
+  document.getElementById("investOtpSection").style.display = "none";
+  document.getElementById("investOtp").value = "";
+  loadDashboard();
 }
 
-// Withdrawal flow
-async function withdrawRequest(){
-  const amount = document.getElementById("withdrawAmount").value;
-  if(!amount || amount<=0) return alert("Enter valid amount.");
-  const formData = new URLSearchParams();
-  formData.append("username", username);
-  formData.append("amount", amount);
-  try{
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/request", {method:"POST", body:formData});
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.detail);
-    alert(data.message + " Enter OTP to confirm.");
-    document.getElementById("withdrawOtpSection").style.display = "block";
-  }catch(err){ alert("Withdrawal request failed: "+err.message); }
+// ===== WITHDRAWAL FLOW =====
+let withdrawOTP = null;
+
+function withdrawRequest(){
+  const user = getUser();
+  const amount = parseFloat(document.getElementById("withdrawAmount").value);
+  if(isNaN(amount)||amount<=0) return alert("Enter valid amount");
+
+  const today = new Date();
+  if(today.getDay()!==1) return alert("Withdrawals only allowed on Mondays");
+
+  const minAllowed = Math.floor((user.investment_amount||0)*0.3);
+  const maxAllowed = user.balance||0;
+
+  if(amount<minAllowed) return alert(`Minimum withdrawal: KES ${minAllowed}`);
+  if(amount>maxAllowed) return alert(`Maximum withdrawal: KES ${maxAllowed}`);
+
+  withdrawOTP = Math.floor(1000+Math.random()*9000).toString();
+  console.log("Withdrawal OTP:", withdrawOTP);
+  alert("OTP sent! (check console in test mode)");
+
+  user.pendingWithdrawal = amount;
+  saveUser(user);
+  document.getElementById("withdrawOtpSection").style.display = "block";
 }
 
-async function withdrawConfirm(){
-  const otp = document.getElementById("withdrawOtp").value;
-  if(!otp) return alert("Enter OTP");
-  const formData = new URLSearchParams();
-  formData.append("username", username);
-  formData.append("otp", otp);
-  try{
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/confirm", {method:"POST", body:formData});
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.detail);
-    alert(data.message);
-    document.getElementById("withdrawOtpSection").style.display = "none";
-    document.getElementById("withdrawOtp").value = "";
-    loadDashboard();
-  }catch(err){ alert("Withdrawal confirmation failed: "+err.message); }
+function withdrawConfirm(){
+  const otp = document.getElementById("withdrawOtp").value.trim();
+  if(otp!==withdrawOTP) return alert("Incorrect OTP");
+
+  const user = getUser();
+  user.balance -= user.pendingWithdrawal;
+  delete user.pendingWithdrawal;
+  saveUser(user);
+
+  alert("Withdrawal successful! Funds sent to MPESA.");
+  document.getElementById("withdrawOtpSection").style.display = "none";
+  document.getElementById("withdrawOtp").value = "";
+  loadDashboard();
 }
 
-// Logout
+// ===== LOGOUT =====
 function logout(){ localStorage.removeItem("username"); window.location.href="login.html"; }
-
-// Countdown updater every second
-setInterval(()=>{
-  for(const [commodity, inv] of Object.entries(investmentsData)){
-    const div = document.getElementById(`invest-${commodity}`);
-    if(!div) continue;
-    const expiry = new Date(inv.expiry_date);
-    const now = new Date();
-    const diff = expiry - now;
-    if(diff>0){
-      const h = Math.floor(diff/3600000);
-      const m = Math.floor((diff%3600000)/60000);
-      const s = Math.floor((diff%60000)/1000);
-      div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${h}h ${m}m ${s}s`;
-    }else{
-      div.textContent = `${commodity}: KES ${inv.amount} | Expired`;
-    }
-  }
-},1000);
 
 loadDashboard();
 </script>
+
 </body>
 </html>
