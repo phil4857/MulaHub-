@@ -33,6 +33,7 @@
   label { display:block; margin-top:10px; }
   .checkbox-label { font-size:14px; margin-top:10px; display:flex; align-items:center; }
   .checkbox-label input { margin-right:8px; }
+  #otpDisplay { font-weight:bold; text-align:center; margin-top:10px; color:#1a237e; }
 </style>
 </head>
 <body>
@@ -60,7 +61,8 @@
     <div class="success-message" id="successMsg"></div>
 
     <div id="otpSection" style="display:none;">
-      <input type="text" id="otpInput" placeholder="Enter OTP sent to your phone" />
+      <p id="otpDisplay"></p>
+      <input type="text" id="otpInput" placeholder="Enter OTP" />
       <button type="button" id="verifyOtpBtn">Verify OTP</button>
     </div>
 
@@ -74,85 +76,72 @@ function togglePassword(id) {
   input.type = input.type === "password" ? "text" : "password";
 }
 
-const API_BASE = "https://repo-1red-jipate-bonus.onrender.com";
+// ===== Simple client-side OTP for testing =====
+let fakeOTP = null;
 
-document.getElementById('registerForm').addEventListener('submit', async function(e) {
+document.getElementById('registerForm').addEventListener('submit', (e) => {
   e.preventDefault();
+  const errorMsg = document.getElementById('errorMsg');
+  const successMsg = document.getElementById('successMsg');
+  const otpSection = document.getElementById('otpSection');
+  const otpDisplay = document.getElementById('otpDisplay');
+
+  errorMsg.textContent = '';
+  successMsg.textContent = '';
+  otpDisplay.textContent = '';
+
   const username = document.getElementById('username').value.trim();
-  const number = document.getElementById('phone').value.trim();
+  const phone = document.getElementById('phone').value.trim();
   const password = document.getElementById('password').value;
   const confirm = document.getElementById('confirmPassword').value;
   const terms = document.getElementById('terms').checked;
+
+  if (!terms) return errorMsg.textContent = 'You must agree to terms.';
+  if (!/^[0-9]{10}$/.test(phone)) return errorMsg.textContent = 'Invalid phone number.';
+  if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) return errorMsg.textContent = 'Username must be 3-15 letters, numbers, or underscores.';
+  if (password.length < 6) return errorMsg.textContent = 'Password must be at least 6 chars.';
+  if (password !== confirm) return errorMsg.textContent = 'Passwords do not match.';
+
+  // Generate OTP
+  fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+  // Show OTP to client
+  otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
+  otpSection.style.display = 'block';
+  successMsg.textContent = '✅ OTP sent (test mode). Enter below to verify.';
+
+  // Save user temporarily
+  localStorage.setItem('pendingRegistration', JSON.stringify({username, phone, password}));
+});
+
+// Verify OTP
+document.getElementById('verifyOtpBtn').addEventListener('click', () => {
   const errorMsg = document.getElementById('errorMsg');
   const successMsg = document.getElementById('successMsg');
+  const otpInput = document.getElementById('otpInput').value.trim();
   const otpSection = document.getElementById('otpSection');
 
   errorMsg.textContent = '';
   successMsg.textContent = '';
 
-  if (!terms) return errorMsg.textContent = 'You must agree to terms.';
-  if (!/^[0-9]{10}$/.test(number)) return errorMsg.textContent = 'Invalid phone number.';
-  if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) return errorMsg.textContent = 'Username must be 3-15 letters, numbers, or underscores.';
-  if (password.length < 6) return errorMsg.textContent = 'Password must be at least 6 chars.';
-  if (password !== confirm) return errorMsg.textContent = 'Passwords do not match.';
+  if (!otpInput) return errorMsg.textContent = 'Enter OTP.';
+  if (otpInput !== fakeOTP) return errorMsg.textContent = 'Incorrect OTP.';
 
-  // Step 1: Register user
-  try {
-    const formData = new URLSearchParams();
-    formData.append("username", username);
-    formData.append("number", number);
-    formData.append("password", password);
+  const pending = JSON.parse(localStorage.getItem('pendingRegistration'));
+  if (!pending) return errorMsg.textContent = 'No registration data found.';
 
-    const res = await fetch(`${API_BASE}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString()
-    });
+  // Save user permanently
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+  users[pending.username] = {username: pending.username, phone: pending.phone, password: pending.password, balance:0, earnings:0};
+  localStorage.setItem('users', JSON.stringify(users));
+  localStorage.setItem('username', pending.username);
+  localStorage.removeItem('pendingRegistration');
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || data.message || "Registration failed.");
-
-    // Show OTP input
-    otpSection.style.display = 'block';
-    successMsg.textContent = '✅ OTP sent to your phone. Enter it below to verify your account.';
-  } catch (err) {
-    errorMsg.textContent = err.message || "Failed to register.";
-  }
-});
-
-// Step 2: Verify OTP
-document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
-  const username = document.getElementById('username').value.trim();
-  const otp = document.getElementById('otpInput').value.trim();
-  const errorMsg = document.getElementById('errorMsg');
-  const successMsg = document.getElementById('successMsg');
-
-  errorMsg.textContent = '';
-  successMsg.textContent = '';
-
-  if (!otp) return errorMsg.textContent = 'Enter OTP.';
-
-  try {
-    const formData = new URLSearchParams();
-    formData.append("username", username);
-    formData.append("otp", otp);
-
-    const res = await fetch(`${API_BASE}/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString()
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || data.message || "OTP verification failed.");
-
-    successMsg.textContent = data.message || "Account verified!";
-    localStorage.setItem("username", username);
-    setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
-  } catch (err) {
-    errorMsg.textContent = err.message || "OTP verification failed.";
-  }
+  successMsg.textContent = '✅ Registration complete! Redirecting...';
+  otpSection.style.display = 'none';
+  setTimeout(()=>window.location.href='dashboard.html', 1500);
 });
 </script>
+
 </body>
 </html>
