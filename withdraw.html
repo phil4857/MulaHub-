@@ -3,17 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Withdraw - mkoba wallet💸</title>
+<title>Withdraw - Mkoba Wallet 💸</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #e8ffe8; margin:0; padding:0;}
-  header { background: #009933; color: white; text-align:center; padding:15px;}
-  .container { max-width:500px; margin:30px auto; padding:20px; background:#ffe6f0; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
-  h2 { margin-top:0; color:#009933; }
-  label { display:block; margin-bottom:8px; margin-top:15px; }
-  input { width:100%; padding:10px; margin-top:5px; box-sizing:border-box; }
-  button { margin-top:20px; width:100%; background:#009933; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;}
-  button:hover { background:#007a29; }
-  .note { margin-top:15px; font-size:14px; color:#d9534f; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f9f5;
+    margin: 0; padding: 0;
+  }
+  header {
+    background: linear-gradient(90deg, #0a1d66, #1234a0);
+    color: #ffd700;
+    text-align: center;
+    padding: 20px;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .container {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 25px 30px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+  h2 {
+    margin-top: 0;
+    color: #0a1d66;
+    text-align: center;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: 500;
+    color: #0a1d66;
+  }
+  input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    font-weight: bold;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(to right, #0a1d66, #1234a0);
+    color: #ffd700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  }
+  .note {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #0a1d66;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -29,9 +84,9 @@
     <input type="number" id="amount" placeholder="Enter amount" required />
     <button type="submit">Submit Withdrawal</button>
     <p class="note">
-      🔐 Withdrawals only on <strong>Mondays</strong><br/>
+      🔒 Withdrawals allowed only on <strong>Mondays</strong><br/>
       💰 Minimum 30% of your investment<br/>
-      ⏳ Admin approval required
+      ⏳ Funds will be sent to your MPESA
     </p>
   </form>
 </div>
@@ -39,13 +94,15 @@
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const username = localStorage.getItem("username");
-  if (!username) {
+  const userToken = localStorage.getItem("userToken");
+
+  if (!username || !userToken) {
     alert("Please log in first.");
     window.location.href = "login.html";
     return;
   }
 
-  // Only allow Mondays
+  // Allow withdrawals only on Monday
   const today = new Date();
   if (today.getDay() !== 1) {
     alert("Withdrawals are only allowed on Mondays.");
@@ -53,10 +110,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // Fetch user dashboard data (user endpoint, not admin)
+  // Fetch user dashboard data
   async function getUserData() {
     try {
-      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/user/dashboard?username=${username}`);
+      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${encodeURIComponent(username)}`, {
+        headers: { "Authorization": `Bearer ${userToken}` }
+      });
       if (!res.ok) throw new Error("Failed to load your data");
       return await res.json();
     } catch (err) {
@@ -80,55 +139,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     const invested = userData.investment_amount || 0;
     const balance = userData.balance || 0;
     const minAllowed = Math.floor(invested * 0.3);
-    let maxAllowed = 0;
-
-    if (invested >= 500 && invested < 1000) maxAllowed = 150;
-    else if (invested >= 1000 && invested < 1500) maxAllowed = 300;
-    else if (invested >= 1500) maxAllowed = Math.floor(invested * 0.3);
+    const maxAllowed = balance;
 
     if (amount < minAllowed) {
-      alert(`Minimum withdrawal is 30% of investment: KES ${minAllowed}`);
+      alert(`Minimum withdrawal is 30% of your investment: KES ${minAllowed}`);
       return;
     }
     if (amount > maxAllowed) {
       alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
       return;
     }
-    if (amount > balance) {
-      alert("Insufficient balance.");
-      return;
-    }
 
-    // Submit withdrawal request (user endpoint)
+    // Submit withdrawal
     try {
-      const formData = new FormData();
+      const formData = new URLSearchParams();
       formData.append("username", username);
       formData.append("amount", amount);
 
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/user/withdraw_request", {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
         method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Withdrawal request failed");
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Withdrawal failed");
 
-      const result = await res.json();
-      alert("✅ Withdrawal request submitted successfully. Wait for admin approval.");
-
-      // 🔒 Secret notification to you (handled in backend)
-      // This POST triggers a hidden notification to admin without revealing to user
-      fetch("https://repo-1red-jipate-bonus.onrender.com/notify_admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "withdrawal_request", username, amount })
-      }).catch(() => console.warn("Secret admin notification failed"));
-
+      alert("✅ Withdrawal submitted successfully! Funds will be sent to your MPESA.");
       window.location.href = "dashboard.html";
 
     } catch (err) {
+      console.error(err);
       alert("❌ " + (err.message || "An error occurred"));
     }
   });
