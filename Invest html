@@ -1,8 +1,15 @@
+Absolutely! Below is a more comprehensive plan for the frontend that aligns with your `main.py` backend, incorporating the features and enhancements you requested. 
+
+### Updated HTML and JavaScript
+
+Here's the revised HTML with integrated JavaScript for dynamic functionality:
+
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset='utf-8' />
+  <meta name='viewport' content='width=device-width,initial-scale=1' />
   <title>Invest — Mkoba Wallet</title>
   <style>
     :root{--accent:#a25c00}
@@ -13,61 +20,161 @@
     .right{flex:1;min-width:260px}
     h2{color:var(--accent);margin:0 0 8px}
     .info{background:#f8faf9;border-radius:10px;padding:12px;margin-bottom:12px}
-    input[type="number"]{width:100%;padding:12px;border-radius:10px;border:1px solid #e5e7eb;font-size:16px}
+    input[type='number'], select{width:100%;padding:12px;border-radius:10px;border:1px solid #e5e7eb;font-size:16px}
     button{background:var(--accent);color:#fff;border:none;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:700}
     .small{font-size:13px;color:#666}
     .note{margin-top:10px;color:#2d3748}
+    .countdown{font-weight: 700; color: #e53e3e; margin-top: 10px;}
   </style>
 </head>
 <body>
-  <div class="panel">
-    <div class="row">
-      <div class="left">
+  <div class='panel'>
+    <div class='row'>
+      <div class='left'>
         <h2>Invest with Mkoba Wallet</h2>
-        <p class="small">Send your investment to the payment number shown and enter the transaction reference below.</p>
+        <p class='small'>Send your investment to the payment number shown and enter the transaction reference below.</p>
 
-        <div class="info">
+        <div class='info'>
           <div><strong>Platform:</strong> Mkoba Wallet</div>
-          <div><strong>Payment Number:</strong> <span id="paymentNumber">0739075065</span></div>
-          <div class="small">Minimum investment: KES 500</div>
+          <div><strong>Payment Number:</strong> <span id='paymentNumber'>0739075065</span></div>
+          <div class='small'>Select a commodity for investment:</div>
+          <select id='commoditySelect' required>
+            <option value=''>-- Select Commodity --</option>
+            <option value='silver' data-min='550'>Silver (KES 550)</option>
+            <option value='marble' data-min='650'>Marble (KES 650)</option>
+            <option value='uranium' data-min='1250'>Uranium (KES 1250)</option>
+            <option value='diamond' data-min='1850'>Diamond (KES 1850)</option>
+            <option value='gold' data-min='2050'>Gold (KES 2050)</option>
+          </select>
         </div>
 
-        <form id="investForm">
+        <form id='investForm'>
           <label>Investment amount (KES)</label>
-          <input id="amount" name="amount" type="number" min="500" step="1" required />
+          <input id='amount' name='amount' type='number' min='500' step='1' required />
 
-          <label style="margin-top:10px">Transaction reference (MPESA/ID)</label>
-          <input id="txRef" name="txRef" placeholder="e.g. AB12CD34" />
+          <label style='margin-top:10px'>Transaction reference (MPESA/ID)</label>
+          <input id='txRef' name='txRef' placeholder='e.g. AB12CD34' required />
 
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <button type="submit">Submit Investment</button>
-            <button type="button" id="cancelBtn" style="background:#f3f4f6;color:#111">Cancel</button>
+          <div style='margin-top:12px;display:flex;gap:8px'>
+            <button type='submit'>Submit Investment</button>
+            <button type='button' id='cancelBtn' style='background:#f3f4f6;color:#111'>Cancel</button>
           </div>
 
-          <p id="investMessage" class="note"></p>
+          <p id='investMessage' class='note'></p>
+          <p id='countdown' class='countdown'></p>
         </form>
       </div>
 
-      <div class="right">
+      <div class='right'>
         <h3>Quick Tips</h3>
-        <ul class="small">
+        <ul class='small'>
           <li>Make sure you are logged in before submitting an investment.</li>
           <li>Use the exact MPESA transaction reference in the form so admin can approve faster.</li>
           <li>Admin will credit your account once the investment is approved.</li>
         </ul>
 
-        <div style="margin-top:18px">
+        <div style='margin-top:18px'>
           <h4>Your Account</h4>
-          <div class="info">
-            <div><strong>Username:</strong> <span id="usernameDisplay">—</span></div>
-            <div><strong>Balance:</strong> KES <span id="balanceDisplay">0.00</span></div>
-            <div><strong>Pending Investment:</strong> KES <span id="pendingInv">0.00</span></div>
+          <div class='info'>
+            <div><strong>Username:</strong> <span id='usernameDisplay'>—</span></div>
+            <div><strong>Balance:</strong> KES <span id='balanceDisplay'>0.00</span></div>
+            <div><strong>Pending Investment:</strong> KES <span id='pendingInv'>0.00</span></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="invest.js"></script>
+  <script>
+    const commoditySelect = document.getElementById('commoditySelect');
+    const amountInput = document.getElementById('amount');
+    const investForm = document.getElementById('investForm');
+    const investMessage = document.getElementById('investMessage');
+    const countdownDisplay = document.getElementById('countdown');
+
+    // Update the minimum investment based on selected commodity
+    commoditySelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const minInvestment = selectedOption.getAttribute('data-min');
+      amountInput.setAttribute('min', minInvestment);
+      investMessage.textContent = `Minimum investment for ${selectedOption.textContent} is KES ${minInvestment}.`;
+    });
+
+    // Handle form submission
+    investForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const amount = amountInput.value;
+      const txRef = document.getElementById('txRef').value;
+      const selectedCommodity = commoditySelect.value;
+
+      if (amount < commoditySelect.options[commoditySelect.selectedIndex].getAttribute('data-min')) {
+        investMessage.textContent = 'Investment amount is below the minimum required.';
+        return;
+      }
+
+      // Send investment data to the backend (replace with your API endpoint)
+      fetch('/api/invest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ amount, txRef, commodity: selectedCommodity })
+      })
+      .then(response => response.json())
+      .then(data => {
+        investMessage.textContent = data.message;
+        startCountdown(); // Start the countdown for the earning period
+      })
+      .catch(error => {
+        investMessage.textContent = 'Error processing investment.';
+        console.error('Error:', error);
+      });
+    });
+
+    // Countdown function
+    function startCountdown() {
+      const countdownEnd = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+      const countdownInterval = setInterval(() => {
+        const now = new Date();
+        const remainingTime = countdownEnd - now;
+
+        if (remainingTime < 0) {
+          clearInterval(countdownInterval);
+          countdownDisplay.textContent = 'Time to earn again!';
+        } else {
+          const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+          countdownDisplay.textContent = `Earnings available in: ${hours}h ${minutes}m`;
+        }
+      }, 60000); // Update every minute
+    }
+
+    // Cancel button functionality
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+      investForm.reset();
+      investMessage.textContent = '';
+      countdownDisplay.textContent = '';
+    });
+  </script>
 </body>
 </html>
+```
+
+### Key Features Implemented
+
+1. **Dynamic Minimum Investment**: The minimum investment updates according to the selected commodity, and it displays a message if the investment is below that amount.
+
+2. **Countdown Timer**: A countdown timer shows the hours and minutes until the next earning period.
+
+3. **Investment Status Handling**: After submitting the investment, a message is displayed indicating the outcome. You can customize the API endpoint to match your backend.
+
+4. **Form Validation**: Validation ensures that the amount entered meets the minimum required for the selected commodity.
+
+5. **Cancel Functionality**: The "Cancel" button resets the form and clears any messages.
+
+### Next Steps
+
+- **Integrate with Backend**: Make sure to adjust the API endpoint in the fetch function to match your backend.
+- **Investment Status Display**: If you want to show current investments and their statuses, you may want to fetch that data and display it in the account section.
+
+Let me know if you need any further adjustments or if you have another file to share!
