@@ -5,71 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Withdraw - Mkoba Wallet 💸</title>
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f0f9f5;
-    margin: 0; padding: 0;
-  }
-  header {
-    background: linear-gradient(90deg, #0a1d66, #1234a0);
-    color: #ffd700;
-    text-align: center;
-    padding: 20px;
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-  .container {
-    max-width: 500px;
-    margin: 30px auto;
-    padding: 25px 30px;
-    background: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  }
-  h2 {
-    margin-top: 0;
-    color: #0a1d66;
-    text-align: center;
-  }
-  label {
-    display: block;
-    margin-top: 15px;
-    font-weight: 500;
-    color: #0a1d66;
-  }
-  input {
-    width: 100%;
-    padding: 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-  }
-  button {
-    margin-top: 20px;
-    width: 100%;
-    padding: 14px;
-    font-weight: bold;
-    font-size: 1rem;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(to right, #0a1d66, #1234a0);
-    color: #ffd700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-  }
-  .note {
-    margin-top: 15px;
-    font-size: 14px;
-    color: #0a1d66;
-    text-align: center;
-  }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f9f5; margin: 0; padding: 0; }
+  header { background: linear-gradient(90deg, #0a1d66, #1234a0); color: #ffd700; text-align: center; padding: 20px; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+  .container { max-width: 500px; margin: 30px auto; padding: 25px 30px; background: #ffffff; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  h2 { margin-top: 0; color: #0a1d66; text-align: center; }
+  label { display: block; margin-top: 15px; font-weight: 500; color: #0a1d66; }
+  input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+  button { margin-top: 20px; width: 100%; padding: 14px; font-weight: bold; font-size: 1rem; border: none; border-radius: 10px; background: linear-gradient(to right, #0a1d66, #1234a0); color: #ffd700; cursor: pointer; transition: all 0.3s ease; }
+  button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+  .note { margin-top: 15px; font-size: 14px; color: #0a1d66; text-align: center; }
   #otpSection { display:none; margin-top:15px; }
+  #otpDisplay { font-weight:bold; text-align:center; margin-top:10px; color:#1a237e; }
 </style>
 </head>
 <body>
@@ -83,10 +29,13 @@
   <form id="withdrawForm">
     <label for="amount">Amount to Withdraw (KES):</label>
     <input type="number" id="amount" placeholder="Enter amount" required />
+    
     <div id="otpSection">
+      <p id="otpDisplay"></p>
       <input type="text" id="withdrawOtp" placeholder="Enter OTP" />
       <button type="button" id="confirmWithdrawBtn">Confirm Withdrawal</button>
     </div>
+    
     <button type="submit" id="withdrawBtn">Submit Withdrawal</button>
     <p class="note">
       🔒 Withdrawals allowed only on <strong>Mondays</strong><br/>
@@ -99,30 +48,18 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const username = localStorage.getItem("username");
-  if (!username) {
-    alert("Please log in first.");
-    window.location.href = "login.html";
-    return;
-  }
-
-  // Monday check
-  const today = new Date();
-  if (today.getDay() !== 1) {
-    alert("Withdrawals are only allowed on Mondays.");
-    window.location.href = "dashboard.html";
-    return;
-  }
+  if (!username) { alert("Please log in first."); window.location.href = "login.html"; return; }
 
   const withdrawForm = document.getElementById("withdrawForm");
   const otpSection = document.getElementById("otpSection");
   const withdrawOtpInput = document.getElementById("withdrawOtp");
+  const otpDisplay = document.getElementById("otpDisplay");
   let fakeOTP = null;
 
   function getUser() {
     const users = JSON.parse(localStorage.getItem("users") || "{}");
     return users[username];
   }
-
   function saveUser(user) {
     const users = JSON.parse(localStorage.getItem("users") || "{}");
     users[username] = user;
@@ -143,9 +80,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (amount < minAllowed) return alert(`Minimum withdrawal is 30% of investment: KES ${minAllowed}`);
     if (amount > maxAllowed) return alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
 
-    fakeOTP = Math.floor(1000 + Math.random()*9000).toString();
-    console.log(`Withdrawal OTP: ${fakeOTP}`); // Test purposes
-    alert("OTP sent to your phone (check console in test mode)");
+    // ✅ Generate OTP and display it on page
+    fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
+    alert("OTP sent (test mode). Enter below to confirm withdrawal.");
+
     user.pendingWithdrawal = amount;
     saveUser(user);
     otpSection.style.display = "block";
