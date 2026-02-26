@@ -1,14 +1,12 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const username = localStorage.getItem("username");
-  const userToken = localStorage.getItem("userToken");
-
-  if (!username || !userToken) {
+  if (!username) {
     alert("Please log in first.");
     window.location.href = "login.html";
     return;
   }
 
-  // Only allow withdrawals on Monday
+  // Monday check
   const today = new Date();
   if (today.getDay() !== 1) {
     alert("Withdrawals are only allowed on Mondays.");
@@ -16,67 +14,57 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // Fetch user dashboard data
-  async function getUserData() {
-    try {
-      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${encodeURIComponent(username)}`, {
-        headers: { "Authorization": `Bearer ${userToken}` }
-      });
-      if (!res.ok) throw new Error("Failed to load your data");
-      return await res.json();
-    } catch (err) {
-      alert(err.message);
-      return null;
-    }
+  const withdrawForm = document.getElementById("withdrawForm");
+  const otpSection = document.getElementById("otpSection");
+  const withdrawOtpInput = document.getElementById("withdrawOtp");
+  const otpDisplay = document.getElementById("otpDisplay");
+  let fakeOTP = null;
+
+  function getUser() {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    return users[username];
   }
 
-  const userData = await getUserData();
-  if (!userData) return;
+  function saveUser(user) {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    users[username] = user;
+    localStorage.setItem("users", JSON.stringify(users));
+  }
 
-  const withdrawForm = document.getElementById("withdrawForm");
-  withdrawForm.addEventListener("submit", async (e) => {
+  withdrawForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const amount = parseFloat(document.getElementById("amount").value);
+    const user = getUser();
+    if (!user) return alert("User not found");
 
-    if (isNaN(amount) || amount <= 0) {
-      alert("Enter a valid amount.");
-      return;
-    }
-
-    const invested = userData.investment_amount || 0;
-    const balance = userData.balance || 0;
+    const invested = user.investment_amount || 0;
+    const balance = user.balance || 0;
     const minAllowed = Math.floor(invested * 0.3);
     const maxAllowed = balance;
 
-    if (amount < minAllowed) {
-      alert(`Minimum withdrawal is 30% of your investment: KES ${minAllowed}`);
-      return;
-    }
-    if (amount > maxAllowed) {
-      alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
-      return;
-    }
+    if (amount < minAllowed) return alert(`Minimum withdrawal is 30% of investment: KES ${minAllowed}`);
+    if (amount > maxAllowed) return alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
 
-    try {
-      const formData = new URLSearchParams();
-      formData.append("username", username);
-      formData.append("amount", amount);
+    // ✅ Generate OTP and display on page
+    fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
+    alert("OTP generated! Enter it below to confirm withdrawal.");
 
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData
-      });
+    user.pendingWithdrawal = amount;
+    saveUser(user);
+    otpSection.style.display = "block";
+  });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Withdrawal failed");
+  document.getElementById("confirmWithdrawBtn").addEventListener("click", () => {
+    const otp = withdrawOtpInput.value.trim();
+    if (otp !== fakeOTP) return alert("Incorrect OTP");
 
-      alert("✅ Withdrawal submitted successfully! Funds will be sent to your MPESA.");
-      window.location.href = "dashboard.html";
+    const user = getUser();
+    user.balance -= user.pendingWithdrawal;
+    delete user.pendingWithdrawal;
+    saveUser(user);
 
-    } catch (err) {
-      console.error(err);
-      alert("❌ " + (err.message || "An error occurred"));
-    }
+    alert("✅ Withdrawal successful! Funds will be sent to your MPESA.");
+    window.location.href = "dashboard.html";
   });
 });
