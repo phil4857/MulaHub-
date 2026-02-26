@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const username = localStorage.getItem("username");
   if (!username) {
     alert("Please log in first.");
@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const balanceEl = document.getElementById("balanceDisplay");
   const investmentListEl = document.getElementById("investmentList");
-  const commoditySelect = document.getElementById("commodity");
   const investOtpSection = document.getElementById("investOtpSection");
   const investOtpInput = document.getElementById("investOtp");
   const withdrawAmountInput = document.getElementById("withdrawAmount");
@@ -16,133 +15,119 @@ document.addEventListener("DOMContentLoaded", async () => {
   const withdrawOtpInput = document.getElementById("withdrawOtp");
 
   let investmentsData = {};
+  let fakeInvestOTP = null;
+  let fakeWithdrawOTP = null;
 
-  async function loadDashboard() {
-    try {
-      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${encodeURIComponent(username)}`);
-      if (!res.ok) throw new Error("Failed to fetch dashboard");
-      const data = await res.json();
-      balanceEl.textContent = `KES ${parseFloat(data.balance||0).toFixed(2)}`;
-      investmentsData = data.investments || {};
-      renderInvestments();
-    } catch(err) {
-      console.error(err);
-      alert("Dashboard load failed: " + err.message);
-    }
+  function getUser() {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    return users[username];
   }
 
-  function renderInvestments(){
+  function saveUser(user) {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    users[username] = user;
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+  function loadDashboard() {
+    const user = getUser();
+    balanceEl.textContent = `KES ${user.balance.toFixed(2)}`;
+    investmentsData = user.investments || {};
+    renderInvestments();
+  }
+
+  function renderInvestments() {
     investmentListEl.innerHTML = "";
-    if(Object.keys(investmentsData).length===0){
+    if (Object.keys(investmentsData).length === 0) {
       investmentListEl.textContent = "No active investments.";
       return;
     }
-    for(const [commodity, inv] of Object.entries(investmentsData)){
+    for (const [commodity, inv] of Object.entries(investmentsData)) {
       const div = document.createElement("div");
       div.id = `invest-${commodity}`;
-      div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${inv.time_remaining}`;
+      const now = new Date();
+      const expiry = new Date(inv.expiry_date);
+      const diff = expiry - now;
+      let timeText = diff > 0 ? `${Math.floor(diff/3600000)}h ${Math.floor((diff%3600000)/60000)}m ${Math.floor((diff%60000)/1000)}s` : "Expired";
+      div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${timeText}`;
       div.className = "investment-item";
       investmentListEl.appendChild(div);
     }
   }
 
   // Investment request
-  document.getElementById("investBtn")?.addEventListener("click", async () => {
-    const commodity = commoditySelect.value;
-    const form = new URLSearchParams({ username, commodity });
-    try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest/request", {
-        method: "POST",
-        body: form
-      });
-      const data = await res.json();
-      if(!res.ok) throw new Error(data.detail);
-      alert(data.message + " Enter OTP to confirm investment.");
-      investOtpSection.style.display = "block";
-    } catch(err) {
-      alert("Investment request failed: "+err.message);
-    }
+  document.getElementById("investBtn")?.addEventListener("click", () => {
+    const commodity = document.getElementById("commodity").value;
+    const user = getUser();
+    const amount = parseFloat(prompt("Enter investment amount:"));
+    if (isNaN(amount) || amount <= 0) return alert("Enter a valid amount");
+    if (amount > user.balance) return alert("Insufficient balance");
+
+    fakeInvestOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    console.log(`Investment OTP: ${fakeInvestOTP}`);
+    alert("OTP sent for investment (check console in test mode)");
+    investOtpSection.style.display = "block";
+
+    user.pendingInvestment = { commodity, amount, expiry_date: new Date(Date.now() + 3600*1000*24).toISOString() };
+    saveUser(user);
   });
 
   // Investment confirm
-  document.getElementById("investConfirmBtn")?.addEventListener("click", async () => {
-    const otp = investOtpInput.value;
-    if(!otp) return alert("Enter OTP");
-    const form = new URLSearchParams({ username, otp });
-    try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/invest/confirm", {
-        method: "POST",
-        body: form
-      });
-      const data = await res.json();
-      if(!res.ok) throw new Error(data.detail);
-      alert(data.message);
-      investOtpSection.style.display = "none";
-      investOtpInput.value = "";
-      await loadDashboard();
-    } catch(err) {
-      alert("Investment confirmation failed: "+err.message);
-    }
+  document.getElementById("investConfirmBtn")?.addEventListener("click", () => {
+    const otp = investOtpInput.value.trim();
+    if (otp !== fakeInvestOTP) return alert("Incorrect OTP");
+
+    const user = getUser();
+    if (!user.pendingInvestment) return alert("No pending investment");
+
+    const inv = user.pendingInvestment;
+    user.balance -= inv.amount;
+    if (!user.investments) user.investments = {};
+    user.investments[inv.commodity] = inv;
+    delete user.pendingInvestment;
+    saveUser(user);
+
+    fakeInvestOTP = null;
+    investOtpInput.value = "";
+    investOtpSection.style.display = "none";
+    alert("Investment successful!");
+    loadDashboard();
   });
 
   // Withdrawal request
-  document.getElementById("withdrawBtn")?.addEventListener("click", async () => {
-    const amount = withdrawAmountInput.value;
-    if(!amount || isNaN(amount) || Number(amount)<=0) return alert("Enter valid amount");
-    const form = new URLSearchParams({ username, amount });
-    try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/request", {
-        method: "POST",
-        body: form
-      });
-      const data = await res.json();
-      if(!res.ok) throw new Error(data.detail);
-      alert(data.message + " Enter OTP to confirm withdrawal.");
-      withdrawOtpSection.style.display = "block";
-    } catch(err) {
-      alert("Withdrawal request failed: "+err.message);
-    }
+  document.getElementById("withdrawBtn")?.addEventListener("click", () => {
+    const amount = parseFloat(withdrawAmountInput.value);
+    const user = getUser();
+    if (isNaN(amount) || amount <= 0) return alert("Enter valid amount");
+    if (amount > user.balance) return alert("Insufficient balance");
+
+    fakeWithdrawOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    console.log(`Withdrawal OTP: ${fakeWithdrawOTP}`);
+    alert("OTP sent for withdrawal (check console in test mode)");
+    withdrawOtpSection.style.display = "block";
+
+    user.pendingWithdrawal = amount;
+    saveUser(user);
   });
 
   // Withdrawal confirm
-  document.getElementById("withdrawConfirmBtn")?.addEventListener("click", async () => {
-    const otp = withdrawOtpInput.value;
-    if(!otp) return alert("Enter OTP");
-    const form = new URLSearchParams({ username, otp });
-    try {
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/confirm", {
-        method: "POST",
-        body: form
-      });
-      const data = await res.json();
-      if(!res.ok) throw new Error(data.detail);
-      alert(data.message);
-      withdrawOtpSection.style.display = "none";
-      withdrawOtpInput.value = "";
-      await loadDashboard();
-    } catch(err) {
-      alert("Withdrawal confirmation failed: "+err.message);
-    }
+  document.getElementById("withdrawConfirmBtn")?.addEventListener("click", () => {
+    const otp = withdrawOtpInput.value.trim();
+    if (otp !== fakeWithdrawOTP) return alert("Incorrect OTP");
+
+    const user = getUser();
+    user.balance -= user.pendingWithdrawal;
+    delete user.pendingWithdrawal;
+    saveUser(user);
+
+    fakeWithdrawOTP = null;
+    withdrawOtpInput.value = "";
+    withdrawOtpSection.style.display = "none";
+    alert("Withdrawal successful!");
+    loadDashboard();
   });
 
-  // Countdown updater
-  setInterval(()=>{
-    for(const [commodity, inv] of Object.entries(investmentsData)){
-      const div = document.getElementById(`invest-${commodity}`);
-      if(!div) continue;
-      const expiry = new Date(inv.expiry_date);
-      const now = new Date();
-      const diff = expiry - now;
-      if(diff>0){
-        const h = Math.floor(diff/3600000);
-        const m = Math.floor((diff%3600000)/60000);
-        const s = Math.floor((diff%60000)/1000);
-        div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${h}h ${m}m ${s}s`;
-      }else{
-        div.textContent = `${commodity}: KES ${inv.amount} | Expired`;
-      }
-    }
-  },1000);
-
+  // Investment countdown updater
+  setInterval(renderInvestments, 1000);
   loadDashboard();
 });
