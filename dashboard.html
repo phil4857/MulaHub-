@@ -21,6 +21,7 @@ button { padding:10px 15px; border:none; border-radius:5px; font-weight:bold; cu
 button:hover { opacity:0.85; }
 .investment-list { margin-top:10px; padding:10px; background:#f0f8f0; border-radius:5px; }
 .investment-item { margin-bottom:5px; }
+.otp-display { font-weight:bold; color:#ff9800; margin-bottom:5px; }
 </style>
 </head>
 <body>
@@ -44,7 +45,10 @@ button:hover { opacity:0.85; }
       <option value="uranium">Uranium (KES 1250)</option>
     </select>
     <button class="invest-btn" onclick="investRequest()">Invest</button>
+
+    <!-- Display OTP to client -->
     <div id="investOtpSection" style="display:none; margin-top:10px;">
+      <p class="otp-display">Your OTP: <span id="investOtpDisplay"></span></p>
       <input type="text" id="investOtp" placeholder="Enter OTP">
       <button class="otp-btn" onclick="investConfirm()">Confirm Investment</button>
     </div>
@@ -55,7 +59,10 @@ button:hover { opacity:0.85; }
     <h3>📤 Request Withdrawal</h3>
     <input type="number" id="withdrawAmount" placeholder="Enter amount">
     <button class="withdraw-btn" onclick="withdrawRequest()">Request Withdrawal</button>
+
+    <!-- Display OTP to client -->
     <div id="withdrawOtpSection" style="display:none; margin-top:10px;">
+      <p class="otp-display">Your OTP: <span id="withdrawOtpDisplay"></span></p>
       <input type="text" id="withdrawOtp" placeholder="Enter OTP">
       <button class="otp-btn" onclick="withdrawConfirm()">Confirm Withdrawal</button>
     </div>
@@ -111,12 +118,11 @@ function renderInvestments(investments){
 
 // ===== INVESTMENT FLOW =====
 let investOTP = null;
-
 function investRequest(){
   const commodity = document.getElementById("commodity").value;
   investOTP = Math.floor(1000+Math.random()*9000).toString();
-  console.log("Investment OTP:", investOTP);
-  alert("OTP sent! (check console in test mode)");
+  document.getElementById("investOtpDisplay").textContent = investOTP;
+  alert("OTP sent! (visible on page for test mode)");
   document.getElementById("investOtpSection").style.display = "block";
 
   const user = getUser();
@@ -147,7 +153,6 @@ function investConfirm(){
 
 // ===== WITHDRAWAL FLOW =====
 let withdrawOTP = null;
-
 function withdrawRequest(){
   const user = getUser();
   const amount = parseFloat(document.getElementById("withdrawAmount").value);
@@ -163,8 +168,8 @@ function withdrawRequest(){
   if(amount>maxAllowed) return alert(`Maximum withdrawal: KES ${maxAllowed}`);
 
   withdrawOTP = Math.floor(1000+Math.random()*9000).toString();
-  console.log("Withdrawal OTP:", withdrawOTP);
-  alert("OTP sent! (check console in test mode)");
+  document.getElementById("withdrawOtpDisplay").textContent = withdrawOTP;
+  alert("OTP sent! (visible on page for test mode)");
 
   user.pendingWithdrawal = amount;
   saveUser(user);
