@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const verifyBtn = document.getElementById('verifyOtpBtn');
   const errorMsg = document.getElementById('errorMsg');
   const successMsg = document.getElementById('successMsg');
+  const otpDisplay = document.getElementById('otpDisplay'); // new element to show OTP
 
   let fakeOTP = null;
 
@@ -13,11 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     otpSection.style.display = 'block';
   }
 
-  // Step 1: Handle registration form submission
+  // Handle registration form submission
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     errorMsg.textContent = '';
     successMsg.textContent = '';
+    otpDisplay.textContent = '';
 
     const username = document.getElementById('username').value.trim();
     const phone = document.getElementById('phone').value.trim();
@@ -41,11 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // ✅ Generate fake OTP
+    // Generate fake OTP
     fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // ✅ Display OTP on page so client can see it immediately
-    successMsg.innerHTML = `✅ OTP sent to ${phone}. <br><strong>Your OTP: ${fakeOTP}</strong>`;
+    // Display OTP clearly for client
+    successMsg.textContent = `✅ OTP sent to ${phone} (test mode)`;
+    otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
     showOTPSection();
 
     // Save registration info temporarily
@@ -54,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
   });
 
-  // Step 2: Handle OTP verification
+  // Handle OTP verification
   verifyBtn.addEventListener('click', () => {
     errorMsg.textContent = '';
     successMsg.textContent = '';
@@ -70,14 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // ✅ OTP correct — finalize registration
+    // OTP correct — finalize registration
     const pending = JSON.parse(localStorage.getItem('pendingRegistration'));
     if (!pending) {
       errorMsg.textContent = "No registration data found. Refresh and try again.";
       return;
     }
 
-    // Save user data locally
     const users = JSON.parse(localStorage.getItem('users') || '{}');
     if (users[pending.username]) {
       errorMsg.textContent = "Username already exists.";
@@ -98,8 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('pendingRegistration');
 
     successMsg.textContent = "✅ Registration complete! Redirecting to dashboard...";
+    otpDisplay.textContent = '';
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 1500);
   });
-});
+}); hi
