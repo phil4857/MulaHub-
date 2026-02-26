@@ -8,12 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let fakeOTP = null;
 
-  // Toggle OTP input visibility
+  // Show OTP input section
   function showOTPSection() {
     otpSection.style.display = 'block';
   }
 
-  // Step 1: Handle initial registration form submission
+  // Step 1: Handle registration form submission
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     errorMsg.textContent = '';
@@ -43,11 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ✅ Generate fake OTP
     fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log(`Fake OTP for ${phone}: ${fakeOTP}`); // For testing purposes
-    successMsg.textContent = `✅ OTP sent to ${phone}. (Check console for OTP in test mode)`;
+
+    // ✅ Display OTP on page so client can see it immediately
+    successMsg.innerHTML = `✅ OTP sent to ${phone}. <br><strong>Your OTP: ${fakeOTP}</strong>`;
     showOTPSection();
 
-    // Save registration info temporarily in localStorage
+    // Save registration info temporarily
     localStorage.setItem('pendingRegistration', JSON.stringify({
       username, phone, password, referral
     }));
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Save user data locally (simulate server storage)
+    // Save user data locally
     const users = JSON.parse(localStorage.getItem('users') || '{}');
     if (users[pending.username]) {
       errorMsg.textContent = "Username already exists.";
