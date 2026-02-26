@@ -1,32 +1,40 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const username = localStorage.getItem("username");
-  if (!username) {
+  const userToken = localStorage.getItem("userToken");
+
+  if (!username || !userToken) {
     alert("Please log in first.");
     window.location.href = "login.html";
     return;
   }
 
+  // Only allow withdrawals on Monday
   const today = new Date();
-  const day = today.getDay(); // 1 = Monday
-  if (day !== 1) {
+  if (today.getDay() !== 1) {
     alert("Withdrawals are only allowed on Mondays.");
     window.location.href = "dashboard.html";
     return;
   }
 
-  async function notifyAdmin(type, username, amount) {
+  // Fetch user dashboard data
+  async function getUserData() {
     try {
-      await fetch("https://repo-1red-jipate-bonus.onrender.com/notify_admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, username, amount })
+      const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${encodeURIComponent(username)}`, {
+        headers: { "Authorization": `Bearer ${userToken}` }
       });
+      if (!res.ok) throw new Error("Failed to load your data");
+      return await res.json();
     } catch (err) {
-      console.warn("Admin notification failed:", err);
+      alert(err.message);
+      return null;
     }
   }
 
-  document.getElementById("withdrawForm").addEventListener("submit", async function (e) {
+  const userData = await getUserData();
+  if (!userData) return;
+
+  const withdrawForm = document.getElementById("withdrawForm");
+  withdrawForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const amount = parseFloat(document.getElementById("amount").value);
 
@@ -35,71 +43,40 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const invested = userData.investment_amount || 0;
+    const balance = userData.balance || 0;
+    const minAllowed = Math.floor(invested * 0.3);
+    const maxAllowed = balance;
+
+    if (amount < minAllowed) {
+      alert(`Minimum withdrawal is 30% of your investment: KES ${minAllowed}`);
+      return;
+    }
+    if (amount > maxAllowed) {
+      alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
+      return;
+    }
+
     try {
-      const [userRes, investRes] = await Promise.all([
-        fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_users"),
-        fetch("https://repo-1red-jipate-bonus.onrender.com/admin/view_investments"),
-      ]);
-
-      const users = await userRes.json();
-      const investments = await investRes.json();
-
-      const user = users[username];
-      const investment = investments[username];
-
-      if (!user || !investment) {
-        alert("Account or investment not found.");
-        return;
-      }
-
-      const invested = investment.amount;
-      const balance = user.balance;
-      const minAllowed = Math.floor(invested * 0.3);
-      let maxAllowed = 0;
-
-      if (invested >= 500 && invested < 1000) maxAllowed = 150;
-      else if (invested >= 1000 && invested < 1500) maxAllowed = 300;
-      else if (invested >= 1500) maxAllowed = Math.floor(invested * 0.3);
-
-      if (amount < minAllowed) {
-        alert(`Minimum withdrawal is 30% of investment: KES ${minAllowed}`);
-        return;
-      }
-
-      if (amount > maxAllowed) {
-        alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
-        return;
-      }
-
-      if (amount > balance) {
-        alert("Insufficient balance.");
-        return;
-      }
-
-      const formData = new FormData();
+      const formData = new URLSearchParams();
       formData.append("username", username);
       formData.append("amount", amount);
 
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw/request", {
+      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/withdraw", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Withdrawal request failed.");
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Withdrawal failed");
 
-      const result = await res.json();
-      alert("✅ Withdrawal request submitted. Wait for admin approval.");
-
-      // ✅ Secret admin notification
-      notifyAdmin("withdrawal", username, amount);
-
+      alert("✅ Withdrawal submitted successfully! Funds will be sent to your MPESA.");
       window.location.href = "dashboard.html";
+
     } catch (err) {
       console.error(err);
-      alert(err.message || "An error occurred during withdrawal.");
+      alert("❌ " + (err.message || "An error occurred"));
     }
   });
 });
