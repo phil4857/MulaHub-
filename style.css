@@ -1,72 +1,120 @@
-/* General page styling */
+/* ------------------ General Page Styling ------------------ */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 20px;
-  max-width: 600px;
-  margin: auto;
-  background-color: #f0f4f8; /* Light background */
+  max-width: 650px;
+  margin: 40px auto;
+  background: linear-gradient(135deg, #e0f7fa, #fff9c4); /* soft gradient background */
   color: #1c1c1c;
 }
 
-/* Headings */
+/* ------------------ Headings ------------------ */
 h1, h2 {
-  color: #0a1d66; /* Dark blue heading */
+  color: #0a1d66; /* dark blue */
   text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
 
-/* Form container */
+/* ------------------ Form Container ------------------ */
 form {
   background: #ffffff;
-  padding: 20px;
-  margin-bottom: 25px;
-  border: 2px solid #d4af37; /* Gold border */
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 25px 30px;
+  margin-bottom: 30px;
+  border: 2px solid #ffd700; /* gold border */
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Input fields */
-input, button, select {
+form:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* ------------------ Input Fields ------------------ */
+input, select {
   display: block;
   width: 100%;
-  padding: 12px;
+  padding: 14px 12px;
   margin-top: 12px;
   box-sizing: border-box;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
-}
-
-/* Input fields style */
-input, select {
   border: 1px solid #ccc;
   background-color: #f9f9f9;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 input:focus, select:focus {
   border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0,123,255,0.3);
   outline: none;
 }
 
-/* Button style */
+/* ------------------ Buttons ------------------ */
 button {
-  background-color: #0a1d66; /* Deep blue */
-  color: #ffd700; /* Gold text */
+  background: linear-gradient(to right, #0a1d66, #1234a0);
+  color: #ffd700; /* gold text */
   font-weight: bold;
   border: none;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  padding: 14px;
+  margin-top: 15px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
-/* Button hover effect */
 button:hover {
-  background-color: #1234a0; /* Lighter blue */
+  background: linear-gradient(to right, #1234a0, #0a1d66);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.25);
 }
 
-/* Message and alerts */
+/* ------------------ Alerts & Messages ------------------ */
 .alert {
-  background-color: #ffeeba;
+  background-color: #fff3cd;
   color: #856404;
-  padding: 10px;
+  padding: 12px 15px;
   margin-bottom: 15px;
-  border-left: 5px solid #ffd700;
-  border-radius: 4px;
+  border-left: 6px solid #ffd700;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ------------------ Countdown Display ------------------ */
+#countdown {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ff9800;
+  margin-bottom: 20px;
+}
+
+/* ------------------ Form Labels ------------------ */
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: 600;
+  color: #0a1d66;
+}
+
+/* ------------------ Extra Touches ------------------ */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 0.95rem;
+}
+
+.checkbox-label input {
+  margin-right: 10px;
+  accent-color: #0a1d66; /* dark blue checkbox color */
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.3s ease-in-out;
 }
