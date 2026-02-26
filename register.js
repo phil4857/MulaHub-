@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     const confirm = document.getElementById('confirmPassword').value;
-    const referral = document.getElementById('referral').value.trim();
+    const referral = document.getElementById('referral') ? document.getElementById('referral').value.trim() : '';
 
     if (!username || !phone || !password || !confirm) {
       alert("Please fill in all required fields.");
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.detail || "Registration failed");
+        throw new Error(data.detail || data.message || "Registration failed");
       }
 
       alert(data.message || "Registered successfully!");
