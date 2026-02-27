@@ -32,21 +32,26 @@ button:hover { opacity:0.85; }
   <h2>Welcome, <span id="usernameDisplay"></span></h2>
   <div class="info">
     <p><strong>Balance:</strong> KES <span id="balanceDisplay">0.00</span></p>
+    <p><strong>Earnings:</strong> KES <span id="earningsDisplay">0.00</span></p>
   </div>
 
   <!-- Investments Section -->
   <div class="form-section">
     <h3>💰 Make Investment</h3>
-    <select id="commodity">
-      <option value="silver">Silver (KES 550)</option>
-      <option value="gold">Gold (KES 2050)</option>
-      <option value="marble">Marble (KES 650)</option>
-      <option value="diamond">Diamond (KES 1850)</option>
-      <option value="uranium">Uranium (KES 1250)</option>
+    <select id="commoditySelect">
+      <option value="">-- Select Commodity --</option>
+      <option value="marble">Marble</option>
+      <option value="crude_oil">Crude Oil</option>
+      <option value="silver">Silver</option>
+      <option value="lead">Lead</option>
+      <option value="platinum">Platinum</option>
+      <option value="diamonds">Diamonds</option>
+      <option value="gold">Gold</option>
+      <option value="uranium">Uranium</option>
     </select>
     <button class="invest-btn" onclick="investRequest()">Invest</button>
     <div id="investOtpSection" style="display:none; margin-top:10px;">
-      <input type="text" id="investOtp" placeholder="Enter OTP">
+      <input type="text" id="investOtpInput" placeholder="Enter OTP">
       <button class="otp-btn" onclick="investConfirm()">Confirm Investment</button>
       <p class="otp-display" id="investOtpDisplay"></p>
     </div>
@@ -58,7 +63,7 @@ button:hover { opacity:0.85; }
     <input type="number" id="withdrawAmount" placeholder="Enter amount">
     <button class="withdraw-btn" onclick="withdrawRequest()">Request Withdrawal</button>
     <div id="withdrawOtpSection" style="display:none; margin-top:10px;">
-      <input type="text" id="withdrawOtp" placeholder="Enter OTP">
+      <input type="text" id="withdrawOtpInput" placeholder="Enter OTP">
       <button class="otp-btn" onclick="withdrawConfirm()">Confirm Withdrawal</button>
       <p class="otp-display" id="withdrawOtpDisplay"></p>
     </div>
@@ -76,27 +81,21 @@ button:hover { opacity:0.85; }
 </div>
 
 <script>
-// ===== USER SETUP =====
+const baseURL = 'https://repo-1red-jipate-bonus.onrender.com'; // Update with your backend
 const username = localStorage.getItem("username");
 if(!username){ alert("Please log in first."); window.location.href="login.html"; }
 document.getElementById("usernameDisplay").textContent = username;
 
-function getUser() {
-  const users = JSON.parse(localStorage.getItem("users") || "{}");
-  return users[username];
-}
-function saveUser(user) {
-  const users = JSON.parse(localStorage.getItem("users") || "{}");
-  users[username] = user;
-  localStorage.setItem("users", JSON.stringify(users));
-}
+async function loadDashboard(){
+  try{
+    const res = await fetch(`${baseURL}/dashboard?username=${username}`);
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail || "Failed to load dashboard");
 
-// ===== DASHBOARD =====
-function loadDashboard() {
-  const user = getUser();
-  if(!user) return;
-  document.getElementById("balanceDisplay").textContent = (user.balance||0).toFixed(2);
-  renderInvestments(user.investments||{});
+    document.getElementById("balanceDisplay").textContent = data.balance.toFixed(2);
+    document.getElementById("earningsDisplay").textContent = data.earnings.toFixed(2);
+    renderInvestments(data.investments || {});
+  }catch(err){ console.error(err); document.getElementById("investmentList").textContent="Failed to load.";}
 }
 
 function renderInvestments(investments){
@@ -106,87 +105,87 @@ function renderInvestments(investments){
   for(const [commodity, inv] of Object.entries(investments)){
     const div = document.createElement("div");
     div.className = "investment-item";
-    div.id = `invest-${commodity}`;
     div.textContent = `${commodity}: KES ${inv.amount} | Expires in ${inv.time_remaining || 'N/A'}`;
     container.appendChild(div);
   }
 }
 
 // ===== INVESTMENT FLOW =====
-let investOTP = null;
+async function investRequest(){
+  const commodity = document.getElementById("commoditySelect").value;
+  if(!commodity) return alert("Select a commodity.");
 
-function investRequest(){
-  const commodity = document.getElementById("commodity").value;
-  investOTP = Math.floor(1000+Math.random()*9000).toString();
-  document.getElementById("investOtpDisplay").textContent = `Test OTP: ${investOTP}`;
-  document.getElementById("investOtpSection").style.display = "block";
+  try{
+    const res = await fetch(`${baseURL}/invest/request`,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({username, commodity})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail || "Investment request failed");
 
-  const user = getUser();
-  user.pendingInvestment = commodity;
-  saveUser(user);
+    document.getElementById("investOtpSection").style.display = "block";
+    document.getElementById("investOtpDisplay").textContent = `Test OTP (mock): ${data.otp || 'see backend logs'}`;
+  }catch(err){ alert(err.message);}
 }
 
-function investConfirm(){
-  const otp = document.getElementById("investOtp").value.trim();
-  if(otp !== investOTP) return alert("Incorrect OTP");
-  const user = getUser();
-  const commodity = user.pendingInvestment;
-  if(!commodity) return alert("No investment requested.");
+async function investConfirm(){
+  const otp = document.getElementById("investOtpInput").value.trim();
+  if(!otp) return alert("Enter OTP");
 
-  const amountMap = {silver:550,gold:2050,marble:650,diamond:1850,uranium:1250};
-  const amt = amountMap[commodity];
-  user.balance = (user.balance||0) - amt;
-  user.investments = user.investments||{};
-  user.investments[commodity] = {amount: amt, time_remaining: "7d"};
-  delete user.pendingInvestment;
-  saveUser(user);
+  try{
+    const res = await fetch(`${baseURL}/invest/confirm`,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({username, otp})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail || "Investment confirmation failed");
 
-  alert("Investment successful!");
-  document.getElementById("investOtpSection").style.display = "none";
-  document.getElementById("investOtp").value = "";
-  document.getElementById("investOtpDisplay").textContent = "";
-  loadDashboard();
+    alert(data.message);
+    document.getElementById("investOtpSection").style.display="none";
+    document.getElementById("investOtpInput").value="";
+    loadDashboard();
+  }catch(err){ alert(err.message);}
 }
 
 // ===== WITHDRAWAL FLOW =====
-let withdrawOTP = null;
+async function withdrawRequest(){
+  const amount = document.getElementById("withdrawAmount").value;
+  if(!amount || amount<=0) return alert("Enter valid amount");
 
-function withdrawRequest(){
-  const user = getUser();
-  const amount = parseFloat(document.getElementById("withdrawAmount").value);
-  if(isNaN(amount)||amount<=0) return alert("Enter valid amount");
+  try{
+    const res = await fetch(`${baseURL}/withdraw/request`,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({username, amount})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail || "Withdrawal request failed");
 
-  const today = new Date();
-  if(today.getDay()!==1) return alert("Withdrawals only allowed on Mondays");
-
-  const minAllowed = Math.floor((user.investment_amount||0)*0.3);
-  const maxAllowed = user.balance||0;
-
-  if(amount<minAllowed) return alert(`Minimum withdrawal: KES ${minAllowed}`);
-  if(amount>maxAllowed) return alert(`Maximum withdrawal: KES ${maxAllowed}`);
-
-  withdrawOTP = Math.floor(1000+Math.random()*9000).toString();
-  document.getElementById("withdrawOtpDisplay").textContent = `Test OTP: ${withdrawOTP}`;
-
-  user.pendingWithdrawal = amount;
-  saveUser(user);
-  document.getElementById("withdrawOtpSection").style.display = "block";
+    document.getElementById("withdrawOtpSection").style.display = "block";
+    document.getElementById("withdrawOtpDisplay").textContent = `Test OTP (mock): ${data.otp || 'see backend logs'}`;
+  }catch(err){ alert(err.message);}
 }
 
-function withdrawConfirm(){
-  const otp = document.getElementById("withdrawOtp").value.trim();
-  if(otp!==withdrawOTP) return alert("Incorrect OTP");
+async function withdrawConfirm(){
+  const otp = document.getElementById("withdrawOtpInput").value.trim();
+  if(!otp) return alert("Enter OTP");
 
-  const user = getUser();
-  user.balance -= user.pendingWithdrawal;
-  delete user.pendingWithdrawal;
-  saveUser(user);
+  try{
+    const res = await fetch(`${baseURL}/withdraw/confirm`,{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({username, otp})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail || "Withdrawal confirmation failed");
 
-  alert("Withdrawal successful! Funds sent to MPESA.");
-  document.getElementById("withdrawOtpSection").style.display = "none";
-  document.getElementById("withdrawOtp").value = "";
-  document.getElementById("withdrawOtpDisplay").textContent = "";
-  loadDashboard();
+    alert(data.message);
+    document.getElementById("withdrawOtpSection").style.display="none";
+    document.getElementById("withdrawOtpInput").value="";
+    loadDashboard();
+  }catch(err){ alert(err.message);}
 }
 
 // ===== LOGOUT =====
