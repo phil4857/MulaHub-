@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Withdraw - Mkoba Wallet 💸</title>
+
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f9f5;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: linear-gradient(90deg, #0a1d66, #1234a0);
+  color: #ffd700;
+  text-align: center;
+  padding: 20px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.container {
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 25px 30px;
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin-top: 0;
+  color: #0a1d66;
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: 500;
+  color: #0a1d66;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  font-weight: bold;
+  font-size: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(to right, #0a1d66, #1234a0);
+  color: #ffd700;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.note {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #0a1d66;
+  text-align: center;
+}
+
+#otpSection {
+  display: none;
+  margin-top: 20px;
+}
+
+#otpDisplay {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #1a237e;
+}
+
+.back-btn {
+  background: #ccc;
+  color: #000;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Withdraw Earnings</h1>
+</header>
+
+<div class="container">
+  <h2>Request Withdrawal</h2>
+
+  <form id="withdrawForm">
+    <label for="amount">Amount to Withdraw (KES):</label>
+    <input type="number" id="amount" placeholder="Enter amount" required />
+
+    <button type="submit">Submit Withdrawal</button>
+
+    <!-- OTP Section -->
+    <div id="otpSection">
+      <p id="otpDisplay"></p>
+      <input type="text" id="withdrawOtp" placeholder="Enter OTP" />
+      <button type="button" id="confirmWithdrawBtn" style="background:linear-gradient(to right,#1b5e20,#2e7d32);">
+        Confirm Withdrawal
+      </button>
+    </div>
+
+    <p class="note">
+      🔒 Withdrawals allowed only on <strong>Mondays</strong><br/>
+      💰 Minimum 30% of your investment<br/>
+      ⏳ Funds will be sent to your MPESA
+    </p>
+
+    <button type="button" class="back-btn" onclick="window.location.href='dashboard.html'">
+      Back to Dashboard
+    </button>
+  </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const username = localStorage.getItem("username");
+  if (!username) {
+    alert("Please log in first.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Restrict withdrawals to Monday
+  const today = new Date();
+  if (today.getDay() !== 1) {
+    alert("Withdrawals are only allowed on Mondays.");
+    window.location.href = "dashboard.html";
+    return;
+  }
+
+  const withdrawForm = document.getElementById("withdrawForm");
+  const otpSection = document.getElementById("otpSection");
+  const otpDisplay = document.getElementById("otpDisplay");
+  const withdrawOtpInput = document.getElementById("withdrawOtp");
+  const confirmBtn = document.getElementById("confirmWithdrawBtn");
+
+  let fakeOTP = null;
+
+  function getUser() {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    return users[username];
+  }
+
+  function saveUser(user) {
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    users[username] = user;
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+  withdrawForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const amount = parseFloat(document.getElementById("amount").value);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Enter a valid amount.");
+      return;
+    }
+
+    const user = getUser();
+    if (!user) {
+      alert("User not found.");
+      return;
+    }
+
+    const invested = user.investment_amount || 0;
+    const balance = user.balance || 0;
+    const minAllowed = Math.floor(invested * 0.3);
+    const maxAllowed = balance;
+
+    if (amount < minAllowed) {
+      alert(`Minimum withdrawal is KES ${minAllowed}`);
+      return;
+    }
+
+    if (amount > maxAllowed) {
+      alert(`Maximum allowed withdrawal is KES ${maxAllowed}`);
+      return;
+    }
+
+    // Generate OTP (test mode)
+    fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpDisplay.textContent = "Your OTP: " + fakeOTP;
+
+    user.pendingWithdrawal = amount;
+    saveUser(user);
+
+    otpSection.style.display = "block";
+  });
+
+  confirmBtn.addEventListener("click", () => {
+
+    const enteredOtp = withdrawOtpInput.value.trim();
+    if (enteredOtp !== fakeOTP) {
+      alert("Incorrect OTP.");
+      return;
+    }
+
+    const user = getUser();
+    user.balance -= user.pendingWithdrawal;
+    delete user.pendingWithdrawal;
+    saveUser(user);
+
+    alert("✅ Withdrawal successful! Funds will be sent to your MPESA.");
+    window.location.href = "dashboard.html";
+  });
+
+});
+</script>
+
+</body>
+</html>
