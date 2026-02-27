@@ -12,6 +12,7 @@
   </style>
 </head>
 <body class='min-h-screen'>
+
   <!-- Navbar -->
   <nav class='bg-indigo-600 text-white p-4 flex justify-between items-center'>
     <h1 class='text-lg font-bold'>💰 Mkoba Wallet - Investment Dashboard</h1>
@@ -20,8 +21,8 @@
     </button>
   </nav>
 
-  <!-- Main Content -->
-  <div class='max-w-5xl mx-auto mt-6 p-4'>
+  <div class='max-w-6xl mx-auto mt-6 p-4'>
+
     <!-- User Overview -->
     <div class='grid md:grid-cols-3 gap-4 mb-6'>
       <div class='bg-white shadow-lg rounded-lg p-4 text-center'>
@@ -46,98 +47,136 @@
       </button>
     </div>
 
-    <!-- Investment Form -->
-    <div class='bg-white shadow-lg rounded-lg p-6'>
-      <h2 class='text-lg font-bold mb-4'>📈 Make a New Investment</h2>
-      <form id='investForm' class='space-y-4'>
-        <div>
-          <label for='amount' class='block text-gray-700 text-sm font-medium'>Amount (KES)</label>
-          <input type='number' id='amount' class='mt-1 block w-full p-2 border rounded-md' required min='500' />
-        </div>
-        <button type='submit' class='bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full'>
-          Invest Now
-        </button>
-      </form>
+    <!-- Commodity Marketplace -->
+    <div class='mt-10'>
+      <h2 class='text-2xl font-bold mb-6'>🛒 Investment Commodities</h2>
+      <div class='grid sm:grid-cols-2 lg:grid-cols-4 gap-6' id='commodityGrid'></div>
     </div>
+
   </div>
 
-  <!-- Script -->
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const username = localStorage.getItem('username');
-      if (!username) {
-        alert('Please log in first.');
-        window.location.href = 'login.html';
-        return;
-      }
-      await loadDashboard(username);
+<script>
 
-      const investForm = document.getElementById('investForm');
-      investForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const amount = document.getElementById('amount').value;
-        if (!amount || amount < 500) {
-          alert('Minimum investment is KES 500');
-          return;
-        }
-        try {
-          const res = await fetch('https://repo-1red-jipate-bonus.onrender.com/invest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ username, amount })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.detail || 'Investment failed');
-          alert(data.message);
-          await loadDashboard(username);
-        } catch (err) {
-          alert('❌ ' + err.message);
-        }
-      });
+const commodities = [
+  { name: "Mable", amount: 650, duration: 15, icon: "🪨" },
+  { name: "Crude Oil", amount: 800, duration: 20, icon: "🛢" },
+  { name: "Silver", amount: 1000, duration: 23, icon: "🥈" },
+  { name: "Lead", amount: 1200, duration: 25, icon: "🧱" },
+  { name: "Platinum", amount: 1350, duration: 28, icon: "🏆" },
+  { name: "Diamonds", amount: 1750, duration: 32, icon: "💎" },
+  { name: "Gold", amount: 2200, duration: 35, icon: "🥇" },
+  { name: "Uranium", amount: 3000, duration: 4500, icon: "☢️" }
+];
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+  const username = localStorage.getItem('username');
+  if (!username) {
+    alert('Please log in first.');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  await loadDashboard(username);
+  renderCommodities();
+});
+
+function renderCommodities() {
+  const grid = document.getElementById("commodityGrid");
+  grid.innerHTML = "";
+
+  commodities.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition";
+
+    card.innerHTML = `
+      <div class="text-5xl mb-4">${item.icon}</div>
+      <h3 class="font-bold text-lg">${item.name}</h3>
+      <p class="text-indigo-600 font-semibold">KES ${item.amount}</p>
+      <p class="text-gray-500 text-sm">${item.duration} Days</p>
+      <p class="text-green-600 text-sm font-medium">10% Daily</p>
+      <button 
+        class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full"
+        onclick="investCommodity('${item.name}', ${item.amount})">
+        Invest
+      </button>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+async function investCommodity(name, amount) {
+  const username = localStorage.getItem("username");
+
+  if (!confirm(`Invest KES ${amount} in ${name}?`)) return;
+
+  try {
+    const res = await fetch('https://repo-1red-jipate-bonus.onrender.com/invest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username, amount })
     });
 
-    async function loadDashboard(username) {
-      try {
-        const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${username}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Failed to load dashboard');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Investment failed");
 
-        document.getElementById('balance').innerText = 'KES ' + (data.balance || 0).toFixed(2);
-        document.getElementById('earnings').innerText = 'KES ' + (data.earnings || 0).toFixed(2);
-        document.getElementById('investment').innerText = 'KES ' + (data.investment_amount || 0).toFixed(2);
+    alert("✅ Investment successful!");
+    await loadDashboard(username);
 
-        if (data.bonus_available) {
-          document.getElementById('bonusSection').classList.remove('hidden');
-          document.getElementById('bonusMessage').innerText = data.bonus_message;
-        } else {
-          document.getElementById('bonusSection').classList.add('hidden');
-        }
-      } catch (err) {
-        console.error('Dashboard load error:', err);
-      }
+  } catch (err) {
+    alert("❌ " + err.message);
+  }
+}
+
+async function loadDashboard(username) {
+  try {
+    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${username}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to load dashboard');
+
+    document.getElementById('balance').innerText = 'KES ' + (data.balance || 0).toFixed(2);
+    document.getElementById('earnings').innerText = 'KES ' + (data.earnings || 0).toFixed(2);
+    document.getElementById('investment').innerText = 'KES ' + (data.investment_amount || 0).toFixed(2);
+
+    if (data.bonus_available) {
+      document.getElementById('bonusSection').classList.remove('hidden');
+      document.getElementById('bonusMessage').innerText = data.bonus_message;
+    } else {
+      document.getElementById('bonusSection').classList.add('hidden');
     }
 
-    async function claimBonus() {
-      const username = localStorage.getItem('username');
-      try {
-        const res = await fetch('https://repo-1red-jipate-bonus.onrender.com/bonus/grab', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ username })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Bonus claim failed');
-        alert(data.message);
-        await loadDashboard(username);
-      } catch (err) {
-        alert('❌ ' + err.message);
-      }
-    }
+  } catch (err) {
+    console.error('Dashboard load error:', err);
+  }
+}
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = 'login.html';
-    }
-  </script>
+async function claimBonus() {
+  const username = localStorage.getItem('username');
+  try {
+    const res = await fetch('https://repo-1red-jipate-bonus.onrender.com/bonus/grab', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Bonus claim failed');
+
+    alert(data.message);
+    await loadDashboard(username);
+
+  } catch (err) {
+    alert('❌ ' + err.message);
+  }
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = 'login.html';
+}
+
+</script>
+
 </body>
 </html>
