@@ -1,101 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Investment Dashboard - Mkoba Wallet</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background: linear-gradient(to right, #f0f9f7, #fff);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .commodity-card {
-      border-radius: 12px;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 16px;
-      text-align: center;
-      flex: 1;
-      min-width: 150px;
-      transition: transform 0.2s;
-    }
-    .commodity-card:hover { transform: translateY(-4px); }
-    .countdown { font-weight: 700; color: #e53e3e; margin-top: 6px; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Investment Dashboard - Mkoba Wallet</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; flex: 1; min-width: 150px; transition: transform 0.2s; }
+  .commodity-card:hover { transform: translateY(-4px); }
+  .countdown { font-weight: 700; color: #e53e3e; margin-top: 6px; }
+</style>
 </head>
 <body class="min-h-screen p-4">
 
-  <!-- Navbar -->
-  <nav class="bg-indigo-600 text-white p-4 flex justify-between items-center rounded-lg">
-    <h1 class="text-lg font-bold">💰 Mkoba Wallet - Investments</h1>
-    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm">Logout</button>
-  </nav>
+<!-- Navbar -->
+<nav class="bg-indigo-600 text-white p-4 flex justify-between items-center rounded-lg">
+  <h1 class="text-lg font-bold">💰 Mkoba Wallet - Investments</h1>
+  <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm">Logout</button>
+</nav>
 
-  <!-- Dashboard -->
-  <div class="max-w-6xl mx-auto mt-6 space-y-6">
+<div class="max-w-6xl mx-auto mt-6 space-y-6">
 
-    <!-- Account Overview -->
-    <div class="grid md:grid-cols-3 gap-4">
-      <div class="bg-white shadow-lg rounded-lg p-4 text-center">
-        <h2 class="text-gray-500 text-sm">Balance</h2>
-        <p id="balance" class="text-2xl font-bold text-indigo-600">KES 0.00</p>
-      </div>
-      <div class="bg-white shadow-lg rounded-lg p-4 text-center">
-        <h2 class="text-gray-500 text-sm">Earnings</h2>
-        <p id="earnings" class="text-2xl font-bold text-green-600">KES 0.00</p>
-      </div>
-      <div class="bg-white shadow-lg rounded-lg p-4 text-center">
-        <h2 class="text-gray-500 text-sm">Investment</h2>
-        <p id="investment" class="text-2xl font-bold text-purple-600">KES 0.00</p>
-      </div>
+  <!-- Account Overview -->
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="bg-white shadow-lg rounded-lg p-4 text-center">
+      <h2 class="text-gray-500 text-sm">Balance</h2>
+      <p id="balance" class="text-2xl font-bold text-indigo-600">KES 0.00</p>
     </div>
-
-    <!-- Active Investments -->
-    <div>
-      <h2 class="text-indigo-700 text-lg font-bold mb-4">Active Investments</h2>
-      <div id="investmentsContainer" class="flex flex-wrap gap-4">
-        <!-- Individual investment cards populated dynamically -->
-      </div>
+    <div class="bg-white shadow-lg rounded-lg p-4 text-center">
+      <h2 class="text-gray-500 text-sm">Earnings</h2>
+      <p id="earnings" class="text-2xl font-bold text-green-600">KES 0.00</p>
     </div>
-
-    <!-- Make New Investment -->
-    <div class="bg-white shadow-lg rounded-lg p-6">
-      <h2 class="text-lg font-bold mb-4">📈 Make a New Investment</h2>
-      <form id="investForm" class="space-y-4">
-        <div>
-          <label for="commoditySelect" class="block text-gray-700 font-medium">Select Commodity</label>
-          <select id="commoditySelect" class="mt-1 block w-full p-2 border rounded-md" required>
-            <option value="">-- Select Commodity --</option>
-            <option value="marble" data-price="650" data-days="15">Marble - KES 650 / 15 days</option>
-            <option value="crude_oil" data-price="800" data-days="20">Crude Oil - KES 800 / 20 days</option>
-            <option value="silver" data-price="1000" data-days="23">Silver - KES 1000 / 23 days</option>
-            <option value="lead" data-price="1200" data-days="25">Lead - KES 1200 / 25 days</option>
-            <option value="platinum" data-price="1350" data-days="28">Platinum - KES 1350 / 28 days</option>
-            <option value="diamonds" data-price="1750" data-days="32">Diamonds - KES 1750 / 32 days</option>
-            <option value="gold" data-price="2200" data-days="35">Gold - KES 2200 / 35 days</option>
-            <option value="uranium" data-price="3000" data-days="45">Uranium - KES 3000 / 45 days</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="amount" class="block text-gray-700 font-medium">Investment Amount (KES)</label>
-          <input type="number" id="amount" class="mt-1 block w-full p-2 border rounded-md" required min="500" />
-        </div>
-
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full">Invest Now</button>
-        <p id="investMessage" class="text-sm text-red-600 mt-2"></p>
-      </form>
+    <div class="bg-white shadow-lg rounded-lg p-4 text-center">
+      <h2 class="text-gray-500 text-sm">Investment</h2>
+      <p id="investment" class="text-2xl font-bold text-purple-600">KES 0.00</p>
     </div>
-
   </div>
 
+  <!-- Active Investments -->
+  <div>
+    <h2 class="text-indigo-700 text-lg font-bold mb-4">Active Investments</h2>
+    <div id="investmentsContainer" class="flex flex-wrap gap-4"></div>
+  </div>
+
+  <!-- Make New Investment -->
+  <div class="bg-white shadow-lg rounded-lg p-6">
+    <h2 class="text-lg font-bold mb-4">📈 Make a New Investment</h2>
+    <form id="investForm" class="space-y-4">
+      <div>
+        <label for="commoditySelect" class="block text-gray-700 font-medium">Select Commodity</label>
+        <select id="commoditySelect" class="mt-1 block w-full p-2 border rounded-md" required>
+          <option value="">-- Select Commodity --</option>
+          <option value="marble" data-price="650" data-days="15">Marble - KES 650 / 15 days</option>
+          <option value="crude_oil" data-price="800" data-days="20">Crude Oil - KES 800 / 20 days</option>
+          <option value="silver" data-price="1000" data-days="23">Silver - KES 1000 / 23 days</option>
+          <option value="lead" data-price="1200" data-days="25">Lead - KES 1200 / 25 days</option>
+          <option value="platinum" data-price="1350" data-days="28">Platinum - KES 1350 / 28 days</option>
+          <option value="diamonds" data-price="1750" data-days="32">Diamonds - KES 1750 / 32 days</option>
+          <option value="gold" data-price="2200" data-days="35">Gold - KES 2200 / 35 days</option>
+          <option value="uranium" data-price="3000" data-days="45">Uranium - KES 3000 / 45 days</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="amount" class="block text-gray-700 font-medium">Investment Amount (KES)</label>
+        <input type="number" id="amount" class="mt-1 block w-full p-2 border rounded-md" required min="500" />
+      </div>
+
+      <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full">Request Investment OTP</button>
+      <p id="investMessage" class="text-sm text-red-600 mt-2"></p>
+
+      <!-- OTP Section -->
+      <div id="otpSection" style="display:none; margin-top:10px;">
+        <p id="otpDisplay" class="text-indigo-600 font-bold"></p>
+        <input type="text" id="investOtp" placeholder="Enter OTP" class="mt-1 block w-full p-2 border rounded-md" />
+        <button type="button" id="investConfirmBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full mt-2">Confirm Investment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
+const API_BASE = 'https://repo-1red-jipate-bonus.onrender.com';
+const username = localStorage.getItem('username');
+if(!username){ window.location.href='login.html'; }
+
+const balanceEl = document.getElementById('balance');
+const earningsEl = document.getElementById('earnings');
+const investmentEl = document.getElementById('investment');
 const investmentsContainer = document.getElementById('investmentsContainer');
-const investForm = document.getElementById('investForm');
 const commoditySelect = document.getElementById('commoditySelect');
 const amountInput = document.getElementById('amount');
+const investForm = document.getElementById('investForm');
 const investMessage = document.getElementById('investMessage');
+const otpSection = document.getElementById('otpSection');
+const otpDisplay = document.getElementById('otpDisplay');
+const investOtpInput = document.getElementById('investOtp');
+const investConfirmBtn = document.getElementById('investConfirmBtn');
+
+let fakeOTP = null;
+let user = { username, balance:0, earnings:0, investment_amount:0, investments: [] };
 
 const commodityImages = {
   marble: 'https://i.imgur.com/FH5vUjz.png',
@@ -108,13 +113,9 @@ const commodityImages = {
   uranium: 'https://i.imgur.com/Xvw3RZ0.png'
 };
 
-// Load user and dashboard from backend
-let user = { username: localStorage.getItem('username') };
-if (!user.username) { window.location.href = 'login.html'; }
-
 async function loadDashboard() {
   try {
-    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${user.username}`);
+    const res = await fetch(`${API_BASE}/dashboard?username=${username}`);
     const data = await res.json();
 
     user.balance = data.balance || 0;
@@ -125,21 +126,19 @@ async function loadDashboard() {
     if (data.investments) {
       for (let [commodity, inv] of Object.entries(data.investments)) {
         const dailyEarning = inv.amount * 0.1;
-        const remaining = new Date(inv.expiry_date) - new Date();
-        const remainingDays = Math.max(Math.ceil(remaining/(1000*60*60*24)),0);
+        const remainingDays = Math.max(Math.ceil((new Date(inv.expiry_date) - new Date())/(1000*60*60*24)),0);
         user.investments.push({commodity, amount: inv.amount, dailyEarning, remainingDays});
         user.investment_amount += inv.amount;
-        user.earnings += dailyEarning * (inv.hours_remaining/24); // approx earnings
+        user.earnings += dailyEarning * remainingDays;
       }
     }
 
-    document.getElementById('balance').innerText = 'KES ' + user.balance.toFixed(2);
-    document.getElementById('earnings').innerText = 'KES ' + user.earnings.toFixed(2);
-    document.getElementById('investment').innerText = 'KES ' + user.investment_amount.toFixed(2);
+    balanceEl.innerText = `KES ${user.balance.toFixed(2)}`;
+    earningsEl.innerText = `KES ${user.earnings.toFixed(2)}`;
+    investmentEl.innerText = `KES ${user.investment_amount.toFixed(2)}`;
 
     renderInvestments();
-
-  } catch (err) {
+  } catch(err) {
     console.error('Dashboard load error', err);
   }
 }
@@ -160,42 +159,45 @@ function renderInvestments() {
   });
 }
 
-investForm.addEventListener('submit', async (e) => {
+investForm.addEventListener('submit', async e => {
   e.preventDefault();
   investMessage.textContent = '';
   const commodity = commoditySelect.value;
   const amount = parseFloat(amountInput.value);
-  if (!commodity) return investMessage.textContent = 'Select a commodity.';
+  if(!commodity) return investMessage.textContent = 'Select a commodity.';
 
   try {
-    // Request investment OTP
-    let res = await fetch('https://repo-1red-jipate-bonus.onrender.com/invest/request', {
-      method: 'POST',
-      headers: {'Content-Type':'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({username: user.username, commodity})
-    });
-    let data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Investment request failed');
-
-    const otp = prompt(`Enter OTP sent to your phone (mock): ${data.message}`);
-    if (!otp) return;
-
-    // Confirm investment
-    res = await fetch('https://repo-1red-jipate-bonus.onrender.com/invest/confirm', {
-      method: 'POST',
-      headers: {'Content-Type':'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({username: user.username, otp})
-    });
-    data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Investment confirm failed');
-
-    alert('✅ ' + data.message);
-    await loadDashboard();
-    investForm.reset();
-
+    // Generate fake OTP
+    fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
+    otpSection.style.display = 'block';
   } catch(err) {
-    investMessage.textContent = '❌ ' + err.message;
+    investMessage.textContent = 'Error requesting OTP.';
   }
+});
+
+investConfirmBtn.addEventListener('click', async () => {
+  const enteredOtp = investOtpInput.value.trim();
+  if(enteredOtp !== fakeOTP) return alert('❌ Incorrect OTP');
+
+  // Mock adding investment locally
+  const commodity = commoditySelect.value;
+  const amount = parseFloat(amountInput.value);
+  const dailyEarning = amount*0.1;
+  user.investments.push({commodity, amount, dailyEarning, remainingDays:15});
+  user.investment_amount += amount;
+  user.earnings += dailyEarning*15;
+  user.balance -= amount;
+
+  otpSection.style.display = 'none';
+  investOtpInput.value = '';
+  fakeOTP = null;
+  alert('✅ Investment confirmed!');
+  renderInvestments();
+  balanceEl.innerText = `KES ${user.balance.toFixed(2)}`;
+  earningsEl.innerText = `KES ${user.earnings.toFixed(2)}`;
+  investmentEl.innerText = `KES ${user.investment_amount.toFixed(2)}`;
+  investForm.reset();
 });
 
 function logout() {
