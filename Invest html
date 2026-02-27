@@ -1,180 +1,186 @@
-Absolutely! Below is a more comprehensive plan for the frontend that aligns with your `main.py` backend, incorporating the features and enhancements you requested. 
-
-### Updated HTML and JavaScript
-
-Here's the revised HTML with integrated JavaScript for dynamic functionality:
-
-```html
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-  <meta charset='utf-8' />
-  <meta name='viewport' content='width=device-width,initial-scale=1' />
-  <title>Invest — Mkoba Wallet</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investment Dashboard - Mkoba Wallet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root{--accent:#a25c00}
-    body{font-family:Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#f0f9f7 0%,#fff 100%);margin:0;padding:30px;display:flex;align-items:center;justify-content:center;min-height:100vh}
-    .panel{width:100%;max-width:760px;background:#fff;border-radius:16px;padding:26px;box-shadow:0 12px 30px rgba(3,3,3,0.06)}
-    .row{display:flex;gap:18px;flex-wrap:wrap}
-    .left{flex:1;min-width:260px}
-    .right{flex:1;min-width:260px}
-    h2{color:var(--accent);margin:0 0 8px}
-    .info{background:#f8faf9;border-radius:10px;padding:12px;margin-bottom:12px}
-    input[type='number'], select{width:100%;padding:12px;border-radius:10px;border:1px solid #e5e7eb;font-size:16px}
-    button{background:var(--accent);color:#fff;border:none;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:700}
-    .small{font-size:13px;color:#666}
-    .note{margin-top:10px;color:#2d3748}
-    .countdown{font-weight: 700; color: #e53e3e; margin-top: 10px;}
+    body {
+      background: linear-gradient(to right, #f0f9f7, #fff);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .commodity-card {
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 16px;
+      text-align: center;
+      flex: 1;
+      min-width: 150px;
+      transition: transform 0.2s;
+    }
+    .commodity-card:hover { transform: translateY(-4px); }
+    .commodity-card img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 8px; }
+    .countdown { font-weight: 700; color: #e53e3e; margin-top: 6px; }
   </style>
 </head>
-<body>
-  <div class='panel'>
-    <div class='row'>
-      <div class='left'>
-        <h2>Invest with Mkoba Wallet</h2>
-        <p class='small'>Send your investment to the payment number shown and enter the transaction reference below.</p>
+<body class="min-h-screen p-4">
 
-        <div class='info'>
-          <div><strong>Platform:</strong> Mkoba Wallet</div>
-          <div><strong>Payment Number:</strong> <span id='paymentNumber'>0739075065</span></div>
-          <div class='small'>Select a commodity for investment:</div>
-          <select id='commoditySelect' required>
-            <option value=''>-- Select Commodity --</option>
-            <option value='silver' data-min='550'>Silver (KES 550)</option>
-            <option value='marble' data-min='650'>Marble (KES 650)</option>
-            <option value='uranium' data-min='1250'>Uranium (KES 1250)</option>
-            <option value='diamond' data-min='1850'>Diamond (KES 1850)</option>
-            <option value='gold' data-min='2050'>Gold (KES 2050)</option>
+  <!-- Navbar -->
+  <nav class="bg-indigo-600 text-white p-4 flex justify-between items-center rounded-lg">
+    <h1 class="text-lg font-bold">💰 Mkoba Wallet - Investments</h1>
+    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm">Logout</button>
+  </nav>
+
+  <!-- Dashboard -->
+  <div class="max-w-6xl mx-auto mt-6 space-y-6">
+    <!-- Account Overview -->
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-white shadow-lg rounded-lg p-4 text-center">
+        <h2 class="text-gray-500 text-sm">Balance</h2>
+        <p id="balance" class="text-2xl font-bold text-indigo-600">KES 0.00</p>
+      </div>
+      <div class="bg-white shadow-lg rounded-lg p-4 text-center">
+        <h2 class="text-gray-500 text-sm">Earnings</h2>
+        <p id="earnings" class="text-2xl font-bold text-green-600">KES 0.00</p>
+      </div>
+      <div class="bg-white shadow-lg rounded-lg p-4 text-center">
+        <h2 class="text-gray-500 text-sm">Investment</h2>
+        <p id="investment" class="text-2xl font-bold text-purple-600">KES 0.00</p>
+      </div>
+    </div>
+
+    <!-- Active Investments -->
+    <div>
+      <h2 class="text-indigo-700 text-lg font-bold mb-4">Active Investments</h2>
+      <div id="investmentsContainer" class="flex flex-wrap gap-4">
+        <!-- Individual investment cards will be added dynamically -->
+      </div>
+    </div>
+
+    <!-- Make New Investment -->
+    <div class="bg-white shadow-lg rounded-lg p-6">
+      <h2 class="text-lg font-bold mb-4">📈 Make a New Investment</h2>
+      <form id="investForm" class="space-y-4">
+        <div>
+          <label for="commoditySelect" class="block text-gray-700 font-medium">Select Commodity</label>
+          <select id="commoditySelect" class="mt-1 block w-full p-2 border rounded-md" required>
+            <option value="">-- Select Commodity --</option>
+            <option value="marble" data-price="650" data-days="15">Marble - KES 650 / 15 days</option>
+            <option value="crude" data-price="800" data-days="20">Crude Oil - KES 800 / 20 days</option>
+            <option value="silver" data-price="1000" data-days="23">Silver - KES 1000 / 23 days</option>
+            <option value="lead" data-price="1200" data-days="25">Lead - KES 1200 / 25 days</option>
+            <option value="platinum" data-price="1350" data-days="28">Platinum - KES 1350 / 28 days</option>
+            <option value="diamonds" data-price="1750" data-days="32">Diamonds - KES 1750 / 32 days</option>
+            <option value="gold" data-price="2200" data-days="35">Gold - KES 2200 / 35 days</option>
+            <option value="uranium" data-price="3000" data-days="4500">Uranium - KES 3000 / 4500 days</option>
           </select>
         </div>
 
-        <form id='investForm'>
-          <label>Investment amount (KES)</label>
-          <input id='amount' name='amount' type='number' min='500' step='1' required />
-
-          <label style='margin-top:10px'>Transaction reference (MPESA/ID)</label>
-          <input id='txRef' name='txRef' placeholder='e.g. AB12CD34' required />
-
-          <div style='margin-top:12px;display:flex;gap:8px'>
-            <button type='submit'>Submit Investment</button>
-            <button type='button' id='cancelBtn' style='background:#f3f4f6;color:#111'>Cancel</button>
-          </div>
-
-          <p id='investMessage' class='note'></p>
-          <p id='countdown' class='countdown'></p>
-        </form>
-      </div>
-
-      <div class='right'>
-        <h3>Quick Tips</h3>
-        <ul class='small'>
-          <li>Make sure you are logged in before submitting an investment.</li>
-          <li>Use the exact MPESA transaction reference in the form so admin can approve faster.</li>
-          <li>Admin will credit your account once the investment is approved.</li>
-        </ul>
-
-        <div style='margin-top:18px'>
-          <h4>Your Account</h4>
-          <div class='info'>
-            <div><strong>Username:</strong> <span id='usernameDisplay'>—</span></div>
-            <div><strong>Balance:</strong> KES <span id='balanceDisplay'>0.00</span></div>
-            <div><strong>Pending Investment:</strong> KES <span id='pendingInv'>0.00</span></div>
-          </div>
+        <div>
+          <label for="amount" class="block text-gray-700 font-medium">Investment Amount (KES)</label>
+          <input type="number" id="amount" class="mt-1 block w-full p-2 border rounded-md" required min="500" />
         </div>
-      </div>
+
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full">Invest Now</button>
+        <p id="investMessage" class="text-sm text-red-600 mt-2"></p>
+      </form>
     </div>
   </div>
 
+  <!-- Script -->
   <script>
+    const investmentsContainer = document.getElementById('investmentsContainer');
+    const investForm = document.getElementById('investForm');
     const commoditySelect = document.getElementById('commoditySelect');
     const amountInput = document.getElementById('amount');
-    const investForm = document.getElementById('investForm');
     const investMessage = document.getElementById('investMessage');
-    const countdownDisplay = document.getElementById('countdown');
 
-    // Update the minimum investment based on selected commodity
-    commoditySelect.addEventListener('change', function() {
-      const selectedOption = this.options[this.selectedIndex];
-      const minInvestment = selectedOption.getAttribute('data-min');
-      amountInput.setAttribute('min', minInvestment);
-      investMessage.textContent = `Minimum investment for ${selectedOption.textContent} is KES ${minInvestment}.`;
+    // Sample images for commodities (replace with actual URLs)
+    const commodityImages = {
+      marble: 'https://i.imgur.com/FH5vUjz.png',
+      crude: 'https://i.imgur.com/PLq1XWb.png',
+      silver: 'https://i.imgur.com/6m3kzLE.png',
+      lead: 'https://i.imgur.com/Y7VgH9C.png',
+      platinum: 'https://i.imgur.com/ivRrGOr.png',
+      diamonds: 'https://i.imgur.com/3m2XDBF.png',
+      gold: 'https://i.imgur.com/1p7VZ2r.png',
+      uranium: 'https://i.imgur.com/Xvw3RZ0.png'
+    };
+
+    // Simulated user data
+    let user = {
+      username: localStorage.getItem('username') || 'Guest',
+      balance: 10000,
+      earnings: 0,
+      investment_amount: 0,
+      investments: []
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('usernameDisplay').textContent = user.username;
+      updateDashboard();
+      renderInvestments();
     });
 
-    // Handle form submission
-    investForm.addEventListener('submit', function(event) {
-      event.preventDefault();
-      const amount = amountInput.value;
-      const txRef = document.getElementById('txRef').value;
-      const selectedCommodity = commoditySelect.value;
-
-      if (amount < commoditySelect.options[commoditySelect.selectedIndex].getAttribute('data-min')) {
-        investMessage.textContent = 'Investment amount is below the minimum required.';
-        return;
-      }
-
-      // Send investment data to the backend (replace with your API endpoint)
-      fetch('/api/invest', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ amount, txRef, commodity: selectedCommodity })
-      })
-      .then(response => response.json())
-      .then(data => {
-        investMessage.textContent = data.message;
-        startCountdown(); // Start the countdown for the earning period
-      })
-      .catch(error => {
-        investMessage.textContent = 'Error processing investment.';
-        console.error('Error:', error);
-      });
-    });
-
-    // Countdown function
-    function startCountdown() {
-      const countdownEnd = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
-      const countdownInterval = setInterval(() => {
-        const now = new Date();
-        const remainingTime = countdownEnd - now;
-
-        if (remainingTime < 0) {
-          clearInterval(countdownInterval);
-          countdownDisplay.textContent = 'Time to earn again!';
-        } else {
-          const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-          countdownDisplay.textContent = `Earnings available in: ${hours}h ${minutes}m`;
-        }
-      }, 60000); // Update every minute
+    function updateDashboard() {
+      document.getElementById('balance').textContent = 'KES ' + user.balance.toFixed(2);
+      document.getElementById('earnings').textContent = 'KES ' + user.earnings.toFixed(2);
+      document.getElementById('investment').textContent = 'KES ' + user.investment_amount.toFixed(2);
     }
 
-    // Cancel button functionality
-    document.getElementById('cancelBtn').addEventListener('click', function() {
+    investForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const commodity = commoditySelect.value;
+      const amount = parseFloat(amountInput.value);
+      if (!commodity) return investMessage.textContent = 'Select a commodity.';
+      const minPrice = parseFloat(commoditySelect.selectedOptions[0].getAttribute('data-price'));
+      const durationDays = parseInt(commoditySelect.selectedOptions[0].getAttribute('data-days'));
+      if (amount < minPrice) return investMessage.textContent = `Minimum for ${commodity} is KES ${minPrice}.`;
+      if (amount > user.balance) return investMessage.textContent = `Insufficient balance.`;
+
+      // Deduct balance and store investment
+      user.balance -= amount;
+      user.investment_amount += amount;
+      const investment = {
+        commodity, amount, startDate: new Date(),
+        duration: durationDays,
+        dailyEarning: amount * 0.1
+      };
+      user.investments.push(investment);
+      investMessage.textContent = `Invested KES ${amount} in ${commodity}.`;
+      renderInvestments();
+      updateDashboard();
       investForm.reset();
-      investMessage.textContent = '';
-      countdownDisplay.textContent = '';
     });
+
+    function renderInvestments() {
+      investmentsContainer.innerHTML = '';
+      user.investments.forEach((inv, index) => {
+        const endDate = new Date(inv.startDate);
+        endDate.setDate(endDate.getDate() + inv.duration);
+        const now = new Date();
+        const remaining = endDate - now;
+        const remainingDays = remaining > 0 ? Math.ceil(remaining / (1000*60*60*24)) : 0;
+
+        const card = document.createElement('div');
+        card.className = 'commodity-card';
+        card.innerHTML = `
+          <img src="${commodityImages[inv.commodity]}" alt="${inv.commodity}" />
+          <div><strong>${inv.commodity.charAt(0).toUpperCase() + inv.commodity.slice(1)}</strong></div>
+          <div>Amount: KES ${inv.amount}</div>
+          <div>Daily Earning: KES ${inv.dailyEarning.toFixed(2)}</div>
+          <div>Expires in: ${remainingDays} day(s)</div>
+        `;
+        investmentsContainer.appendChild(card);
+      });
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
   </script>
 </body>
 </html>
-```
-
-### Key Features Implemented
-
-1. **Dynamic Minimum Investment**: The minimum investment updates according to the selected commodity, and it displays a message if the investment is below that amount.
-
-2. **Countdown Timer**: A countdown timer shows the hours and minutes until the next earning period.
-
-3. **Investment Status Handling**: After submitting the investment, a message is displayed indicating the outcome. You can customize the API endpoint to match your backend.
-
-4. **Form Validation**: Validation ensures that the amount entered meets the minimum required for the selected commodity.
-
-5. **Cancel Functionality**: The "Cancel" button resets the form and clears any messages.
-
-### Next Steps
-
-- **Integrate with Backend**: Make sure to adjust the API endpoint in the fetch function to match your backend.
-- **Investment Status Display**: If you want to show current investments and their statuses, you may want to fetch that data and display it in the account section.
-
-Let me know if you need any further adjustments or if you have another file to share!
