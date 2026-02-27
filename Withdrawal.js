@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const withdrawForm = document.getElementById("withdrawForm");
   const otpSection = document.getElementById("otpSection");
   const withdrawOtpInput = document.getElementById("withdrawOtp");
-  const otpDisplay = document.getElementById("otpDisplay"); // Ensure this exists in HTML
+  const otpDisplay = document.getElementById("otpDisplay"); // Element to show OTP
   let fakeOTP = null;
 
   function getUser() {
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("users", JSON.stringify(users));
   }
 
-  // Step 1: Request withdrawal and generate OTP
+  // Step 1: Request withdrawal and generate fake OTP
   withdrawForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const amount = parseFloat(document.getElementById("amount").value);
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (amount < minAllowed) return alert(`Minimum withdrawal is 30% of your investment: KES ${minAllowed}`);
     if (amount > maxAllowed) return alert(`Maximum allowed withdrawal: KES ${maxAllowed}`);
 
-    // ✅ Generate OTP and show it on page for client to see
+    // ✅ Generate fake OTP and display
     fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
     if (otpDisplay) otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
     alert("OTP generated! Enter it below to confirm withdrawal.");
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     otpSection.style.display = "block";
   });
 
-  // Step 2: Confirm withdrawal with OTP
+  // Step 2: Confirm withdrawal with fake OTP
   document.getElementById("confirmWithdrawBtn").addEventListener("click", () => {
     const otp = withdrawOtpInput.value.trim();
     if (otp !== fakeOTP) return alert("Incorrect OTP");
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     delete user.pendingWithdrawal;
     saveUser(user);
 
-    alert("✅ Withdrawal successful! Funds will be sent to your MPESA.");
+    alert("✅ Withdrawal successful! Funds sent to MPESA.");
     window.location.href = "dashboard.html";
   });
 });
