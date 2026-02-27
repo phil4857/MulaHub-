@@ -70,7 +70,6 @@
 <div class="login-box">
   <h2>Mkoba Wallet Login</h2>
 
-  <!-- User Login -->
   <form id="loginForm">
     <input type="text" id="username" placeholder="Username" required><br>
     <input type="password" id="password" placeholder="Password" required><br>
@@ -80,14 +79,18 @@
 </div>
 
 <script>
-  // Handle User Login
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    loginError.textContent = '';
+
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
-    const errorMsg = document.getElementById('loginError');
 
     try {
+      // Align with main.py login endpoint
       const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -97,12 +100,13 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Login failed");
 
+      // Store username locally (main.py expects it in localStorage)
       localStorage.setItem("username", data.username || username);
-      // Optional: store a token if your backend provides one
-      // localStorage.setItem("userToken", data.token);
+
+      // Redirect to dashboard aligned with main.py endpoints
       window.location.href = "dashboard.html";
     } catch (err) {
-      errorMsg.textContent = err.message;
+      loginError.textContent = err.message;
     }
   });
 </script>
