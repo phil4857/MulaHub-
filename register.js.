@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const successMsg = document.getElementById('successMsg');
   const otpDisplay = document.getElementById('otpDisplay');
 
-  let fakeOTP = null;
+  let verificationKey = null;
 
   function resetMessages() {
     errorMsg.textContent = '';
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------- REGISTER ----------------
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     resetMessages();
     otpDisplay.textContent = '';
@@ -37,97 +37,100 @@ document.addEventListener('DOMContentLoaded', () => {
     const referral = referralInput ? referralInput.value.trim() : '';
 
     if (!username || !phone || !password || !confirm) {
-      errorMsg.textContent = "Please fill in all required fields.";
+      errorMsg.textContent = 'Please fill in all required fields.';
       return;
     }
 
     if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
-      errorMsg.textContent = "Username must be 3–15 letters, numbers or underscores.";
+      errorMsg.textContent = 'Username must be 3–15 letters, numbers, or underscores.';
       return;
     }
 
     if (!/^07\d{8}$/.test(phone)) {
-      errorMsg.textContent = "Phone must be 07XXXXXXXX format.";
+      errorMsg.textContent = 'Phone must be 07XXXXXXXX format.';
       return;
     }
 
     if (password.length < 6) {
-      errorMsg.textContent = "Password must be at least 6 characters.";
+      errorMsg.textContent = 'Password must be at least 6 characters.';
       return;
     }
 
     if (password !== confirm) {
-      errorMsg.textContent = "Passwords do not match.";
+      errorMsg.textContent = 'Passwords do not match.';
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem('users') || '{}');
-    if (users[username]) {
-      errorMsg.textContent = "Username already exists.";
-      return;
+    try {
+      const response = await fetch('http://localhost:8000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          username: username,
+          phone: phone,
+          password: password,
+          referral: referral
+        })
+      });
+
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        errorMsg.textContent = errorDetails.detail || 'Registration failed';
+        return;
+      }
+
+      verificationKey = username;  // Store the username to verify OTP
+      successMsg.textContent = `OTP sent to ${phone}.`;
+      showOTPSection();
+
+    } catch (error) {
+      console.error('Error:', error);
+      errorMsg.textContent = 'An error occurred. Please try again later.';
     }
-
-    // Generate 6-digit fake OTP
-    fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
-
-    successMsg.textContent = `OTP sent to ${phone} (demo mode).`;
-    otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
-    showOTPSection();
-
-    localStorage.setItem('pendingRegistration', JSON.stringify({
-      username,
-      phone,
-      password,
-      referral
-    }));
   });
 
   // ---------------- VERIFY OTP ----------------
-  verifyBtn.addEventListener('click', () => {
+  verifyBtn.addEventListener('click', async () => {
     resetMessages();
 
     const enteredOTP = otpInput.value.trim();
     if (!enteredOTP) {
-      errorMsg.textContent = "Enter OTP to verify.";
+      errorMsg.textContent = 'Enter OTP to verify.';
       return;
     }
 
-    if (enteredOTP !== fakeOTP) {
-      errorMsg.textContent = "Incorrect OTP.";
-      return;
+    try {
+      const response = await fetch('http://localhost:8000/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          username: verificationKey,
+          otp: enteredOTP
+        })
+      });
+
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        errorMsg.textContent = errorDetails.detail || 'OTP verification failed';
+        return;
+      }
+
+      successMsg.textContent = 'Registration successful! Redirecting...';
+      otpDisplay.textContent = '';
+      hideOTPSection();
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error:', error);
+      errorMsg.textContent = 'An error occurred. Please try again later.';
     }
-
-    const pending = JSON.parse(localStorage.getItem('pendingRegistration'));
-    if (!pending) {
-      errorMsg.textContent = "Registration session expired.";
-      return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users') || '{}');
-
-    users[pending.username] = {
-      username: pending.username,
-      phone: pending.phone,
-      password: pending.password,
-      referral: pending.referral,
-      balance: 10000,         // starting bonus
-      earnings: 0,
-      verified: true,
-      investments: {},
-      createdAt: Date.now()
-    };
-
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('username', pending.username);
-    localStorage.removeItem('pendingRegistration');
-
-    successMsg.textContent = "Registration successful! Redirecting...";
-    otpDisplay.textContent = '';
-    hideOTPSection();
-
-    setTimeout(() => {
-      window.location.href = "dashboard.html";
-    }, 1500);
   });
 
-});
+}); and OTP verification. Make sure your FastAPI server is running and accessible at `http://localhost:8000`, or adjust the URL accordingly if it's hosted elsewhere.
