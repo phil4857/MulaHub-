@@ -114,7 +114,6 @@ button:hover {
 
     <button type="submit">Submit Withdrawal</button>
 
-    <!-- OTP Section -->
     <div id="otpSection">
       <p id="otpDisplay"></p>
       <input type="text" id="withdrawOtp" placeholder="Enter OTP" />
@@ -140,12 +139,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const username = localStorage.getItem("username");
   if (!username) {
-    alert("Please log in first.");
     window.location.href = "login.html";
     return;
   }
 
-  // Restrict withdrawals to Monday
   const today = new Date();
   if (today.getDay() !== 1) {
     alert("Withdrawals are only allowed on Mondays.");
@@ -161,13 +158,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let fakeOTP = null;
 
+  function getUsers() {
+    return JSON.parse(localStorage.getItem("users") || "{}");
+  }
+
   function getUser() {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    return users[username];
+    return getUsers()[username];
   }
 
   function saveUser(user) {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    const users = getUsers();
     users[username] = user;
     localStorage.setItem("users", JSON.stringify(users));
   }
@@ -176,34 +176,19 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
 
     const amount = parseFloat(document.getElementById("amount").value);
-    if (isNaN(amount) || amount <= 0) {
-      alert("Enter a valid amount.");
-      return;
-    }
+    if (!amount || amount <= 0) return;
 
     const user = getUser();
-    if (!user) {
-      alert("User not found.");
-      return;
-    }
+    if (!user) return;
 
     const invested = user.investment_amount || 0;
     const balance = user.balance || 0;
+
     const minAllowed = Math.floor(invested * 0.3);
-    const maxAllowed = balance;
+    if (amount < minAllowed) return;
+    if (amount > balance) return;
 
-    if (amount < minAllowed) {
-      alert(`Minimum withdrawal is KES ${minAllowed}`);
-      return;
-    }
-
-    if (amount > maxAllowed) {
-      alert(`Maximum allowed withdrawal is KES ${maxAllowed}`);
-      return;
-    }
-
-    // Generate OTP (test mode)
-    fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
     otpDisplay.textContent = "Your OTP: " + fakeOTP;
 
     user.pendingWithdrawal = amount;
@@ -215,17 +200,20 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmBtn.addEventListener("click", () => {
 
     const enteredOtp = withdrawOtpInput.value.trim();
-    if (enteredOtp !== fakeOTP) {
-      alert("Incorrect OTP.");
-      return;
-    }
+    if (enteredOtp !== fakeOTP) return;
 
     const user = getUser();
+    if (!user || !user.pendingWithdrawal) return;
+
     user.balance -= user.pendingWithdrawal;
     delete user.pendingWithdrawal;
     saveUser(user);
 
-    alert("✅ Withdrawal successful! Funds will be sent to your MPESA.");
+    fakeOTP = null;
+    withdrawOtpInput.value = "";
+    otpSection.style.display = "none";
+
+    alert("Withdrawal successful.");
     window.location.href = "dashboard.html";
   });
 
