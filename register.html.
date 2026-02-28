@@ -1,147 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register - Mkoba Wallet</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to bottom right, #fefcea, #f1da36);
-    margin: 0; padding: 0;
-    display: flex; justify-content: center; align-items: center;
-    height: 100vh; flex-direction: column;
-  }
-  #paymentBanner {
-    background:#003366; color:#fff; width:100%; padding:10px;
-    text-align:center; font-weight:bold; position: fixed; top:0; left:0; z-index:1000;
-  }
-  .register-container {
-    background-color: #ffffffee; padding:35px; border-radius:20px;
-    box-shadow:0 0 30px rgba(0,0,0,0.15); width:90%; max-width:420px; margin-top:60px;
-  }
-  .register-container h2 { text-align:center; color:#1a237e; margin-bottom:25px; }
-  input[type="text"], input[type="password"], input[type="tel"] {
-    width:100%; padding:12px; margin:10px 0; border:1px solid #bbb; border-radius:8px; font-size:16px;
-  }
-  .toggle-password { float:right; margin-top:-30px; margin-right:10px; cursor:pointer; font-size:14px; color:#333; }
-  button { width:100%; padding:12px; background-color:#1e88e5; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer; transition:0.3s; }
-  button:hover { background-color:#1565c0; }
-  .error-message, .success-message { font-size:14px; margin-top:10px; text-align:center; }
-  .error-message { color:red; }
-  .success-message { color:green; }
-  label { display:block; margin-top:10px; }
-  .checkbox-label { font-size:14px; margin-top:10px; display:flex; align-items:center; }
-  .checkbox-label input { margin-right:8px; }
-  #otpDisplay { font-weight:bold; text-align:center; margin-top:10px; color:#1a237e; }
-</style>
-</head>
-<body>
-
-<div id="paymentBanner">Send Investments to MPESA Number: 0739075065</div>
-
-<div class="register-container">
-  <h2>Create Account</h2>
-  <form id="registerForm">
-    <input type="text" id="username" placeholder="Username" required />
-    <input type="tel" id="phone" placeholder="Phone Number (0712345678)" required pattern="[0-9]{10}" />
-    
-    <input type="password" id="password" placeholder="Password" required />
-    <span class="toggle-password" onclick="togglePassword('password')">Show</span>
-    
-    <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
-    <span class="toggle-password" onclick="togglePassword('confirmPassword')">Show</span>
-
-    <label class="checkbox-label">
-      <input type="checkbox" id="terms" required />
-      I agree to the <a href="#">terms & conditions</a>.
-    </label>
-
-    <div class="error-message" id="errorMsg"></div>
-    <div class="success-message" id="successMsg"></div>
-
-    <div id="otpSection" style="display:none;">
-      <p id="otpDisplay"></p>
-      <input type="text" id="otpInput" placeholder="Enter OTP" />
-      <button type="button" id="verifyOtpBtn">Verify OTP</button>
-    </div>
-
-    <button type="submit" id="registerBtn">Register</button>
-  </form>
-</div>
-
 <script>
 function togglePassword(id) {
   const input = document.getElementById(id);
   input.type = input.type === "password" ? "text" : "password";
 }
 
-// ===== Simple client-side OTP for testing =====
 let fakeOTP = null;
 
-document.getElementById('registerForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const errorMsg = document.getElementById('errorMsg');
-  const successMsg = document.getElementById('successMsg');
-  const otpSection = document.getElementById('otpSection');
-  const otpDisplay = document.getElementById('otpDisplay');
+document.addEventListener("DOMContentLoaded", () => {
 
-  errorMsg.textContent = '';
-  successMsg.textContent = '';
-  otpDisplay.textContent = '';
+  const form = document.getElementById("registerForm");
+  const errorMsg = document.getElementById("errorMsg");
+  const successMsg = document.getElementById("successMsg");
+  const otpSection = document.getElementById("otpSection");
+  const otpDisplay = document.getElementById("otpDisplay");
+  const otpInput = document.getElementById("otpInput");
 
-  const username = document.getElementById('username').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const password = document.getElementById('password').value;
-  const confirm = document.getElementById('confirmPassword').value;
-  const terms = document.getElementById('terms').checked;
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  if (!terms) return errorMsg.textContent = 'You must agree to terms.';
-  if (!/^[0-9]{10}$/.test(phone)) return errorMsg.textContent = 'Invalid phone number.';
-  if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) return errorMsg.textContent = 'Username must be 3-15 letters, numbers, or underscores.';
-  if (password.length < 6) return errorMsg.textContent = 'Password must be at least 6 chars.';
-  if (password !== confirm) return errorMsg.textContent = 'Passwords do not match.';
+    errorMsg.textContent = "";
+    successMsg.textContent = "";
+    otpDisplay.textContent = "";
 
-  // Generate OTP
-  fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    const username = document.getElementById("username").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword").value;
+    const terms = document.getElementById("terms").checked;
 
-  // Show OTP to client
-  otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
-  otpSection.style.display = 'block';
-  successMsg.textContent = '✅ OTP sent (test mode). Enter below to verify.';
+    if (!terms) return errorMsg.textContent = "You must agree to terms.";
+    if (!/^[0-9]{10}$/.test(phone)) return errorMsg.textContent = "Invalid phone number.";
+    if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) return errorMsg.textContent = "Username must be 3-15 letters, numbers or underscores.";
+    if (password.length < 6) return errorMsg.textContent = "Password must be at least 6 characters.";
+    if (password !== confirm) return errorMsg.textContent = "Passwords do not match.";
 
-  // Save user temporarily
-  localStorage.setItem('pendingRegistration', JSON.stringify({username, phone, password}));
-});
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    if (users[username]) {
+      return errorMsg.textContent = "Username already exists.";
+    }
 
-// Verify OTP
-document.getElementById('verifyOtpBtn').addEventListener('click', () => {
-  const errorMsg = document.getElementById('errorMsg');
-  const successMsg = document.getElementById('successMsg');
-  const otpInput = document.getElementById('otpInput').value.trim();
-  const otpSection = document.getElementById('otpSection');
+    // Generate fake OTP
+    fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-  errorMsg.textContent = '';
-  successMsg.textContent = '';
+    otpDisplay.textContent = "Your OTP: " + fakeOTP;
+    otpSection.style.display = "block";
+    successMsg.textContent = "OTP generated. Enter it below to complete registration.";
 
-  if (!otpInput) return errorMsg.textContent = 'Enter OTP.';
-  if (otpInput !== fakeOTP) return errorMsg.textContent = 'Incorrect OTP.';
+    localStorage.setItem("pendingRegistration", JSON.stringify({
+      username,
+      phone,
+      password
+    }));
+  });
 
-  const pending = JSON.parse(localStorage.getItem('pendingRegistration'));
-  if (!pending) return errorMsg.textContent = 'No registration data found.';
+  document.getElementById("verifyOtpBtn").addEventListener("click", () => {
 
-  // Save user permanently
-  const users = JSON.parse(localStorage.getItem('users') || '{}');
-  users[pending.username] = {username: pending.username, phone: pending.phone, password: pending.password, balance:0, earnings:0};
-  localStorage.setItem('users', JSON.stringify(users));
-  localStorage.setItem('username', pending.username);
-  localStorage.removeItem('pendingRegistration');
+    errorMsg.textContent = "";
+    successMsg.textContent = "";
 
-  successMsg.textContent = '✅ Registration complete! Redirecting...';
-  otpSection.style.display = 'none';
-  setTimeout(()=>window.location.href='dashboard.html', 1500);
+    const enteredOtp = otpInput.value.trim();
+
+    if (!enteredOtp) return errorMsg.textContent = "Enter OTP.";
+    if (enteredOtp !== fakeOTP) return errorMsg.textContent = "Incorrect OTP.";
+
+    const pending = JSON.parse(localStorage.getItem("pendingRegistration"));
+    if (!pending) return errorMsg.textContent = "Registration session expired.";
+
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+    users[pending.username] = {
+      username: pending.username,
+      phone: pending.phone,
+      password: pending.password,
+      balance: 10000,
+      earnings: 0,
+      verified: true,
+      investments: {}
+    };
+
+    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem("username", pending.username);
+    localStorage.removeItem("pendingRegistration");
+
+    successMsg.textContent = "Registration successful! Redirecting...";
+    otpSection.style.display = "none";
+
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1500);
+  });
+
 });
 </script>
-
-</body>
-</html>
