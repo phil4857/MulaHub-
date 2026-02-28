@@ -15,6 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const otpDisplay = document.getElementById("otpDisplay");
   const otpInput = document.getElementById("otpInput");
 
+  function getUsers() {
+    return JSON.parse(localStorage.getItem("users") || "{}");
+  }
+
+  function saveUsers(users) {
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -28,18 +36,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirm = document.getElementById("confirmPassword").value;
     const terms = document.getElementById("terms").checked;
 
-    if (!terms) return errorMsg.textContent = "You must agree to terms.";
-    if (!/^[0-9]{10}$/.test(phone)) return errorMsg.textContent = "Invalid phone number.";
-    if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) return errorMsg.textContent = "Username must be 3-15 letters, numbers or underscores.";
-    if (password.length < 6) return errorMsg.textContent = "Password must be at least 6 characters.";
-    if (password !== confirm) return errorMsg.textContent = "Passwords do not match.";
-
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    if (users[username]) {
-      return errorMsg.textContent = "Username already exists.";
+    if (!terms) {
+      errorMsg.textContent = "You must agree to terms.";
+      return;
     }
 
-    // Generate fake OTP
+    if (!/^[0-9]{10}$/.test(phone)) {
+      errorMsg.textContent = "Invalid phone number.";
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
+      errorMsg.textContent = "Username must be 3-15 letters, numbers or underscores.";
+      return;
+    }
+
+    if (password.length < 6) {
+      errorMsg.textContent = "Password must be at least 6 characters.";
+      return;
+    }
+
+    if (password !== confirm) {
+      errorMsg.textContent = "Passwords do not match.";
+      return;
+    }
+
+    const users = getUsers();
+    if (users[username]) {
+      errorMsg.textContent = "Username already exists.";
+      return;
+    }
+
+    // Generate 6-digit fake OTP
     fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
     otpDisplay.textContent = "Your OTP: " + fakeOTP;
@@ -60,26 +88,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const enteredOtp = otpInput.value.trim();
 
-    if (!enteredOtp) return errorMsg.textContent = "Enter OTP.";
-    if (enteredOtp !== fakeOTP) return errorMsg.textContent = "Incorrect OTP.";
+    if (!enteredOtp) {
+      errorMsg.textContent = "Enter OTP.";
+      return;
+    }
+
+    if (enteredOtp !== fakeOTP) {
+      errorMsg.textContent = "Incorrect OTP.";
+      return;
+    }
 
     const pending = JSON.parse(localStorage.getItem("pendingRegistration"));
-    if (!pending) return errorMsg.textContent = "Registration session expired.";
+    if (!pending) {
+      errorMsg.textContent = "Registration session expired.";
+      return;
+    }
 
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    const users = getUsers();
 
+    // CREATE USER (FULL STRUCTURE MATCHING OTHER PAGES)
     users[pending.username] = {
       username: pending.username,
       phone: pending.phone,
       password: pending.password,
-      balance: 10000,
+      balance: 10000,                // Starting balance
       earnings: 0,
+      investment_amount: 0,          // Required by withdraw page
       verified: true,
-      investments: {}
+      lastBonusDate: null,           // Required by dashboard
+      pendingWithdrawal: null        // Required by withdraw
     };
 
-    localStorage.setItem("users", JSON.stringify(users));
+    saveUsers(users);
+
+    // Auto-login after registration
     localStorage.setItem("username", pending.username);
+    localStorage.setItem("userToken", "fake-jwt-token");
+
     localStorage.removeItem("pendingRegistration");
 
     successMsg.textContent = "Registration successful! Redirecting...";
