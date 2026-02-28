@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Mkoba Wallet - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       background: linear-gradient(135deg, #28a745, #007bff);
@@ -16,17 +18,11 @@
 
     .login-box {
       background: white;
-      padding: 25px;
+      padding: 30px;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
       width: 340px;
       text-align: center;
-      animation: fadeIn 0.6s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
     }
 
     h2 {
@@ -40,9 +36,10 @@
       margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 6px;
+      font-size: 14px;
     }
 
-    button[type="submit"] {
+    button {
       width: 100%;
       padding: 10px;
       background: #007bff;
@@ -52,9 +49,10 @@
       font-weight: bold;
       cursor: pointer;
       margin-top: 10px;
+      font-size: 15px;
     }
 
-    button[type="submit"]:hover {
+    button:hover {
       background: #0056b3;
     }
 
@@ -62,6 +60,21 @@
       color: red;
       font-size: 14px;
       margin-top: 10px;
+      min-height: 18px;
+    }
+
+    .register-link {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .register-link a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -71,44 +84,60 @@
   <h2>Mkoba Wallet Login</h2>
 
   <form id="loginForm">
-    <input type="text" id="username" placeholder="Username" required><br>
-    <input type="password" id="password" placeholder="Password" required><br>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
     <button type="submit">Login</button>
     <div class="error-message" id="loginError"></div>
   </form>
+
+  <div class="register-link">
+    Don't have an account? <a href="register.html">Register</a>
+  </div>
 </div>
 
 <script>
-  const loginForm = document.getElementById('loginForm');
-  const loginError = document.getElementById('loginError');
+document.addEventListener("DOMContentLoaded", () => {
 
-  loginForm.addEventListener('submit', async (e) => {
+  const loginForm = document.getElementById("loginForm");
+  const loginError = document.getElementById("loginError");
+
+  loginForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    loginError.textContent = '';
+    loginError.textContent = "";
 
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
 
-    try {
-      // Align with main.py login endpoint
-      const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username, password })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Login failed");
-
-      // Store username locally (main.py expects it in localStorage)
-      localStorage.setItem("username", data.username || username);
-
-      // Redirect to dashboard aligned with main.py endpoints
-      window.location.href = "dashboard.html";
-    } catch (err) {
-      loginError.textContent = err.message;
+    if (!username || !password) {
+      loginError.textContent = "Please enter username and password.";
+      return;
     }
+
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    const user = users[username];
+
+    if (!user) {
+      loginError.textContent = "User not found.";
+      return;
+    }
+
+    if (!user.verified) {
+      loginError.textContent = "Account not verified.";
+      return;
+    }
+
+    if (user.password !== password) {
+      loginError.textContent = "Incorrect password.";
+      return;
+    }
+
+    // Successful login
+    localStorage.setItem("username", username);
+
+    window.location.href = "dashboard.html";
   });
+
+});
 </script>
 
 </body>
