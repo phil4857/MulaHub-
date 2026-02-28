@@ -4,86 +4,76 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>User Dashboard - Mkoba Wallet 💵🎉</title>
+
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f4f9ff;
-    margin: 0; padding: 0;
-  }
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f9ff;
+  margin: 0;
+}
 
-  header {
-    background: linear-gradient(90deg, #0a1d66, #1234a0);
-    color: #ffd700;
-    padding: 20px;
-    text-align: center;
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
+header {
+  background: linear-gradient(90deg, #0a1d66, #1234a0);
+  color: #ffd700;
+  padding: 20px;
+  text-align: center;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
 
-  .container {
-    background: #ffffff;
-    margin: 20px auto;
-    padding: 25px 30px;
-    max-width: 700px;
-    border-radius: 15px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  }
+.container {
+  background: #fff;
+  margin: 20px auto;
+  padding: 25px;
+  max-width: 700px;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
 
-  .info p {
-    background: #f0f8f0;
-    padding: 12px 15px;
-    border-left: 5px solid #0a1d66;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    font-weight: 500;
-    color: #0a1d66;
-  }
+.info p {
+  background: #f0f8f0;
+  padding: 12px;
+  border-left: 5px solid #0a1d66;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
 
-  .info span {
-    font-weight: bold;
-    color: #1234a0;
-  }
+.info span {
+  font-weight: bold;
+  color: #1234a0;
+}
 
-  #bonusStatus {
-    background: #fff3cd;
-    padding: 12px;
-    border-left: 6px solid #ffd700;
-    border-radius: 8px;
-    font-weight: 500;
-    text-align: center;
-    margin-bottom: 15px;
-  }
+#bonusStatus {
+  background: #fff3cd;
+  padding: 12px;
+  border-left: 6px solid #ffd700;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 15px;
+}
 
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    margin-top: 20px;
-  }
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin-top: 20px;
+}
 
-  .actions button {
-    flex: 1 1 45%;
-    margin: 10px 5px;
-    padding: 14px;
-    border-radius: 12px;
-    border: none;
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-    background: linear-gradient(to right, #0a1d66, #1234a0);
-    color: #ffd700;
-    transition: all 0.3s ease;
-  }
+.actions button {
+  flex: 1 1 45%;
+  margin: 10px 5px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(to right, #0a1d66, #1234a0);
+  color: #ffd700;
+}
 
-  .actions button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
-  }
-
-  .logout {
-    background: linear-gradient(to right, #dc3545, #a71d2a) !important;
-  }
+.logout {
+  background: linear-gradient(to right, #dc3545, #a71d2a) !important;
+}
 </style>
 </head>
 <body>
@@ -94,11 +84,14 @@
 
 <div class="container">
   <div class="info">
-    <p><strong>Username:</strong> <span id="usernameDisplay">Loading...</span></p>
-    <p><strong>Balance:</strong> KES <span id="balanceDisplay">Loading...</span></p>
-    <p><strong>Total Earnings:</strong> KES <span id="earningsDisplay">Loading...</span></p>
-    <p><strong>Referral Link:</strong> <span id="referralLink">Loading...</span></p>
-    <p><strong>Payment Number:</strong> <span id="payNumber">0739075065</span></p>
+    <p><strong>Username:</strong> <span id="usernameDisplay"></span></p>
+    <p><strong>Balance:</strong> KES <span id="balanceDisplay"></span></p>
+    <p><strong>Total Earnings:</strong> KES <span id="earningsDisplay"></span></p>
+    <p><strong>Investment:</strong> KES <span id="investmentDisplay"></span></p>
+    <p><strong>Referral Link:</strong> 
+      <a id="referralLink" target="_blank"></a>
+    </p>
+    <p><strong>Payment Number:</strong> 0739075065</p>
   </div>
 
   <div id="bonusStatus">Loading bonus info...</div>
@@ -111,69 +104,90 @@
 </div>
 
 <script>
-const username = localStorage.getItem("username");
-const userToken = localStorage.getItem("userToken");
 
-if(!username || !userToken){
+const username = localStorage.getItem("username");
+if (!username) {
   window.location.href = "login.html";
 }
 
+// ===== GET USER =====
+function getUsers() {
+  return JSON.parse(localStorage.getItem("users") || "{}");
+}
+
+function getUser() {
+  return getUsers()[username];
+}
+
+function saveUser(user) {
+  const users = getUsers();
+  users[username] = user;
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+const user = getUser();
+if (!user) {
+  alert("User not found.");
+  window.location.href = "login.html";
+}
+
+// ===== DISPLAY INFO =====
 document.getElementById("usernameDisplay").textContent = username;
+document.getElementById("balanceDisplay").textContent = (user.balance || 0).toFixed(2);
+document.getElementById("earningsDisplay").textContent = (user.earnings || 0).toFixed(2);
+document.getElementById("investmentDisplay").textContent = (user.investment_amount || 0).toFixed(2);
+
+// Referral link
+const referralURL = `${window.location.origin}/register.html?ref=${encodeURIComponent(username)}`;
 const referralEl = document.getElementById("referralLink");
-referralEl.textContent = `${window.location.origin}/register.html?ref=${encodeURIComponent(username)}`;
-referralEl.href = `${window.location.origin}/register.html?ref=${encodeURIComponent(username)}`;
+referralEl.href = referralURL;
+referralEl.textContent = referralURL;
 
-async function loadDashboard(){
-  try{
-    const res = await fetch(`https://repo-1red-jipate-bonus.onrender.com/dashboard?username=${encodeURIComponent(username)}`, {
-      headers: { "Authorization": `Bearer ${userToken}` }
-    });
+// ===== DAILY BONUS =====
+const bonusEl = document.getElementById("bonusStatus");
 
-    if(!res.ok) throw new Error("Failed to load dashboard");
-    const data = await res.json();
+function canClaimBonus() {
+  const today = new Date().toDateString();
+  return user.lastBonusDate !== today;
+}
 
-    document.getElementById("balanceDisplay").textContent = parseFloat(data.balance || 0).toFixed(2);
-    document.getElementById("earningsDisplay").textContent = parseFloat(data.earnings || 0).toFixed(2);
-
-    const bonusEl = document.getElementById("bonusStatus");
-    if(data.bonus_days_remaining > 0){
-      bonusEl.textContent = `${data.bonus_days_remaining} bonus days left`;
-    } else {
-      bonusEl.textContent = "No bonus available today";
-    }
-
-  } catch(err){
-    console.error(err);
-    alert("Unable to load dashboard. Try again later.");
+function updateBonusStatus() {
+  if (canClaimBonus()) {
+    bonusEl.textContent = "Bonus available today!";
+  } else {
+    bonusEl.textContent = "You already claimed today’s bonus.";
   }
 }
 
-document.getElementById("grabBonusBtn").addEventListener("click", async ()=>{
-  try{
-    const form = new URLSearchParams({username});
-    const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/bonus/grab", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: form
-    });
+document.getElementById("grabBonusBtn").addEventListener("click", () => {
 
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.detail || "Bonus grab failed");
-    alert(data.message);
-    await loadDashboard();
-  } catch(err){
-    console.error(err);
-    alert(err.message || "Failed to grab bonus");
+  if (!canClaimBonus()) {
+    alert("You already claimed your bonus today.");
+    return;
   }
+
+  const bonusAmount = 50; // fixed demo bonus
+
+  user.balance = (user.balance || 0) + bonusAmount;
+  user.earnings = (user.earnings || 0) + bonusAmount;
+  user.lastBonusDate = new Date().toDateString();
+
+  saveUser(user);
+
+  alert(`Bonus of KES ${bonusAmount} added!`);
+
+  location.reload();
 });
 
-function logout(){
+updateBonusStatus();
+
+// ===== LOGOUT =====
+function logout() {
   localStorage.removeItem("username");
   localStorage.removeItem("userToken");
   window.location.href = "login.html";
 }
 
-loadDashboard();
 </script>
 
 </body>
