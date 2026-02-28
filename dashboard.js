@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   const username = localStorage.getItem("username");
   if (!username) {
-    alert("Please log in first.");
     window.location.href = "login.html";
     return;
   }
@@ -30,44 +30,57 @@ document.addEventListener("DOMContentLoaded", () => {
     uranium: { price: 3000, days: 45 }
   };
 
+  function getUsers() {
+    return JSON.parse(localStorage.getItem("users") || "{}");
+  }
+
   function getUser() {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    return users[username];
+    return getUsers()[username];
   }
 
   function saveUser(user) {
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    const users = getUsers();
     users[username] = user;
     localStorage.setItem("users", JSON.stringify(users));
   }
 
-  function loadDashboard() {
+  function updateUI() {
     const user = getUser();
     if (!user) return;
 
     balanceEl.textContent = `KES ${user.balance.toFixed(2)}`;
-    renderInvestments(user.investments || {});
+    renderInvestments(user);
   }
 
-  function renderInvestments(investments) {
+  function renderInvestments(user) {
     investmentListEl.innerHTML = "";
-    if (Object.keys(investments).length === 0) {
+
+    if (!user.investments || Object.keys(user.investments).length === 0) {
       investmentListEl.textContent = "No active investments.";
       return;
     }
 
-    for (const [commodity, inv] of Object.entries(investments)) {
+    const now = new Date();
+
+    for (const [commodity, inv] of Object.entries(user.investments)) {
       const div = document.createElement("div");
       div.className = "investment-item";
 
-      const now = new Date();
       const expiry = new Date(inv.expiry_date);
       const diff = expiry - now;
 
       let timeText = "Expired";
+
       if (diff > 0) {
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         timeText = `${days} days remaining`;
+      } else {
+        // Auto-credit earnings once expired
+        user.balance += inv.amount * 1.2;
+        delete user.investments[commodity];
+        saveUser(user);
+        updateUI();
+        return;
       }
 
       div.textContent = `${commodity.toUpperCase()} | KES ${inv.amount} | ${timeText}`;
@@ -75,17 +88,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // INVEST REQUEST
+  // ===== INVEST REQUEST =====
   document.getElementById("investBtn")?.addEventListener("click", () => {
+
     const commodity = document.getElementById("commodity").value;
     const user = getUser();
 
-    if (!commodities[commodity]) return alert("Invalid commodity");
+    if (!commodities[commodity]) return;
+    if (user.balance < commodities[commodity].price) return;
 
-    const price = commodities[commodity].price;
-    if (user.balance < price) return alert("Insufficient balance");
-
-    fakeInvestOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    fakeInvestOTP = Math.floor(100000 + Math.random() * 900000).toString();
     investOtpDisplay.textContent = `Your OTP: ${fakeInvestOTP}`;
     investOtpSection.style.display = "block";
 
@@ -94,21 +106,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     user.pendingInvestment = {
       commodity,
-      amount: price,
+      amount: commodities[commodity].price,
       expiry_date: expiryDate.toISOString()
     };
 
     saveUser(user);
   });
 
-  // INVEST CONFIRM
+  // ===== INVEST CONFIRM =====
   document.getElementById("investConfirmBtn")?.addEventListener("click", () => {
-    if (investOtpInput.value.trim() !== fakeInvestOTP)
-      return alert("Incorrect OTP");
+
+    if (investOtpInput.value.trim() !== fakeInvestOTP) return;
 
     const user = getUser();
     const inv = user.pendingInvestment;
-    if (!inv) return alert("No pending investment");
+    if (!inv) return;
 
     user.balance -= inv.amount;
     user.investments = user.investments || {};
@@ -122,31 +134,30 @@ document.addEventListener("DOMContentLoaded", () => {
     investOtpInput.value = "";
     investOtpDisplay.textContent = "";
 
-    alert("Investment successful!");
-    loadDashboard();
+    updateUI();
   });
 
-  // WITHDRAW REQUEST
+  // ===== WITHDRAW REQUEST =====
   document.getElementById("withdrawBtn")?.addEventListener("click", () => {
+
     const today = new Date();
-    if (today.getDay() !== 1)
-      return alert("Withdrawals allowed only on Monday");
+    if (today.getDay() !== 1) return; // Monday only
 
     const amount = parseFloat(withdrawAmountInput.value);
     const user = getUser();
 
-    if (!amount || amount <= 0) return alert("Enter valid amount");
-    if (amount > user.balance) return alert("Insufficient balance");
+    if (!amount || amount <= 0) return;
+    if (amount > user.balance) return;
 
-    fakeWithdrawOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    fakeWithdrawOTP = Math.floor(100000 + Math.random() * 900000).toString();
     withdrawOtpDisplay.textContent = `Your OTP: ${fakeWithdrawOTP}`;
     withdrawOtpSection.style.display = "block";
   });
 
-  // WITHDRAW CONFIRM
+  // ===== WITHDRAW CONFIRM =====
   document.getElementById("withdrawConfirmBtn")?.addEventListener("click", () => {
-    if (withdrawOtpInput.value.trim() !== fakeWithdrawOTP)
-      return alert("Incorrect OTP");
+
+    if (withdrawOtpInput.value.trim() !== fakeWithdrawOTP) return;
 
     const user = getUser();
     const amount = parseFloat(withdrawAmountInput.value);
@@ -159,9 +170,8 @@ document.addEventListener("DOMContentLoaded", () => {
     withdrawOtpInput.value = "";
     withdrawOtpDisplay.textContent = "";
 
-    alert("Withdrawal successful!");
-    loadDashboard();
+    updateUI();
   });
 
-  loadDashboard();
+  updateUI();
 });
