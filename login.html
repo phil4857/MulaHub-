@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-  <meta charset="UTF-8">
+  <meta charset='UTF-8'>
   <title>Mkoba Wallet - Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 
   <style>
     body {
@@ -80,61 +80,65 @@
 </head>
 <body>
 
-<div class="login-box">
+<div class='login-box'>
   <h2>Mkoba Wallet Login</h2>
 
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-    <div class="error-message" id="loginError"></div>
+  <form id='loginForm'>
+    <input type='text' id='username' placeholder='Username' required>
+    <input type='password' id='password' placeholder='Password' required>
+    <button type='submit'>Login</button>
+    <div class='error-message' id='loginError'></div>
   </form>
 
-  <div class="register-link">
-    Don't have an account? <a href="register.html">Register</a>
+  <div class='register-link'>
+    Don't have an account? <a href='register.html'>Register</a>
   </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
 
-  const loginForm = document.getElementById("loginForm");
-  const loginError = document.getElementById("loginError");
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
 
-  loginForm.addEventListener("submit", (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    loginError.textContent = "";
+    loginError.textContent = '';
 
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
 
     if (!username || !password) {
-      loginError.textContent = "Please enter username and password.";
+      loginError.textContent = 'Please enter username and password.';
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    const user = users[username];
+    try {
+      const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          username: username,
+          password: password
+        })
+      });
 
-    if (!user) {
-      loginError.textContent = "User not found.";
-      return;
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        loginError.textContent = errorDetails.detail || 'Login failed';
+        return;
+      }
+
+      const data = await response.json();
+      localStorage.setItem('username', username);
+      window.location.href = 'dashboard.html';
+
+    } catch (error) {
+      console.error('Error:', error);
+      loginError.textContent = 'An error occurred. Please try again later.';
     }
-
-    if (!user.verified) {
-      loginError.textContent = "Account not verified.";
-      return;
-    }
-
-    if (user.password !== password) {
-      loginError.textContent = "Incorrect password.";
-      return;
-    }
-
-    // Successful login
-    localStorage.setItem("username", username);
-
-    window.location.href = "dashboard.html";
   });
 
 });
