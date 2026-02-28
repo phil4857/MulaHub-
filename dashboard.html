@@ -1,137 +1,248 @@
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+To update your dashboard HTML and JavaScript code for better integration with your FastAPI backend, you'll want to replace the local storage operations with API calls. This will allow you to manage investments and withdrawals more securely and efficiently.
 
-  const username = localStorage.getItem("username");
-  if (!username) {
-    window.location.href = "login.html";
-    return;
-  }
+Here's how you can revise the provided JavaScript and HTML code for your dashboard:
 
-  const users = JSON.parse(localStorage.getItem("users") || "{}");
-  const user = users[username];
+Updated Dashboard HTML and JavaScript
 
-  if (!user) {
-    localStorage.removeItem("username");
-    window.location.href = "login.html";
-    return;
-  }
+CTYPE html>
 
-  document.getElementById("usernameDisplay").textContent = username;
 
-  function updateUI() {
-    document.getElementById("balanceDisplay").textContent = user.balance.toFixed(2);
-    document.getElementById("earningsDisplay").textContent = user.earnings.toFixed(2);
-    renderInvestments();
-  }
+    
+    
+    User Dashboard - Mkoba Wallet 💵🎉
+    
+        /* Your existing styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f9ff;
+            margin: 0;
+        }
+        header {
+            background: linear-gradient(90deg, #0a1d66, #1234a0);
+            color: #ffd700;
+            padding: 20px;
+            text-align: center;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+        .container {
+            background: #fff;
+            margin: 20px auto;
+            padding: 25px;
+            max-width: 700px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .info p {
+            background: #f0f8f0;
+            padding: 12px;
+            border-left: 5px solid #0a1d66;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .info span {
+            font-weight: bold;
+            color: #1234a0;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .actions button {
+            flex: 1 1 45%;
+            margin: 10px 5px;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(to right, #0a1d66, #1234a0);
+            color: #ffd700;
+        }
+        .logout {
+            background: linear-gradient(to right, #dc3545, #a71d2a) !important;
+        }
+    
 
-  function renderInvestments() {
-    const container = document.getElementById("investmentList");
-    container.innerHTML = "";
 
-    if (!user.investments || Object.keys(user.investments).length === 0) {
-      container.textContent = "No active investments.";
-      return;
+
+
+    Welcome to Mkoba Wallet Dashboard 💵🎉
+
+
+
+    
+        Username: 
+        Balance: KES 
+        Total Earnings: KES 
+        Investment: KES 
+    
+
+    
+        💰 Invest
+        📤 Withdraw
+        🚪 Logout
+    
+
+
+
+
+    Invest in Commodity
+    
+        Gold
+        Silver
+        Platinum
+        
+    
+    Invest
+    
+        
+        
+        Confirm Investment
+    
+
+
+
+
+    Withdraw Funds
+    
+    Withdraw
+    
+        
+        
+        Confirm Withdrawal
+    
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const username = localStorage.getItem('username');
+    if (!username) {
+        window.location.href = 'login.html';
+        return;
     }
 
-    for (const [commodity, inv] of Object.entries(user.investments)) {
-      const div = document.createElement("div");
-      div.className = "investment-item";
-      div.textContent = `${commodity}: KES ${inv.amount}`;
-      container.appendChild(div);
-    }
-  }
-
-  // ===== INVEST =====
-  window.investRequest = function () {
-    const commodity = document.getElementById("commoditySelect").value;
-    if (!commodity) return alert("Select a commodity.");
-
-    const fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    localStorage.setItem("investOTP", fakeOTP);
-    localStorage.setItem("pendingCommodity", commodity);
-
-    document.getElementById("investOtpSection").style.display = "block";
-    document.getElementById("investOtpDisplay").textContent = "OTP: " + fakeOTP;
-  };
-
-  window.investConfirm = function () {
-    const otp = document.getElementById("investOtpInput").value.trim();
-    const savedOTP = localStorage.getItem("investOTP");
-    const commodity = localStorage.getItem("pendingCommodity");
-
-    if (!otp) return alert("Enter OTP");
-    if (otp !== savedOTP) return alert("Incorrect OTP");
-
-    const amount = 1000;
-
-    if (user.balance < amount) {
-      alert("Insufficient balance");
-      return;
+    async function fetchUserData() {
+        const response = await fetch(<span class="highlight">http://localhost:8000/dashboard?username=${username}</span>, {
+            method: 'GET',
+            headers: {
+                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
+            }
+        });
+        if (!response.ok) {
+            logout();
+            return;
+        }
+        return await response.json();
     }
 
-    user.balance -= amount;
-    user.earnings += 200;
-
-    if (!user.investments) user.investments = {};
-    user.investments[commodity] = { amount };
-
-    users[username] = user;
-    localStorage.setItem("users", JSON.stringify(users));
-
-    document.getElementById("investOtpSection").style.display = "none";
-    document.getElementById("investOtpInput").value = "";
-
-    localStorage.removeItem("investOTP");
-    localStorage.removeItem("pendingCommodity");
-
-    updateUI();
-  };
-
-  // ===== WITHDRAW =====
-  window.withdrawRequest = function () {
-    const amount = parseFloat(document.getElementById("withdrawAmount").value);
-    if (!amount || amount <= 0) return alert("Enter valid amount");
-
-    const fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    localStorage.setItem("withdrawOTP", fakeOTP);
-    localStorage.setItem("pendingWithdrawAmount", amount);
-
-    document.getElementById("withdrawOtpSection").style.display = "block";
-    document.getElementById("withdrawOtpDisplay").textContent = "OTP: " + fakeOTP;
-  };
-
-  window.withdrawConfirm = function () {
-    const otp = document.getElementById("withdrawOtpInput").value.trim();
-    const savedOTP = localStorage.getItem("withdrawOTP");
-    const amount = parseFloat(localStorage.getItem("pendingWithdrawAmount"));
-
-    if (!otp) return alert("Enter OTP");
-    if (otp !== savedOTP) return alert("Incorrect OTP");
-
-    if (user.balance < amount) {
-      alert("Insufficient balance");
-      return;
+    async function updateUI() {
+        const user = await fetchUserData();
+        if (user) {
+            document.getElementById('usernameDisplay').textContent = username;
+            document.getElementById('balanceDisplay').textContent = user.balance.toFixed(2);
+            document.getElementById('earningsDisplay').textContent = user.earnings.toFixed(2);
+            document.getElementById('investmentDisplay').textContent = user.investment_amount.toFixed(2);
+        }
     }
 
-    user.balance -= amount;
+    window.investRequest = async function () {
+        const commodity = document.getElementById('commoditySelect').value;
+        if (!commodity) return alert('Select a commodity.');
 
-    users[username] = user;
-    localStorage.setItem("users", JSON.stringify(users));
+        // Requesting OTP from backend
+        const response = await fetch('http://localhost:8000/invest/request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
+            },
+            body: JSON.stringify({ username, commodity })
+        });
+        if (!response.ok) {
+            alert('Investment request failed.');
+            return;
+        }
 
-    document.getElementById("withdrawOtpSection").style.display = "none";
-    document.getElementById("withdrawOtpInput").value = "";
+        const data = await response.json();
+        document.getElementById('investOtpDisplay').textContent = <span class="highlight">OTP: ${data.otp}</span>;
+        document.getElementById('investOtpSection').style.display = 'block';
+    };
 
-    localStorage.removeItem("withdrawOTP");
-    localStorage.removeItem("pendingWithdrawAmount");
+    window.investConfirm = async function () {
+        const otp = document.getElementById('investOtpInput').value.trim();
+        if (!otp) return alert('Enter OTP');
 
-    updateUI();
-  };
+        const response = await fetch('http://localhost:8000/invest/confirm', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
+            },
+            body: JSON.stringify({ username, otp })
+        });
+        if (!response.ok) {
+            alert('Investment confirmation failed.');
+            return;
+        }
 
-  window.logout = function () {
-    localStorage.removeItem("username");
-    window.location.href = "login.html";
-  };
+        alert('Investment confirmed!');
+        document.getElementById('investOtpSection').style.display = 'none';
+        updateUI();
+    };
 
-  updateUI();
+    window.withdrawRequest = async function () {
+        const amount = parseFloat(document.getElementById('withdrawAmount').value);
+        if (!amount || amount <= 0) return alert('Enter valid amount');
+
+        // Requesting OTP from backend
+        const response = await fetch('http://localhost:8000/withdraw/request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
+            },
+            body: JSON.stringify({ username, amount })
+        });
+        if (!response.ok) {
+            alert('Withdrawal request failed.');
+            return;
+        }
+
+        const data = await response.json();
+        document.getElementById('withdrawOtpDisplay').textContent = <span class="highlight">OTP: ${data.otp}</span>;
+        document.getElementById('withdrawOtpSection').style.display = 'block';
+    };
+
+    window.withdrawConfirm = async function () {
+        const otp = document.getElementById('withdrawOtpInput').value.trim();
+        if (!otp) return alert('Enter OTP');
+
+        const response = await fetch('http://localhost:8000/withdraw/confirm', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
+            },
+            body: JSON.stringify({ username, otp })
+        });
+        if (!response.ok) {
+            alert('Withdrawal confirmation failed.');
+            return;
+        }
+
+        alert('Withdrawal successful!');
+        document.getElementById('withdrawOtpSection').style.display = 'none';
+        updateUI();
+    };
+
+    window.logout = function () {
+        localStorage.removeItem('username');
+        localStorage.removeItem('userToken');
+        window.location.href = 'login.html';
+    };
+
+    updateUI(); // Initial UI update
 });
-</script>
