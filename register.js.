@@ -1,34 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
+
   const form = document.getElementById('registerForm');
   const otpSection = document.getElementById('otpSection');
   const otpInput = document.getElementById('otpInput');
   const verifyBtn = document.getElementById('verifyOtpBtn');
   const errorMsg = document.getElementById('errorMsg');
   const successMsg = document.getElementById('successMsg');
-  const otpDisplay = document.getElementById('otpDisplay'); // new element to show OTP
+  const otpDisplay = document.getElementById('otpDisplay');
 
   let fakeOTP = null;
 
-  // Show OTP input section
+  function resetMessages() {
+    errorMsg.textContent = '';
+    successMsg.textContent = '';
+  }
+
   function showOTPSection() {
     otpSection.style.display = 'block';
   }
 
-  // Handle registration form submission
+  function hideOTPSection() {
+    otpSection.style.display = 'none';
+  }
+
+  // ---------------- REGISTER ----------------
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    errorMsg.textContent = '';
-    successMsg.textContent = '';
+    resetMessages();
     otpDisplay.textContent = '';
 
     const username = document.getElementById('username').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     const confirm = document.getElementById('confirmPassword').value;
-    const referral = document.getElementById('referral') ? document.getElementById('referral').value.trim() : '';
+    const referralInput = document.getElementById('referral');
+    const referral = referralInput ? referralInput.value.trim() : '';
 
     if (!username || !phone || !password || !confirm) {
       errorMsg.textContent = "Please fill in all required fields.";
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
+      errorMsg.textContent = "Username must be 3–15 letters, numbers or underscores.";
+      return;
+    }
+
+    if (!/^07\d{8}$/.test(phone)) {
+      errorMsg.textContent = "Phone must be 07XXXXXXXX format.";
+      return;
+    }
+
+    if (password.length < 6) {
+      errorMsg.textContent = "Password must be at least 6 characters.";
       return;
     }
 
@@ -37,72 +61,73 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const phoneRegex = /^07\d{8}$/;
-    if (!phoneRegex.test(phone)) {
-      errorMsg.textContent = "Please enter a valid phone number (07XXXXXXXX).";
+    const users = JSON.parse(localStorage.getItem('users') || '{}');
+    if (users[username]) {
+      errorMsg.textContent = "Username already exists.";
       return;
     }
 
-    // Generate fake OTP
-    fakeOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    // Generate 6-digit fake OTP
+    fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Display OTP clearly for client
-    successMsg.textContent = `✅ OTP sent to ${phone} (test mode)`;
+    successMsg.textContent = `OTP sent to ${phone} (demo mode).`;
     otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
     showOTPSection();
 
-    // Save registration info temporarily
     localStorage.setItem('pendingRegistration', JSON.stringify({
-      username, phone, password, referral
+      username,
+      phone,
+      password,
+      referral
     }));
   });
 
-  // Handle OTP verification
+  // ---------------- VERIFY OTP ----------------
   verifyBtn.addEventListener('click', () => {
-    errorMsg.textContent = '';
-    successMsg.textContent = '';
+    resetMessages();
 
     const enteredOTP = otpInput.value.trim();
     if (!enteredOTP) {
-      errorMsg.textContent = "Enter OTP to verify your account.";
+      errorMsg.textContent = "Enter OTP to verify.";
       return;
     }
 
     if (enteredOTP !== fakeOTP) {
-      errorMsg.textContent = "Incorrect OTP. Please try again.";
+      errorMsg.textContent = "Incorrect OTP.";
       return;
     }
 
-    // OTP correct — finalize registration
     const pending = JSON.parse(localStorage.getItem('pendingRegistration'));
     if (!pending) {
-      errorMsg.textContent = "No registration data found. Refresh and try again.";
+      errorMsg.textContent = "Registration session expired.";
       return;
     }
 
     const users = JSON.parse(localStorage.getItem('users') || '{}');
-    if (users[pending.username]) {
-      errorMsg.textContent = "Username already exists.";
-      return;
-    }
 
     users[pending.username] = {
       username: pending.username,
       phone: pending.phone,
       password: pending.password,
       referral: pending.referral,
-      balance: 0,
+      balance: 10000,         // starting bonus
       earnings: 0,
+      verified: true,
+      investments: {},
+      createdAt: Date.now()
     };
 
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.setItem('username', pending.username);
     localStorage.removeItem('pendingRegistration');
 
-    successMsg.textContent = "✅ Registration complete! Redirecting to dashboard...";
+    successMsg.textContent = "Registration successful! Redirecting...";
     otpDisplay.textContent = '';
+    hideOTPSection();
+
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 1500);
   });
-}); hi
+
+});
