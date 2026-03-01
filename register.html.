@@ -1,86 +1,220 @@
-<script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mkoba Wallet - Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-document.addEventListener('DOMContentLoaded', () => {
+        .register-container {
+            background: white;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+            width: 360px;
+        }
 
-    const form = document.getElementById('registerForm');
-    const errorMsg = document.getElementById('errorMsg');
-    const successMsg = document.getElementById('successMsg');
-    const otpSection = document.getElementById('otpSection');
-    const otpInput = document.getElementById('otpInput');
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-        errorMsg.textContent = '';
-        successMsg.textContent = '';
+        button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
 
-        const formData = new FormData(form);
+        button:hover {
+            background-color: #45a049;
+        }
 
-        try {
-            const response = await fetch(`${BACKEND_URL}/register`, {
-                method: 'POST',
-                body: formData
-            });
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
 
-            const data = await response.json();
+        .success-message {
+            color: green;
+            margin-top: 10px;
+            text-align: center;
+        }
 
-            if (!response.ok) {
-                errorMsg.textContent = data.detail || 'Registration failed.';
-                return;
+        #otpSection {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Mkoba Wallet Registration</h2>
+
+        <form id="registerForm">
+            <input type="text" id="username" name="username" placeholder="Username" required>
+            <input type="text" id="phone" name="phone" placeholder="Phone Number (07XXXXXXXX)" required>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+            <input type="text" id="referral" name="referral" placeholder="Referral (Optional)">
+            <label class="checkbox-label">
+                <input type="checkbox" name="terms" required> I agree to the terms
+            </label>
+            <button type="submit">Register</button>
+        </form>
+
+        <div id="otpSection">
+            <input type="text" id="otpInput" placeholder="Enter OTP">
+            <button id="verifyOtpBtn">Verify OTP</button>
+        </div>
+
+        <div class="error-message" id="errorMsg"></div>
+        <div class="success-message" id="successMsg"></div>
+    </div>
+
+    <script>
+        const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('registerForm');
+            const otpSection = document.getElementById('otpSection');
+            const otpInput = document.getElementById('otpInput');
+            const verifyBtn = document.getElementById('verifyOtpBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+
+            let verificationKey = null;
+
+            function resetMessages() {
+                errorMsg.textContent = '';
+                successMsg.textContent = '';
             }
 
-            successMsg.textContent = 'OTP sent successfully.';
-            otpSection.style.display = 'block';
+            function showOTPSection() { otpSection.style.display = 'block'; }
+            function hideOTPSection() { otpSection.style.display = 'none'; }
 
-        } catch (error) {
-            errorMsg.textContent = 'Server error. Please try again.';
-        }
-    });
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                resetMessages();
 
-    document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
+                const username = document.getElementById('username').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const password = document.getElementById('password').value;
+                const confirm = document.getElementById('confirmPassword').value;
+                const referral = document.getElementById('referral').value.trim();
+                const termsChecked = form.elements['terms'].checked;
 
-        errorMsg.textContent = '';
-        successMsg.textContent = '';
+                if (!username || !phone || !password || !confirm) {
+                    errorMsg.textContent = 'Please fill in all required fields.';
+                    return;
+                }
+                if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
+                    errorMsg.textContent = 'Username must be 3–15 letters, numbers, or underscores.';
+                    return;
+                }
+                if (!/^07\d{8}$/.test(phone)) {
+                    errorMsg.textContent = 'Phone must be 07XXXXXXXX format.';
+                    return;
+                }
+                if (password.length < 6) {
+                    errorMsg.textContent = 'Password must be at least 6 characters.';
+                    return;
+                }
+                if (password !== confirm) {
+                    errorMsg.textContent = 'Passwords do not match.';
+                    return;
+                }
+                if (!termsChecked) {
+                    errorMsg.textContent = 'You must agree to the terms.';
+                    return;
+                }
 
-        const enteredOtp = otpInput.value.trim();
-        const username = document.getElementById('username').value.trim();
+                try {
+                    const response = await fetch(`${BACKEND_URL}/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ username, phone, password, referral })
+                    });
 
-        if (!enteredOtp) {
-            errorMsg.textContent = 'Enter OTP.';
-            return;
-        }
+                    const data = await response.json();
 
-        try {
-            const response = await fetch(`${BACKEND_URL}/verify-otp`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    username: username,
-                    otp: enteredOtp
-                })
+                    if (!response.ok) {
+                        errorMsg.textContent = data.detail || 'Registration failed.';
+                        return;
+                    }
+
+                    verificationKey = username;
+                    successMsg.textContent = `OTP sent to ${phone}.`;
+                    showOTPSection();
+
+                } catch (error) {
+                    console.error(error);
+                    errorMsg.textContent = 'Server error. Please try again.';
+                }
             });
 
-            const data = await response.json();
+            verifyBtn.addEventListener('click', async () => {
+                resetMessages();
+                const enteredOTP = otpInput.value.trim();
 
-            if (!response.ok) {
-                errorMsg.textContent = data.detail || 'OTP verification failed.';
-                return;
-            }
+                if (!enteredOTP) {
+                    errorMsg.textContent = 'Enter OTP to verify.';
+                    return;
+                }
 
-            successMsg.textContent = 'Registration successful! Redirecting...';
-            otpSection.style.display = 'none';
+                try {
+                    const response = await fetch(`${BACKEND_URL}/verify-otp`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ username: verificationKey, otp: enteredOTP })
+                    });
 
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
+                    const data = await response.json();
 
-        } catch (error) {
-            errorMsg.textContent = 'Server error. Please try again.';
-        }
-    });
+                    if (!response.ok) {
+                        errorMsg.textContent = data.detail || 'OTP verification failed';
+                        return;
+                    }
 
-});
-</script>
+                    successMsg.textContent = 'Registration successful! Redirecting...';
+                    hideOTPSection();
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+
+                } catch (error) {
+                    console.error(error);
+                    errorMsg.textContent = 'Server error. Please try again.';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
