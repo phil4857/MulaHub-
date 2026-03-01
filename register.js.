@@ -1,3 +1,6 @@
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('registerForm');
     const otpSection = document.getElementById('otpSection');
@@ -15,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         successMsg.textContent = '';
     }
 
-    // Show and hide OTP section
     function showOTPSection() {
         otpSection.style.display = 'block';
     }
@@ -65,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // API call to register the user
-            const response = await fetch('http://localhost:8000/register', {
+            const response = await fetch(`${BACKEND_URL}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -85,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             verificationKey = username;  // Store the username for OTP verification
-            successMsg.textContent = OTP sent to ${phone}.;
+            successMsg.textContent = `OTP sent to ${phone}.`;
             showOTPSection();
 
         } catch (error) {
@@ -105,8 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // API call to verify the OTP
-            const response = await fetch('http://localhost:8000/verify-otp', {
+            const response = await fetch(`${BACKEND_URL}/verify-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -128,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hideOTPSection();
 
             setTimeout(() => {
-                window.location.href = 'dashboard.html';  // Redirect to dashboard after success
+                window.location.href = 'dashboard.html';
             }, 1500);
 
         } catch (error) {
@@ -137,3 +138,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+</script>
