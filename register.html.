@@ -1,40 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Mkoba Wallet - Register</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        /* Add your CSS styles here */
-    </style>
-</head>
-<body>
+CTYPE html>
 
-<div class="register-container">
-    <h2>Mkoba Wallet Registration</h2>
-    <form id="registerForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="text" id="phone" placeholder="Phone (07XXXXXXXX)" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-        <input type="checkbox" id="terms"> I agree to the terms
-        <button type="submit">Register</button>
-        <div class="error-message" id="errorMsg"></div>
-        <div class="success-message" id="successMsg"></div>
-    </form>
 
-    <div id="otpSection" style="display:none;">
-        <p id="otpDisplay"></p>
-        <input type="text" id="otpInput" placeholder="Enter OTP" required>
-        <button id="verifyOtpBtn">Verify OTP</button>
-    </div>
-</div>
+    
+    Mkoba Wallet - Register
+    
+    
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .register-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .success-message {
+            color: green;
+            margin-top: 10px;
+        }
+    
 
-<script>
-function togglePassword(id) {
-    const input = document.getElementById(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
-}
+
+
+
+    Mkoba Wallet Registration
+    
+        
+        
+        
+        
+         I agree to the terms
+        Register
+        
+        
+    
+
+    
+        
+        
+        Verify OTP
+    
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('registerForm');
@@ -44,59 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const otpDisplay = document.getElementById('otpDisplay');
     const otpInput = document.getElementById('otpInput');
 
-    function resetMessages() {
-        errorMsg.textContent = '';
-        successMsg.textContent = '';
-        otpDisplay.textContent = '';
-    }
-
-    // ---------------- REGISTER ----------------
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        resetMessages();
-
-        const username = document.getElementById('username').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const password = document.getElementById('password').value;
-        const confirm = document.getElementById('confirmPassword').value;
-        const terms = document.getElementById('terms').checked;
-
+        errorMsg.textContent = '';
+        successMsg.textContent = '';
+        
+        const formData = new FormData(form);
+        const terms = formData.get('terms');
+        
         if (!terms) {
             errorMsg.textContent = 'You must agree to the terms.';
             return;
         }
 
-        if (!/^[0-9]{10}$/.test(phone)) {
-            errorMsg.textContent = 'Invalid phone number.';
-            return;
-        }
-
-        if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
-            errorMsg.textContent = 'Username must be 3-15 letters, numbers, or underscores.';
-            return;
-        }
-
-        if (password.length < 6) {
-            errorMsg.textContent = 'Password must be at least 6 characters.';
-            return;
-        }
-
-        if (password !== confirm) {
-            errorMsg.textContent = 'Passwords do not match.';
-            return;
-        }
-
         try {
-            const response = await fetch('http://localhost:8000/register', {
+            const response = await fetch(form.action, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    username: username,
-                    phone: phone,
-                    password: password
-                })
+                body: formData
             });
 
             if (!response.ok) {
@@ -114,10 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ---------------- VERIFY OTP ----------------
     document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
-        resetMessages();
-
         const enteredOtp = otpInput.value.trim();
         if (!enteredOtp) {
             errorMsg.textContent = 'Enter OTP.';
@@ -155,7 +154,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-</script>
-
-</body>
-</html>
