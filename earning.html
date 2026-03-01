@@ -1,245 +1,166 @@
+Your HTML for the investment dashboard looks well-structured, but let’s ensure it integrates effectively with your FastAPI backend and provides the intended functionality for managing investments and withdrawals. Below, I'll refine the code, ensuring that it is ready to interact with your backend while also maintaining user experience.
+
+### Updated Investment Dashboard HTML
+
+Here’s the complete and refined HTML for the investment dashboard, including JavaScript for functionality:
+
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mkoba Wallet - Investment Dashboard 💰</title>
-<style>
-  body { font-family: Arial, sans-serif; background: #f4fff7; margin:0; padding:0; }
-  header { background:#28a745; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
-  .container { max-width:900px; margin:20px auto; padding:20px; background:white; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.1);}
-  h2 { color:#28a745; border-bottom:2px solid #eee; padding-bottom:5px; }
-  .info { margin-bottom: 15px; padding: 15px; background: #f0f8f0; border-left: 5px solid #28a745; }
-  .form-section { margin-top:20px; background:#fafafa; padding:15px; border-radius:8px; border:1px solid #ddd; }
-  input, select { padding:8px; margin:5px 0; width:90%; border:1px solid #ccc; border-radius:5px; }
-  button { padding:10px 15px; border:none; border-radius:5px; font-weight:bold; cursor:pointer; transition:0.3s; }
-  .invest-btn { background:#28a745; color:white; }
-  .withdraw-btn { background:#007bff; color:white; }
-  .logout-btn { background:#dc3545; color:white; }
-  button:hover { opacity:0.85; }
-  .investment-card { display:flex; align-items:center; gap:12px; margin:8px 0; padding:10px; border-radius:6px; background:#f8fff8; border:1px solid #c1e1c1; }
-  .investment-card img { width:60px; height:60px; object-fit:contain; border-radius:6px; }
-  .investment-info { flex:1; }
-  .countdown { font-weight:bold; color:#e53e3e; margin-top:5px; }
-  .otp-display { margin-top:5px; font-weight:bold; color:green; }
-</style>
+    <meta charset='UTF-8'/>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+    <title>Mkoba Wallet - Investment Dashboard 💰</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4fff7; margin:0; padding:0; }
+        header { background:#28a745; color:white; padding:15px; text-align:center; font-size:20px; font-weight:bold; }
+        .container { max-width:900px; margin:20px auto; padding:20px; background:white; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+        h2 { color:#28a745; border-bottom:2px solid #eee; padding-bottom:5px; }
+        .info { margin-bottom: 15px; padding: 15px; background: #f0f8f0; border-left: 5px solid #28a745; }
+        .form-section { margin-top:20px; background:#fafafa; padding:15px; border-radius:8px; border:1px solid #ddd; }
+        input, select { padding:8px; margin:5px 0; width:90%; border:1px solid #ccc; border-radius:5px; }
+        button { padding:10px 15px; border:none; border-radius:5px; font-weight:bold; cursor:pointer; transition:0.3s; }
+        .invest-btn { background:#28a745; color:white; }
+        .withdraw-btn { background:#007bff; color:white; }
+        .logout-btn { background:#dc3545; color:white; }
+        button:hover { opacity:0.85; }
+        .investment-card { display:flex; align-items:center; gap:12px; margin:8px 0; padding:10px; border-radius:6px; background:#f8fff8; border:1px solid #c1e1c1; }
+        .investment-card img { width:60px; height:60px; object-fit:contain; border-radius:6px; }
+        .investment-info { flex:1; }
+        .countdown { font-weight:bold; color:#e53e3e; margin-top:5px; }
+        .otp-display { margin-top:5px; font-weight:bold; color:green; }
+    </style>
 </head>
 <body>
 <header>💰 Mkoba Wallet - Investment Dashboard</header>
 
-<div class="container">
-  <h2>Welcome, <span id="usernameDisplay"></span></h2>
-  <div class="info">
-    <p><strong>Balance:</strong> KES <span id="balanceDisplay">0.00</span></p>
-  </div>
-
-  <!-- Investment Section -->
-  <div class="form-section">
-    <h3>📈 Make Investment</h3>
-    <select id="commodity">
-      <option value="">-- Select Commodity --</option>
-      <option value="marble" data-min="650" data-duration="15">Marble (KES 650 / 15 days)</option>
-      <option value="crude_oil" data-min="800" data-duration="20">Crude Oil (KES 800 / 20 days)</option>
-      <option value="silver" data-min="1000" data-duration="23">Silver (KES 1000 / 23 days)</option>
-      <option value="lead" data-min="1200" data-duration="25">Lead (KES 1200 / 25 days)</option>
-      <option value="platinum" data-min="1350" data-duration="28">Platinum (KES 1350 / 28 days)</option>
-      <option value="diamonds" data-min="1750" data-duration="32">Diamonds (KES 1750 / 32 days)</option>
-      <option value="gold" data-min="2200" data-duration="35">Gold (KES 2200 / 35 days)</option>
-      <option value="uranium" data-min="3000" data-duration="4500">Uranium (KES 3000 / 4500 days)</option>
-    </select>
-    <input type="number" id="amount" placeholder="Enter investment amount" />
-    <button class="invest-btn" id="investBtn">Request Investment OTP</button>
-    <div id="investOtpSection" style="display:none;">
-      <input type="text" id="investOtp" placeholder="Enter OTP"/>
-      <button class="invest-btn" id="investConfirmBtn">Confirm Investment</button>
-      <div class="otp-display" id="investOtpDisplay"></div>
+<div class='container'>
+    <h2>Welcome, <span id='usernameDisplay'></span></h2>
+    <div class='info'>
+        <p><strong>Balance:</strong> KES <span id='balanceDisplay'>0.00</span></p>
     </div>
-  </div>
 
-  <!-- Active Investments -->
-  <div class="form-section">
-    <h3>💵 Active Investments</h3>
-    <div id="activeInvestments">Loading investments...</div>
-  </div>
-
-  <!-- Withdrawal Section -->
-  <div class="form-section">
-    <h3>📤 Request Withdrawal</h3>
-    <input type="number" id="withdrawAmount" placeholder="Enter amount" />
-    <button class="withdraw-btn" id="withdrawBtn">Request Withdrawal OTP</button>
-    <div id="withdrawOtpSection" style="display:none;">
-      <input type="text" id="withdrawOtp" placeholder="Enter OTP" />
-      <button class="withdraw-btn" id="withdrawConfirmBtn">Confirm Withdrawal</button>
-      <div class="otp-display" id="withdrawOtpDisplay"></div>
+    <!-- Investment Section -->
+    <div class='form-section'>
+        <h3>📈 Make Investment</h3>
+        <select id='commodity'>
+            <option value=''>-- Select Commodity --</option>
+            <option value='marble' data-min='650' data-duration='15'>Marble (KES 650 / 15 days)</option>
+            <option value='crude_oil' data-min='800' data-duration='20'>Crude Oil (KES 800 / 20 days)</option>
+            <option value='silver' data-min='1000' data-duration='23'>Silver (KES 1000 / 23 days)</option>
+            <option value='lead' data-min='1200' data-duration='25'>Lead (KES 1200 / 25 days)</option>
+            <option value='platinum' data-min='1350' data-duration='28'>Platinum (KES 1350 / 28 days)</option>
+            <option value='diamonds' data-min='1750' data-duration='32'>Diamonds (KES 1750 / 32 days)</option>
+            <option value='gold' data-min='2200' data-duration='35'>Gold (KES 2200 / 35 days)</option>
+            <option value='uranium' data-min='3000' data-duration='45'>Uranium (KES 3000 / 45 days)</option>
+        </select>
+        <input type='number' id='amount' placeholder='Enter investment amount' />
+        <button class='invest-btn' id='investBtn'>Request Investment OTP</button>
+        <div id='investOtpSection' style='display:none;'>
+            <input type='text' id='investOtp' placeholder='Enter OTP'/>
+            <button class='invest-btn' id='investConfirmBtn'>Confirm Investment</button>
+            <div class='otp-display' id='investOtpDisplay'></div>
+        </div>
     </div>
-  </div>
 
-  <div class="form-section">
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
-  </div>
+    <!-- Active Investments -->
+    <div class='form-section'>
+        <h3>💵 Active Investments</h3>
+        <div id='activeInvestments'>Loading investments...</div>
+    </div>
+
+    <!-- Withdrawal Section -->
+    <div class='form-section'>
+        <h3>📤 Request Withdrawal</h3>
+        <input type='number' id='withdrawAmount' placeholder='Enter amount' />
+        <button class='withdraw-btn' id='withdrawBtn'>Request Withdrawal OTP</button>
+        <div id='withdrawOtpSection' style='display:none;'>
+            <input type='text' id='withdrawOtp' placeholder='Enter OTP' />
+            <button class='withdraw-btn' id='withdrawConfirmBtn'>Confirm Withdrawal</button>
+            <div class='otp-display' id='withdrawOtpDisplay'></div>
+        </div>
+    </div>
+
+    <div class='form-section'>
+        <button class='logout-btn' onclick='logout()'>🚪 Logout</button>
+    </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const username = localStorage.getItem("username") || "Guest";
-  document.getElementById("usernameDisplay").textContent = username;
-  if(!localStorage.getItem("users")){
-    localStorage.setItem("users", JSON.stringify({[username]: {balance: 10000, investment_amount:0, investments:{}}}));
-  }
+document.addEventListener('DOMContentLoaded', async () => {
+    const username = localStorage.getItem('username') || 'Guest';
+    document.getElementById('usernameDisplay').textContent = username;
 
-  const balanceEl = document.getElementById("balanceDisplay");
-  const activeInvestmentsEl = document.getElementById("activeInvestments");
-  const commoditySelect = document.getElementById("commodity");
-  const amountInput = document.getElementById("amount");
-  const investOtpSection = document.getElementById("investOtpSection");
-  const investOtpInput = document.getElementById("investOtp");
-  const investOtpDisplay = document.getElementById("investOtpDisplay");
-  const withdrawAmountInput = document.getElementById("withdrawAmount");
-  const withdrawOtpSection = document.getElementById("withdrawOtpSection");
-  const withdrawOtpInput = document.getElementById("withdrawOtp");
-  const withdrawOtpDisplay = document.getElementById("withdrawOtpDisplay");
-
-  let fakeInvestOTP = null;
-  let fakeWithdrawOTP = null;
-
-  const commodityImages = {
-    marble:'https://i.imgur.com/0X2U6hX.png',
-    crude_oil:'https://i.imgur.com/6zQyGzK.png',
-    silver:'https://i.imgur.com/T0M2Pz2.png',
-    lead:'https://i.imgur.com/OU8b5wC.png',
-    platinum:'https://i.imgur.com/1oC0fIq.png',
-    diamonds:'https://i.imgur.com/akRhzZk.png',
-    gold:'https://i.imgur.com/9O3qGZx.png',
-    uranium:'https://i.imgur.com/Xxg1XYJ.png'
-  };
-
-  function getUser(){
-    const users = JSON.parse(localStorage.getItem("users")||"{}");
-    return users[username];
-  }
-  function saveUser(user){
-    const users = JSON.parse(localStorage.getItem("users")||"{}");
-    users[username]=user;
-    localStorage.setItem("users", JSON.stringify(users));
-  }
-
-  function renderDashboard(){
-    const user = getUser();
-    balanceEl.textContent = Number(user.balance||0).toFixed(2);
-    const investments = user.investments||{};
-    activeInvestmentsEl.innerHTML="";
-    if(Object.keys(investments).length===0){ activeInvestmentsEl.textContent="No active investments."; return; }
-    for(const [commodity, inv] of Object.entries(investments)){
-      const div = document.createElement("div");
-      div.className="investment-card";
-
-      const img = document.createElement("img");
-      img.src = commodityImages[commodity]||'';
-      img.alt = commodity;
-
-      const info = document.createElement("div");
-      info.className="investment-info";
-      const expiryTime = new Date(inv.start_date).getTime() + inv.duration*24*60*60*1000;
-      info.innerHTML = `<strong>${commodity.toUpperCase()}</strong>
-                        <div>Invested: KES ${inv.amount}</div>
-                        <div>Daily Earnings: KES ${(inv.amount*0.1).toFixed(2)}</div>
-                        <div class="countdown" data-expiry="${expiryTime}"></div>`;
-
-      div.appendChild(img);
-      div.appendChild(info);
-      activeInvestmentsEl.appendChild(div);
-    }
-    startCountdowns();
-  }
-
-  function startCountdowns(){
-    const countdowns = document.querySelectorAll(".countdown");
-    function update(){
-      const now = Date.now();
-      countdowns.forEach(c=>{
-        const expiry = Number(c.dataset.expiry);
-        const diff = expiry-now;
-        if(diff<=0) c.textContent="Expired";
-        else{
-          const days = Math.floor(diff/(1000*60*60*24));
-          const hours = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-          const mins = Math.floor((diff%(1000*60*60))/(1000*60));
-          c.textContent = `Expires in: ${days}d ${hours}h ${mins}m`;
+    async function fetchUserData() {
+        const response = await fetch(`http://localhost:8000/dashboard?username=${username}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            }
+        });
+        if (!response.ok) {
+            alert('Failed to fetch user data.');
+            logout();
+            return;
         }
-      });
+        return await response.json();
     }
-    update(); setInterval(update,60000);
-  }
 
-  // Investment Flow
-  document.getElementById("investBtn").addEventListener("click", ()=>{
-    const commodity = commoditySelect.value;
-    const amount = Number(amountInput.value);
-    if(!commodity) return alert("Select a commodity");
-    const min = Number(commoditySelect.options[commoditySelect.selectedIndex].dataset.min);
-    const duration = Number(commoditySelect.options[commoditySelect.selectedIndex].dataset.duration);
-    if(!amount || amount<min) return alert(`Minimum for ${commodity} is KES ${min}`);
-    const user = getUser();
-    if(amount>user.balance) return alert("Insufficient balance");
-    fakeInvestOTP = Math.floor(1000+Math.random()*9000).toString();
-    investOtpDisplay.textContent=`Test OTP: ${fakeInvestOTP}`;
-    investOtpSection.style.display="block";
-    user.pendingInvestment={commodity, amount, start_date:new Date().toISOString(), duration};
-    saveUser(user);
-  });
+    const balanceEl = document.getElementById('balanceDisplay');
+    const activeInvestmentsEl = document.getElementById('activeInvestments');
+    const commoditySelect = document.getElementById('commodity');
+    const amountInput = document.getElementById('amount');
+    const investOtpSection = document.getElementById('investOtpSection');
+    const investOtpInput = document.getElementById('investOtp');
+    const investOtpDisplay = document.getElementById('investOtpDisplay');
+    const withdrawAmountInput = document.getElementById('withdrawAmount');
+    const withdrawOtpSection = document.getElementById('withdrawOtpSection');
+    const withdrawOtpInput = document.getElementById('withdrawOtp');
+    const withdrawOtpDisplay = document.getElementById('withdrawOtpDisplay');
 
-  document.getElementById("investConfirmBtn").addEventListener("click", ()=>{
-    const otp = investOtpInput.value.trim();
-    if(otp!==fakeInvestOTP) return alert("Incorrect OTP");
-    const user = getUser();
-    const inv = user.pendingInvestment;
-    user.balance -= inv.amount;
-    if(!user.investments) user.investments={};
-    user.investments[inv.commodity]=inv;
-    delete user.pendingInvestment;
-    saveUser(user);
-    fakeInvestOTP=null;
-    investOtpInput.value="";
-    investOtpSection.style.display="none";
-    investOtpDisplay.textContent="";
-    alert("Investment successful!");
-    renderDashboard();
-  });
+    let fakeInvestOTP = null;
+    let fakeWithdrawOTP = null;
 
-  // Withdrawal Flow
-  document.getElementById("withdrawBtn").addEventListener("click", ()=>{
-    const amount = Number(withdrawAmountInput.value);
-    const user = getUser();
-    const today = new Date();
-    if(today.getDay()!==1) return alert("Withdrawals allowed only on Mondays");
-    const minAllowed = Math.floor((user.investment_amount||0)*0.3);
-    const maxAllowed = user.balance||0;
-    if(amount<minAllowed) return alert(`Minimum withdrawal: KES ${minAllowed}`);
-    if(amount>maxAllowed) return alert(`Maximum withdrawal: KES ${maxAllowed}`);
-    fakeWithdrawOTP = Math.floor(1000+Math.random()*9000).toString();
-    withdrawOtpDisplay.textContent=`Test OTP: ${fakeWithdrawOTP}`;
-    withdrawOtpSection.style.display="block";
-  });
+    function renderDashboard() {
+        const user = await fetchUserData();
+        balanceEl.textContent = Number(user.balance || 0).toFixed(2);
+        const investments = user.investments || {};
+        activeInvestmentsEl.innerHTML = '';
+        
+        if (Object.keys(investments).length === 0) {
+            activeInvestmentsEl.textContent = "No active investments.";
+            return;
+        }
 
-  document.getElementById("withdrawConfirmBtn").addEventListener("click", ()=>{
-    const otp = withdrawOtpInput.value.trim();
-    if(otp!==fakeWithdrawOTP) return alert("Incorrect OTP");
-    const user = getUser();
-    const amount = Number(withdrawAmountInput.value);
-    user.balance -= amount;
-    saveUser(user);
-    fakeWithdrawOTP=null;
-    withdrawOtpInput.value="";
-    withdrawOtpSection.style.display="none";
-    withdrawOtpDisplay.textContent="";
-    alert("Withdrawal successful! Funds sent to MPESA.");
-    renderDashboard();
-  });
+        for (const [commodity, inv] of Object.entries(investments)) {
+            const div = document.createElement('div');
+            div.className = 'investment-card';
+            div.innerHTML = `<strong>${commodity.toUpperCase()}</strong> | KES ${inv.amount} | Expires in: ${inv.expiry_date}`;
+            activeInvestmentsEl.appendChild(div);
+        }
+    }
 
-  window.logout=()=>{ localStorage.removeItem("username"); window.location.href="login.html"; }
+    // Investment Flow
+    document.getElementById('investBtn').addEventListener('click', async () => {
+        const commodity = commoditySelect.value;
+        const amount = Number(amountInput.value);
+        if (!commodity) return alert("Select a commodity.");
+        
+        const user = await fetchUserData();
+        if (amount > user.balance) return alert("Insufficient balance.");
+        
+        // Request OTP from backend
+        const response = await fetch('http://localhost:8000/invest/request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+            },
+            body: JSON.stringify({ username, commodity })
+        });
 
-  renderDashboard();
-});
-</script>
-</body>
-</html>
+        if (!response.ok) {
+            alert('Investment request failed.');
+            return;
+        }
+
