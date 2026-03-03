@@ -1,111 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Register - Mkoba Wallet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body {
-  font-family: Arial;
-  background:#f4f4f4;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.box {
-  background:white;
-  padding:30px;
-  width:320px;
-  border-radius:8px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.2);
-}
-input,button {
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-}
-button {
-  background:#28a745;
-  color:white;
-  border:none;
-  cursor:pointer;
-}
-button:hover {
-  background:#218838;
-}
-.msg {
-  margin-top:10px;
-  font-size:14px;
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="box">
-<h2>Register</h2>
-
-<input id="username" placeholder="Username" required>
-<input id="phone" placeholder="Phone" required>
-<input id="password" type="password" placeholder="Password" required>
-<input id="referral" placeholder="Referral (optional)">
-<button onclick="register()">Register</button>
-
-<div class="msg" id="msg"></div>
-<p>Already have account? <a href="login.html">Login</a></p>
+  <h2>Register</h2>
+  <input id="username" placeholder="Username">
+  <input id="phone" placeholder="Phone (07XXXXXXXX)">
+  <input id="password" type="password" placeholder="Password">
+  <input id="confirmPassword" type="password" placeholder="Confirm Password">
+  <input id="referral" placeholder="Referral (optional)">
+  <button id="registerBtn">Register</button>
+  <div class="msg" id="msg"></div>
+  <p>Already have an account? <a href="login.html">Login</a></p>
 </div>
 
-<script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
-
-async function register() {
-
-  const msg = document.getElementById("msg");
-  msg.innerText = "";
-  msg.style.color = "black";
-
-  const username = document.getElementById("username").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const referral = document.getElementById("referral").value.trim();
-
-  if(!username || !phone || !password){
-    msg.innerText = "Please fill all required fields.";
-    msg.style.color = "red";
-    return;
-  }
-
-  const formData = new URLSearchParams();
-  formData.append("username", username);
-  formData.append("phone", phone);
-  formData.append("password", password);
-  formData.append("referral", referral);
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: formData
-    });
-
-    const data = await res.json();
-
-    if(res.ok){
-      msg.style.color = "green";
-      msg.innerText = data.message || "Registration successful!";
-    } else {
-      msg.style.color = "red";
-      msg.innerText = data.detail || "Registration failed.";
-    }
-
-  } catch(error) {
-    msg.style.color = "red";
-    msg.innerText = "Cannot connect to server.";
-  }
-}
-</script>
-
+<script src="register.js"></script>
 </body>
 </html>
