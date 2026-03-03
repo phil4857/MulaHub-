@@ -1,3 +1,5 @@
+const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('loginError');
@@ -17,41 +19,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('http://localhost:8000/login', {
+            const response = await fetch(`${BACKEND_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: new URLSearchParams({
-                    username: username,
-                    password: password
-                })
+                body: new URLSearchParams({ username, password })
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorDetails = await response.json();
+                // Handle specific backend status codes
                 if (response.status === 404) {
                     errorMsg.textContent = 'User not found. Please register first.';
                 } else if (response.status === 400) {
                     errorMsg.textContent = 'Incorrect password.';
                 } else if (response.status === 403) {
-                    // User is not verified
-                    const data = await response.json();
-                    const fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                    localStorage.setItem('loginOTP', fakeOTP);
-                    localStorage.setItem('currentLogin', username);
-                    alert(OTP sent: ${fakeOTP});  // For demo purposes, replace with your OTP page redirection
-                    window.location.href = 'otp.html';
+                    errorMsg.textContent = data.detail || 'Account pending approval. Please wait for verification.';
                 } else {
-                    errorMsg.textContent = errorDetails.detail || 'An error occurred. Please try again.';
+                    errorMsg.textContent = data.detail || 'An error occurred. Please try again.';
                 }
                 return;
             }
 
-            // Successful login
-            const data = await response.json();
+            // Successful login: save username and redirect
             localStorage.setItem('username', data.username);
             window.location.href = 'dashboard.html';
+
         } catch (error) {
             console.error('Login error:', error);
             errorMsg.textContent = 'An unexpected error occurred. Please try again.';
