@@ -3,138 +3,71 @@ const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('registerForm');
-    const otpSection = document.getElementById('otpSection');
-    const otpInput = document.getElementById('otpInput');
-    const verifyBtn = document.getElementById('verifyOtpBtn');
     const errorMsg = document.getElementById('errorMsg');
     const successMsg = document.getElementById('successMsg');
-    const otpDisplay = document.getElementById('otpDisplay');
 
-    let verificationKey = null;
-
-    // Reset error and success messages
     function resetMessages() {
         errorMsg.textContent = '';
         successMsg.textContent = '';
     }
 
-    function showOTPSection() {
-        otpSection.style.display = 'block';
-    }
-
-    function hideOTPSection() {
-        otpSection.style.display = 'none';
-    }
-
-    // ---------------- REGISTER ----------------
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         resetMessages();
-        otpDisplay.textContent = '';
 
         const username = document.getElementById('username').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const password = document.getElementById('password').value;
         const confirm = document.getElementById('confirmPassword').value;
-        const referralInput = document.getElementById('referral');
-        const referral = referralInput ? referralInput.value.trim() : '';
+        const referral = document.getElementById('referral').value.trim();
+        const termsChecked = form.elements['terms'].checked;
 
-        // Input validations
+        // Input validation
         if (!username || !phone || !password || !confirm) {
             errorMsg.textContent = 'Please fill in all required fields.';
             return;
         }
-
         if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
             errorMsg.textContent = 'Username must be 3–15 letters, numbers, or underscores.';
             return;
         }
-
         if (!/^07\d{8}$/.test(phone)) {
             errorMsg.textContent = 'Phone must be 07XXXXXXXX format.';
             return;
         }
-
         if (password.length < 6) {
             errorMsg.textContent = 'Password must be at least 6 characters.';
             return;
         }
-
         if (password !== confirm) {
             errorMsg.textContent = 'Passwords do not match.';
             return;
         }
-
-        try {
-            // API call to register the user
-            const response = await fetch(`${BACKEND_URL}/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    username: username,
-                    phone: phone,
-                    password: password,
-                    referral: referral
-                })
-            });
-
-            if (!response.ok) {
-                const errorDetails = await response.json();
-                errorMsg.textContent = errorDetails.detail || 'Registration failed';
-                return;
-            }
-
-            verificationKey = username;  // Store the username for OTP verification
-            successMsg.textContent = `OTP sent to ${phone}.`;
-            showOTPSection();
-
-        } catch (error) {
-            console.error('Error:', error);
-            errorMsg.textContent = 'An error occurred. Please try again later.';
-        }
-    });
-
-    // ---------------- VERIFY OTP ----------------
-    verifyBtn.addEventListener('click', async () => {
-        resetMessages();
-
-        const enteredOTP = otpInput.value.trim();
-        if (!enteredOTP) {
-            errorMsg.textContent = 'Enter OTP to verify.';
+        if (!termsChecked) {
+            errorMsg.textContent = 'You must agree to the terms.';
             return;
         }
 
         try {
-            const response = await fetch(`${BACKEND_URL}/verify-otp`, {
+            const response = await fetch(`${BACKEND_URL}/register`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    username: verificationKey,
-                    otp: enteredOTP
-                })
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ username, phone, password, referral })
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const errorDetails = await response.json();
-                errorMsg.textContent = errorDetails.detail || 'OTP verification failed';
+                errorMsg.textContent = data.detail || 'Registration failed';
                 return;
             }
 
-            successMsg.textContent = 'Registration successful! Redirecting...';
-            otpDisplay.textContent = '';
-            hideOTPSection();
-
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
+            successMsg.textContent = 'Registration successful! Awaiting admin approval.';
+            form.reset();
 
         } catch (error) {
             console.error('Error:', error);
-            errorMsg.textContent = 'An error occurred. Please try again later.';
+            errorMsg.textContent = 'Server error. Please try again later.';
         }
     });
 });
