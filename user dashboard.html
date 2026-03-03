@@ -1,213 +1,67 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html>
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
-    <title>User Dashboard - Mkoba Wallet 💵🎉</title>
-
-    <style>
-        /* Your existing styles */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f9ff;
-            margin: 0;
-        }
-        header {
-            background: linear-gradient(90deg, #0a1d66, #1234a0);
-            color: #ffd700;
-            padding: 20px;
-            text-align: center;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-        }
-        .container {
-            background: #fff;
-            margin: 20px auto;
-            padding: 25px;
-            max-width: 700px;
-            border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        }
-        .info p {
-            background: #f0f8f0;
-            padding: 12px;
-            border-left: 5px solid #0a1d66;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .info span {
-            font-weight: bold;
-            color: #1234a0;
-        }
-        #bonusStatus {
-            background: #fff3cd;
-            padding: 12px;
-            border-left: 6px solid #ffd700;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-        .actions button {
-            flex: 1 1 45%;
-            margin: 10px 5px;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            background: linear-gradient(to right, #0a1d66, #1234a0);
-            color: #ffd700;
-        }
-        .logout {
-            background: linear-gradient(to right, #dc3545, #a71d2a) !important;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial; padding:20px; background:#f4f4f4;}
+.card{background:white; padding:20px; margin-top:15px; border-radius:8px;}
+button{padding:8px 12px; margin-top:10px;}
+</style>
 </head>
 <body>
 
-<header>
-    <h1>Welcome to Mkoba Wallet Dashboard 💵🎉</h1>
-</header>
+<h2>User Dashboard</h2>
+<button onclick="logout()">Logout</button>
 
-<div class='container'>
-    <div class='info'>
-        <p><strong>Username:</strong> <span id='usernameDisplay'></span></p>
-        <p><strong>Balance:</strong> KES <span id='balanceDisplay'></span></p>
-        <p><strong>Total Earnings:</strong> KES <span id='earningsDisplay'></span></p>
-        <p><strong>Investment:</strong> KES <span id='investmentDisplay'></span></p>
-        <p><strong>Referral Link:</strong> 
-            <a id='referralLink' target='_blank'></a>
-        </p>
-        <p><strong>Payment Number:</strong> 0739075065</p>
-    </div>
+<div class="card">
+<p><strong>Balance:</strong> <span id="balance"></span></p>
+<p><strong>Earnings:</strong> <span id="earnings"></span></p>
+</div>
 
-    <div id='bonusStatus'>Loading bonus info...</div>
-
-    <div class='actions'>
-        <button id='grabBonusBtn'>🎁 Grab Daily Bonus</button>
-        <button onclick="window.location.href='withdraw.html'">📤 Withdraw</button>
-        <button class='logout' onclick='logout()'>🚪 Logout</button>
-    </div>
+<div class="card">
+<h3>Withdraw</h3>
+<input id="amount" placeholder="Amount">
+<button onclick="withdraw()">Request Withdrawal</button>
+<p id="msg"></p>
 </div>
 
 <script>
-    const username = localStorage.getItem('username');
-    if (!username) {
-        window.location.href = 'login.html';
-    }
+const BACKEND_URL="https://repo-1red-jipate-bonus.onrender.com";
+const username=localStorage.getItem("username");
+if(!username){window.location="login.html";}
 
-    // ===== GET USER DATA =====
-    async function getUserData() {
-        try {
-            const response = await fetch(`http://localhost:8000/dashboard?username=${username}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}` // Assuming you use JWT
-                }
-            });
+async function load(){
+const res=await fetch(`${BACKEND_URL}/dashboard?username=${username}`);
+const data=await res.json();
+if(res.ok){
+balance.innerText=data.balance;
+earnings.innerText=data.earnings;
+}else{
+alert(data.detail);
+}
+}
+load();
 
-            if (!response.ok) {
-                throw new Error('Could not fetch user data.');
-            }
+async function withdraw(){
+const formData=new URLSearchParams();
+formData.append("username",username);
+formData.append("amount",amount.value);
 
-            const user = await response.json();
-            displayUserData(user);
-        } catch (error) {
-            alert(error.message);
-            logout(); // Logout if error occurs
-        }
-    }
+const res=await fetch(`${BACKEND_URL}/withdraw/request`,{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:formData
+});
+const data=await res.json();
+msg.innerText=data.message||data.detail;
+}
 
-    function displayUserData(user) {
-        document.getElementById('usernameDisplay').textContent = user.username;
-        document.getElementById('balanceDisplay').textContent = (user.balance || 0).toFixed(2);
-        document.getElementById('earningsDisplay').textContent = (user.earnings || 0).toFixed(2);
-        document.getElementById('investmentDisplay').textContent = (user.investment_amount || 0).toFixed(2);
-
-        // Referral link
-        const referralURL = `${window.location.origin}/register.html?ref=${encodeURIComponent(user.username)}`;
-        const referralEl = document.getElementById('referralLink');
-        referralEl.href = referralURL;
-        referralEl.textContent = referralURL;
-
-        // Update bonus status
-        updateBonusStatus(user);
-    }
-
-    // ===== DAILY BONUS =====
-    const bonusEl = document.getElementById('bonusStatus');
-
-    function canClaimBonus(user) {
-        const today = new Date().toDateString();
-        return user.lastBonusDate !== today;
-    }
-
-    function updateBonusStatus(user) {
-        if (canClaimBonus(user)) {
-            bonusEl.textContent = 'Bonus available today!';
-        } else {
-            bonusEl.textContent = 'You already claimed today’s bonus.';
-        }
-    }
-
-    document.getElementById('grabBonusBtn').addEventListener('click', async () => {
-        const user = getUsers()[username]; // Get user data
-
-        if (!canClaimBonus(user)) {
-            alert('You already claimed your bonus today.');
-            return;
-        }
-
-        const bonusAmount = 50; // fixed demo bonus
-
-        user.balance = (user.balance || 0) + bonusAmount;
-        user.earnings = (user.earnings || 0) + bonusAmount;
-        user.lastBonusDate = new Date().toDateString();
-
-        saveUser(user);
-        await updateUser(user); // Update user data on the backend
-
-        alert(`Bonus of KES ${bonusAmount} added!`);
-        location.reload();
-    });
-
-    async function updateUser(user) {
-        try {
-            const response = await fetch(`http://localhost:8000/update-user`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-                },
-                body: JSON.stringify(user)
-            });
-
-            if (!response.ok) {
-                throw new Error('Could not update user data.');
-            }
-        } catch (error) {
-            alert(error.message);
-        }
-    }
-
-    // ===== LOGOUT =====
-    function logout() {
-        localStorage.removeItem('username');
-        localStorage.removeItem('userToken');
-        window.location.href = 'login.html';
-    }
-
-    // Fetch user data on page load
-    getUserData();
-
+function logout(){
+localStorage.removeItem("username");
+window.location="login.html";
+}
 </script>
-
 </body>
 </html>
- 
