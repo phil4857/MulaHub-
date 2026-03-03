@@ -1,187 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Mkoba Wallet - Admin Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f8f9fa;
-    margin: 0;
-    padding: 20px;
-  }
-  h2 { text-align: center; color: #343a40; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  th, td {
-    padding: 12px;
-    border-bottom: 1px solid #dee2e6;
-    text-align: left;
-  }
-  th {
-    background: #343a40;
-    color: white;
-  }
-  button {
-    padding: 6px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: white;
-    font-weight: bold;
-  }
-  .approve-btn { background-color: #28a745; }
-  .approve-btn:hover { background-color: #218838; }
-  .logout-btn {
-    margin-top: 15px;
-    background-color: #dc3545;
-    float: right;
-  }
-  .logout-btn:hover { background-color: #c82333; }
+body{font-family:Arial; padding:20px;}
+table{width:100%; border-collapse:collapse; margin-top:20px;}
+th,td{border:1px solid #ccc; padding:8px;}
+button{padding:5px 8px;}
 </style>
 </head>
 <body>
 
 <h2>Admin Dashboard</h2>
-<button class="logout-btn" id="logoutBtn">Logout</button>
+<button onclick="logout()">Logout</button>
 
-<h3>Pending Users</h3>
-<table id="usersTable">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Phone</th>
-      <th>Referral</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<h3>Pending Withdrawals</h3>
-<table id="withdrawalsTable">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Amount</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
+<h3>Users</h3>
+<table>
+<thead><tr><th>Username</th><th>Approved</th><th>Action</th></tr></thead>
+<tbody id="users"></tbody>
 </table>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com"; // replace with your backend URL
+const BACKEND_URL="https://repo-1red-jipate-bonus.onrender.com";
+if(localStorage.getItem("admin")!=="true"){window.location="admin-login.html";}
 
-document.addEventListener('DOMContentLoaded', () => {
-  const usersTableBody = document.querySelector('#usersTable tbody');
-  const withdrawalsTableBody = document.querySelector('#withdrawalsTable tbody');
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  // ---------------- LOGOUT ----------------
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('adminUsername');
-    window.location.href = 'admin-login.html';
-  });
-
-  const adminUsername = localStorage.getItem('adminUsername');
-  if (!adminUsername) {
-    window.location.href = 'admin-login.html';
-    return;
-  }
-
-  // ---------------- FETCH PENDING USERS ----------------
-  async function loadPendingUsers() {
-    try {
-      const response = await fetch(`${BACKEND_URL}/all-users`);
-      const data = await response.json();
-
-      usersTableBody.innerHTML = '';
-      data.forEach(user => {
-        if (!user.approved) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${user.username}</td>
-            <td>${user.phone}</td>
-            <td>${user.referral || '-'}</td>
-            <td><button class="approve-btn" data-username="${user.username}">Approve</button></td>
-          `;
-          usersTableBody.appendChild(tr);
-        }
-      });
-
-      // Add event listeners for approve buttons
-      document.querySelectorAll('.approve-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const username = btn.dataset.username;
-          try {
-            const resp = await fetch(`${BACKEND_URL}/approve-user`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: new URLSearchParams({ username })
-            });
-            const resData = await resp.json();
-            if (!resp.ok) alert(resData.detail || 'Failed to approve user');
-            else loadPendingUsers(); // reload table
-          } catch (err) { console.error(err); alert('Error approving user'); }
-        });
-      });
-
-    } catch (err) {
-      console.error('Error fetching users:', err);
-    }
-  }
-
-  // ---------------- FETCH PENDING WITHDRAWALS ----------------
-  async function loadPendingWithdrawals() {
-    try {
-      const response = await fetch(`${BACKEND_URL}/all-withdrawals`);
-      const data = await response.json();
-
-      withdrawalsTableBody.innerHTML = '';
-      data.forEach(wd => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${wd.username}</td>
-          <td>${wd.amount}</td>
-          <td><button class="approve-btn" data-username="${wd.username}">Approve</button></td>
-        `;
-        withdrawalsTableBody.appendChild(tr);
-      });
-
-      document.querySelectorAll('#withdrawalsTable .approve-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const username = btn.dataset.username;
-          try {
-            const resp = await fetch(`${BACKEND_URL}/withdraw/confirm`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: new URLSearchParams({ username })
-            });
-            const resData = await resp.json();
-            if (!resp.ok) alert(resData.detail || 'Failed to approve withdrawal');
-            else loadPendingWithdrawals(); // reload table
-          } catch (err) { console.error(err); alert('Error approving withdrawal'); }
-        });
-      });
-
-    } catch (err) {
-      console.error('Error fetching withdrawals:', err);
-    }
-  }
-
-  // ---------------- INITIAL LOAD ----------------
-  loadPendingUsers();
-  loadPendingWithdrawals();
+async function loadUsers(){
+const res=await fetch(`${BACKEND_URL}/admin/users`);
+const data=await res.json();
+users.innerHTML="";
+data.forEach(u=>{
+users.innerHTML+=`
+<tr>
+<td>${u.username}</td>
+<td>${u.approved}</td>
+<td>${!u.approved ? `<button onclick="approve('${u.username}')">Approve</button>`:""}</td>
+</tr>
+`;
 });
-</script>
+}
+loadUsers();
 
+async function approve(username){
+const formData=new URLSearchParams();
+formData.append("username",username);
+
+await fetch(`${BACKEND_URL}/admin/approve-user`,{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:formData
+});
+loadUsers();
+}
+
+function logout(){
+localStorage.removeItem("admin");
+window.location="admin-login.html";
+}
+</script>
 </body>
 </html>
