@@ -1,130 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Mkoba Wallet - Admin Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background: linear-gradient(135deg, #343a40, #6c757d);
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .login-box {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      width: 340px;
-      text-align: center;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      color: #343a40;
-    }
-
-    input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #343a40;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      font-size: 15px;
-    }
-
-    button:hover {
-      background: #212529;
-    }
-
-    .error-message {
-      color: red;
-      font-size: 14px;
-      margin-top: 10px;
-      min-height: 18px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Admin Login - Mkoba Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="login-box">
+<div class="box">
   <h2>Admin Login</h2>
-
-  <form id="adminLoginForm">
-    <input type="text" id="username" placeholder="Admin Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-    <div class="error-message" id="loginError"></div>
-  </form>
+  <input type="password" id="adminPassword" placeholder="Admin Password">
+  <button id="adminLoginBtn">Login</button>
+  <div class="msg" id="adminMsg"></div>
 </div>
-
-<script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com"; // update if different
-
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('adminLoginForm');
-  const errorMsg = document.getElementById('loginError');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    errorMsg.textContent = '';
-
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-
-    if (!username || !password) {
-      errorMsg.textContent = 'Please enter username and password.';
-      return;
-    }
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ username, password })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        errorMsg.textContent = data.detail || 'Login failed.';
-        return;
-      }
-
-      if (!data.is_admin) {
-        errorMsg.textContent = 'Access denied: Not an admin.';
-        return;
-      }
-
-      // Save admin username in localStorage for dashboard
-      localStorage.setItem('adminUsername', data.username);
-      window.location.href = 'admin-dashboard.html'; // redirect to admin dashboard
-
-    } catch (error) {
-      console.error('Login error:', error);
-      errorMsg.textContent = 'An unexpected error occurred.';
-    }
-  });
-});
-</script>
-
+<script src="admin-login.js"></script>
 </body>
 </html>
