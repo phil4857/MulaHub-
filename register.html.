@@ -14,7 +14,6 @@
             height: 100vh;
             margin: 0;
         }
-
         .register-container {
             background: white;
             padding: 25px;
@@ -22,12 +21,10 @@
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
             width: 360px;
         }
-
         h2 {
             margin-bottom: 20px;
             text-align: center;
         }
-
         input {
             width: 100%;
             padding: 10px;
@@ -35,7 +32,6 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
         button {
             width: 100%;
             background-color: #4CAF50;
@@ -46,37 +42,15 @@
             cursor: pointer;
             margin-top: 8px;
         }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .error-message {
-            color: red;
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .success-message {
-            color: green;
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        #otpSection {
-            display: none;
-            margin-top: 15px;
-        }
-
-        .checkbox-label {
-            font-size: 14px;
-        }
+        button:hover { background-color: #45a049; }
+        .error-message { color: red; margin-top: 10px; text-align: center; }
+        .success-message { color: green; margin-top: 10px; text-align: center; }
+        .checkbox-label { font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="register-container">
         <h2>Mkoba Wallet Registration</h2>
-
         <form id="registerForm">
             <input type="text" id="username" name="username" placeholder="Username" required>
             <input type="text" id="phone" name="phone" placeholder="Phone Number (07XXXXXXXX)" required>
@@ -88,12 +62,6 @@
             </label>
             <button type="submit">Register</button>
         </form>
-
-        <div id="otpSection">
-            <input type="text" id="otpInput" placeholder="Enter OTP">
-            <button id="verifyOtpBtn">Verify OTP</button>
-        </div>
-
         <div class="error-message" id="errorMsg"></div>
         <div class="success-message" id="successMsg"></div>
     </div>
@@ -103,21 +71,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('registerForm');
-            const otpSection = document.getElementById('otpSection');
-            const otpInput = document.getElementById('otpInput');
-            const verifyBtn = document.getElementById('verifyOtpBtn');
             const errorMsg = document.getElementById('errorMsg');
             const successMsg = document.getElementById('successMsg');
-
-            let verificationKey = null;
 
             function resetMessages() {
                 errorMsg.textContent = '';
                 successMsg.textContent = '';
             }
-
-            function showOTPSection() { otpSection.style.display = 'block'; }
-            function hideOTPSection() { otpSection.style.display = 'none'; }
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -169,45 +129,9 @@
                         return;
                     }
 
-                    verificationKey = username;
-                    successMsg.textContent = `OTP sent to ${phone}.`;
-                    showOTPSection();
+                    successMsg.textContent = `Registration successful! Awaiting approval from admin.`;
 
-                } catch (error) {
-                    console.error(error);
-                    errorMsg.textContent = 'Server error. Please try again.';
-                }
-            });
-
-            verifyBtn.addEventListener('click', async () => {
-                resetMessages();
-                const enteredOTP = otpInput.value.trim();
-
-                if (!enteredOTP) {
-                    errorMsg.textContent = 'Enter OTP to verify.';
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${BACKEND_URL}/verify-otp`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({ username: verificationKey, otp: enteredOTP })
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        errorMsg.textContent = data.detail || 'OTP verification failed';
-                        return;
-                    }
-
-                    successMsg.textContent = 'Registration successful! Redirecting...';
-                    hideOTPSection();
-
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
+                    form.reset();
 
                 } catch (error) {
                     console.error(error);
