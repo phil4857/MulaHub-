@@ -1,74 +1,61 @@
-<script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
 
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('registerForm');
-    const errorMsg = document.getElementById('errorMsg');
-    const successMsg = document.getElementById('successMsg');
+document.addEventListener("DOMContentLoaded", () => {
+  const registerBtn = document.getElementById("registerBtn");
+  const msg = document.getElementById("msg");
 
-    function resetMessages() {
-        errorMsg.textContent = '';
-        successMsg.textContent = '';
+  registerBtn.addEventListener("click", async () => {
+    msg.innerText = "";
+    const username = document.getElementById("username").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const referral = document.getElementById("referral").value.trim();
+
+    if (!username || !phone || !password || !confirmPassword) {
+      msg.style.color = "red";
+      msg.innerText = "Please fill in all required fields.";
+      return;
     }
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        resetMessages();
+    if (!/^07\d{8}$/.test(phone)) {
+      msg.style.color = "red";
+      msg.innerText = "Phone must be in 07XXXXXXXX format.";
+      return;
+    }
 
-        const username = document.getElementById('username').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const password = document.getElementById('password').value;
-        const confirm = document.getElementById('confirmPassword').value;
-        const referral = document.getElementById('referral').value.trim();
-        const termsChecked = form.elements['terms'].checked;
+    if (password.length < 6) {
+      msg.style.color = "red";
+      msg.innerText = "Password must be at least 6 characters.";
+      return;
+    }
 
-        // Input validation
-        if (!username || !phone || !password || !confirm) {
-            errorMsg.textContent = 'Please fill in all required fields.';
-            return;
-        }
-        if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
-            errorMsg.textContent = 'Username must be 3–15 letters, numbers, or underscores.';
-            return;
-        }
-        if (!/^07\d{8}$/.test(phone)) {
-            errorMsg.textContent = 'Phone must be 07XXXXXXXX format.';
-            return;
-        }
-        if (password.length < 6) {
-            errorMsg.textContent = 'Password must be at least 6 characters.';
-            return;
-        }
-        if (password !== confirm) {
-            errorMsg.textContent = 'Passwords do not match.';
-            return;
-        }
-        if (!termsChecked) {
-            errorMsg.textContent = 'You must agree to the terms.';
-            return;
-        }
+    if (password !== confirmPassword) {
+      msg.style.color = "red";
+      msg.innerText = "Passwords do not match.";
+      return;
+    }
 
-        try {
-            const response = await fetch(`${BACKEND_URL}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ username, phone, password, referral })
-            });
+    try {
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+      formData.append("phone", phone);
+      formData.append("password", password);
+      formData.append("referral", referral);
 
-            const data = await response.json();
+      const res = await fetch(`${BACKEND_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData,
+      });
 
-            if (!response.ok) {
-                errorMsg.textContent = data.detail || 'Registration failed';
-                return;
-            }
-
-            successMsg.textContent = 'Registration successful! Awaiting admin approval.';
-            form.reset();
-
-        } catch (error) {
-            console.error('Error:', error);
-            errorMsg.textContent = 'Server error. Please try again later.';
-        }
-    });
+      const data = await res.json();
+      msg.style.color = res.ok ? "green" : "red";
+      msg.innerText = data.message || data.detail;
+    } catch (err) {
+      msg.style.color = "red";
+      msg.innerText = "Server error. Try again later.";
+      console.error(err);
+    }
+  });
 });
-</script>
