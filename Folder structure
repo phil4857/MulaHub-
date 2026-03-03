@@ -1,0 +1,24 @@
+frontend/
+│
+├── index.html
+├── login.html
+├── register.html
+├── dashboard.html
+├── user_dashboard.html
+├── admin_login.html
+├── admin_dashboard.html
+├── invest.html
+├── investment_dashboard.html
+├── withdrawal.html
+├── earning.html
+│
+├── css/
+│   ├── style.css
+│
+├── js/
+│   ├── script.js       (general JS helpers)
+│   ├── login.js
+│   ├── register.js
+│   ├── dashboard.js
+│   ├── invest.js
+│   ├── withdrawal.js
