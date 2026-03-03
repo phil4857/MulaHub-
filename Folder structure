@@ -13,12 +13,14 @@ frontend/
 ├── earning.html
 │
 ├── css/
-│   ├── style.css
+│   └── style.css
 │
 ├── js/
-│   ├── script.js       (general JS helpers)
+│   ├── script.js              # general JS helpers
 │   ├── login.js
 │   ├── register.js
 │   ├── dashboard.js
 │   ├── invest.js
 │   ├── withdrawal.js
+│   ├── admin_login.js         # new
+│   └── admin_dashboard.js     # new
