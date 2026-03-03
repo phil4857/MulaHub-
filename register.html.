@@ -1,144 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Mkoba Wallet - Register</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .register-container {
-            background: white;
-            padding: 25px;
-            border-radius: 6px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
-            width: 360px;
-        }
-        h2 {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 6px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        button:hover { background-color: #45a049; }
-        .error-message { color: red; margin-top: 10px; text-align: center; }
-        .success-message { color: green; margin-top: 10px; text-align: center; }
-        .checkbox-label { font-size: 14px; }
-    </style>
+<meta charset="UTF-8">
+<title>Register - Mkoba Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {font-family: Arial; background:#f4f4f4; display:flex; justify-content:center; align-items:center; height:100vh;}
+.box {background:white; padding:30px; width:320px; border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.2);}
+input,button {width:100%; padding:10px; margin-top:10px;}
+button {background:#28a745; color:white; border:none; cursor:pointer;}
+button:hover {background:#218838;}
+.msg {margin-top:10px; font-size:14px;}
+</style>
 </head>
 <body>
-    <div class="register-container">
-        <h2>Mkoba Wallet Registration</h2>
-        <form id="registerForm">
-            <input type="text" id="username" name="username" placeholder="Username" required>
-            <input type="text" id="phone" name="phone" placeholder="Phone Number (07XXXXXXXX)" required>
-            <input type="password" id="password" name="password" placeholder="Password" required>
-            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
-            <input type="text" id="referral" name="referral" placeholder="Referral (Optional)">
-            <label class="checkbox-label">
-                <input type="checkbox" name="terms" required> I agree to the terms
-            </label>
-            <button type="submit">Register</button>
-        </form>
-        <div class="error-message" id="errorMsg"></div>
-        <div class="success-message" id="successMsg"></div>
-    </div>
 
-    <script>
-        const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
+<div class="box">
+<h2>Register</h2>
+<input id="username" placeholder="Username">
+<input id="phone" placeholder="Phone">
+<input id="password" type="password" placeholder="Password">
+<input id="referral" placeholder="Referral (optional)">
+<button onclick="register()">Register</button>
+<div class="msg" id="msg"></div>
+<p>Already have account? <a href="login.html">Login</a></p>
+</div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('registerForm');
-            const errorMsg = document.getElementById('errorMsg');
-            const successMsg = document.getElementById('successMsg');
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
 
-            function resetMessages() {
-                errorMsg.textContent = '';
-                successMsg.textContent = '';
-            }
+async function register(){
+const msg = document.getElementById("msg");
+msg.innerText = "";
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                resetMessages();
+const formData = new URLSearchParams();
+formData.append("username", username.value);
+formData.append("phone", phone.value);
+formData.append("password", password.value);
+formData.append("referral", referral.value);
 
-                const username = document.getElementById('username').value.trim();
-                const phone = document.getElementById('phone').value.trim();
-                const password = document.getElementById('password').value;
-                const confirm = document.getElementById('confirmPassword').value;
-                const referral = document.getElementById('referral').value.trim();
-                const termsChecked = form.elements['terms'].checked;
+const res = await fetch(`${BACKEND_URL}/register`,{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:formData
+});
 
-                if (!username || !phone || !password || !confirm) {
-                    errorMsg.textContent = 'Please fill in all required fields.';
-                    return;
-                }
-                if (!/^[a-zA-Z0-9_]{3,15}$/.test(username)) {
-                    errorMsg.textContent = 'Username must be 3–15 letters, numbers, or underscores.';
-                    return;
-                }
-                if (!/^07\d{8}$/.test(phone)) {
-                    errorMsg.textContent = 'Phone must be 07XXXXXXXX format.';
-                    return;
-                }
-                if (password.length < 6) {
-                    errorMsg.textContent = 'Password must be at least 6 characters.';
-                    return;
-                }
-                if (password !== confirm) {
-                    errorMsg.textContent = 'Passwords do not match.';
-                    return;
-                }
-                if (!termsChecked) {
-                    errorMsg.textContent = 'You must agree to the terms.';
-                    return;
-                }
+const data = await res.json();
+msg.innerText = data.message || data.detail;
 
-                try {
-                    const response = await fetch(`${BACKEND_URL}/register`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({ username, phone, password, referral })
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        errorMsg.textContent = data.detail || 'Registration failed.';
-                        return;
-                    }
-
-                    successMsg.textContent = `Registration successful! Awaiting approval from admin.`;
-
-                    form.reset();
-
-                } catch (error) {
-                    console.error(error);
-                    errorMsg.textContent = 'Server error. Please try again.';
-                }
-            });
-        });
-    </script>
+if(res.ok){
+msg.style.color="green";
+}else{
+msg.style.color="red";
+}
+}
+</script>
 </body>
 </html>
