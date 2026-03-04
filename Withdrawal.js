@@ -1,121 +1,67 @@
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+
 document.addEventListener("DOMContentLoaded", () => {
-
-  const username = localStorage.getItem("username");
-  if (!username) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  // Monday only (1 = Monday)
-  const today = new Date();
-  if (today.getDay() !== 1) {
-    alert("Withdrawals are only allowed on Mondays.");
-    window.location.href = "dashboard.html";
-    return;
-  }
-
-  const withdrawForm = document.getElementById("withdrawForm");
-  const otpSection = document.getElementById("otpSection");
-  const withdrawOtpInput = document.getElementById("withdrawOtp");
-  const otpDisplay = document.getElementById("otpDisplay");
-  const confirmBtn = document.getElementById("confirmWithdrawBtn");
-
-  let fakeOTP = null;
-  let otpActive = false;
-
-  function getUsers() {
-    return JSON.parse(localStorage.getItem("users") || "{}");
-  }
-
-  function getUser() {
-    return getUsers()[username];
-  }
-
-  function saveUser(user) {
-    const users = getUsers();
-    users[username] = user;
-    localStorage.setItem("users", JSON.stringify(users));
-  }
-
-  // ===== STEP 1: REQUEST WITHDRAWAL =====
-  withdrawForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const amountInput = document.getElementById("amount").value;
-    const amount = parseFloat(amountInput);
-
-    if (!amount || amount <= 0) {
-      alert("Enter a valid amount.");
-      return;
+    const username = localStorage.getItem("username");
+    if (!username) {
+        window.location.href = "login.html";
+        return;
     }
 
-    const user = getUser();
-    if (!user) {
-      alert("User not found.");
-      return;
+    // Monday only check (client-side early warning)
+    const today = new Date();
+    if (today.getDay() !== 1) {
+        alert("Withdrawals are only allowed on Mondays.");
+        window.location.href = "dashboard.html";
+        return;
     }
 
-    const invested = user.investment_amount || 0;
-    const balance = user.balance || 0;
-    const minAllowed = Math.floor(invested * 0.3);
+    const withdrawForm = document.getElementById("withdrawForm");
+    const otpSection = document.getElementById("otpSection"); // can keep if you want to add OTP later, but hidden for now
+    const amountInput = document.getElementById("amount");
+    const msg = document.getElementById("msg") || document.createElement("div"); // fallback
 
-    if (amount < minAllowed) {
-      alert(`Minimum withdrawal is KES ${minAllowed}`);
-      return;
-    }
+    // Hide OTP section permanently (no OTP in current backend)
+    if (otpSection) otpSection.style.display = "none";
 
-    if (amount > balance) {
-      alert(`Maximum allowed withdrawal is KES ${balance}`);
-      return;
-    }
+    withdrawForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    // Generate 6-digit fake OTP
-    fakeOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    otpActive = true;
+        const amount = parseFloat(amountInput.value);
 
-    if (otpDisplay) {
-      otpDisplay.textContent = `Your OTP: ${fakeOTP}`;
-    }
+        if (!amount || amount <= 0) {
+            alert("Enter a valid amount greater than 0.");
+            return;
+        }
 
-    user.pendingWithdrawal = amount;
-    saveUser(user);
+        const formData = new URLSearchParams();
+        formData.append("username", username);
+        formData.append("amount", amount);
 
-    otpSection.style.display = "block";
-  });
+        try {
+            const response = await fetch(`${BACKEND_URL}/withdraw/request`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData
+            });
 
-  // ===== STEP 2: CONFIRM WITHDRAWAL =====
-  confirmBtn.addEventListener("click", () => {
+            const data = await response.json();
 
-    if (!otpActive) return;
-
-    const enteredOtp = withdrawOtpInput.value.trim();
-    if (enteredOtp !== fakeOTP) {
-      alert("Incorrect OTP.");
-      return;
-    }
-
-    const user = getUser();
-    if (!user || !user.pendingWithdrawal) return;
-
-    const amount = user.pendingWithdrawal;
-
-    if (amount > user.balance) {
-      alert("Balance error.");
-      return;
-    }
-
-    user.balance -= amount;
-    delete user.pendingWithdrawal;
-    saveUser(user);
-
-    // Reset OTP state
-    fakeOTP = null;
-    otpActive = false;
-    withdrawOtpInput.value = "";
-    otpSection.style.display = "none";
-
-    alert("Withdrawal successful! Funds sent to MPESA.");
-    window.location.href = "dashboard.html";
-  });
-
+            if (response.ok) {
+                alert(data.message || "Withdrawal request submitted successfully! Pending admin approval.");
+                // Optional: clear input
+                amountInput.value = "";
+                // Redirect back to dashboard or refresh balance
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 2000);
+            } else {
+                alert(data.detail || "Withdrawal request failed. Please try again.");
+            }
+        } catch (err) {
+            console.error("Withdrawal request error:", err);
+            alert("Network error. Please check your connection and try again.");
+        }
+    });
 });
