@@ -1,3 +1,5 @@
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+
 document.addEventListener('DOMContentLoaded', async () => {
     const username = localStorage.getItem('username');
     if (!username) {
@@ -7,13 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const balanceEl = document.getElementById('balanceDisplay');
     const investmentListEl = document.getElementById('investmentList');
-    const investOtpSection = document.getElementById('investOtpSection');
-    const investOtpInput = document.getElementById('investOtp');
-    const investOtpDisplay = document.getElementById('investOtpDisplay');
-    const withdrawAmountInput = document.getElementById('withdrawAmount');
-    const withdrawOtpSection = document.getElementById('withdrawOtpSection');
-    const withdrawOtpInput = document.getElementById('withdrawOtp');
-    const withdrawOtpDisplay = document.getElementById('withdrawOtpDisplay');
 
     const commodities = {
         marble: { price: 650, days: 15 },
@@ -27,29 +22,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     async function fetchUserData() {
-        const response = await fetch(http://localhost:8000/dashboard?username=${username}, {
-            method: 'GET',
-            headers: {
-                'Authorization': Bearer ${localStorage.getItem('userToken')}
+        try {
+            const response = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+            if (!response.ok) {
+                console.error(`Dashboard fetch failed: ${response.status} ${response.statusText}`);
+                if (response.status === 403) {
+                    alert("Account not approved or access denied. Please wait for admin approval.");
+                } else {
+                    alert(`Failed to load dashboard data (status ${response.status}).`);
+                }
+                logout();
+                return null;
             }
-        });
-        if (!response.ok) {
-            alert('Failed to fetch user data.');
-            logout();
-            return;
+            return await response.json();
+        } catch (err) {
+            console.error("Dashboard fetch error:", err);
+            alert("Cannot connect to the server. Check your internet.");
+            return null;
         }
-        return await response.json();
     }
 
     async function updateUI() {
         const user = await fetchUserData();
-        if (user) {
-            balanceEl.textContent = KES ${user.balance.toFixed(2)};
-            renderInvestments(user.investments);
+        if (!user) return;
+
+        if (balanceEl) {
+            balanceEl.textContent = `KES ${Number(user.balance || 0).toFixed(2)}`;
         }
+
+        renderInvestments(user.investments || {});
     }
 
     function renderInvestments(investments) {
+        if (!investmentListEl) return;
+
         investmentListEl.innerHTML = '';
 
         if (!investments || Object.keys(investments).length === 0) {
@@ -62,154 +68,151 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (const [commodity, inv] of Object.entries(investments)) {
             const div = document.createElement('div');
             div.className = 'investment-item';
+
             const expiry = new Date(inv.expiry_date);
             const diff = expiry - now;
 
             let timeText = 'Expired';
-
             if (diff > 0) {
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                timeText = ${days} days remaining;
-            } else {
-                // Auto-credit earnings once expired
-                alert(Investment in ${commodity} has expired. Earnings credited.);
-                // Update user's balance (assumed logic)
-                inv.total_earned = inv.amount * 1.2; // Example earning
-                await fetch(http://localhost:8000/invest/confirm, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': Bearer ${localStorage.getItem('userToken')}
-                    },
-                    body: JSON.stringify({ username, commodity })
-                });
-                updateUI(); // Refresh UI
-                return;
+                timeText = `${days} days remaining`;
             }
 
-            div.textContent = ${commodity.toUpperCase()} | KES ${inv.amount} | ${timeText};
+            div.textContent = `${commodity.toUpperCase()} | KES ${inv.amount} | ${timeText}`;
             investmentListEl.appendChild(div);
         }
     }
 
-    // ===== INVEST REQUEST =====
+    // INVEST REQUEST
     document.getElementById('investBtn')?.addEventListener('click', async () => {
-        const commodity = document.getElementById('commodity').value;
+        const commodity = document.getElementById('commodity')?.value;
+        if (!commodity) return alert("Please select a commodity.");
+
         const user = await fetchUserData();
+        if (!user) return;
 
-        if (!commodities[commodity]) return alert("Select a valid commodity.");
-        if (user.balance < commodities[commodity].price) return alert("Insufficient balance.");
-
-        // Request OTP from backend
-        const response = await fetch('http://localhost:8000/invest/request', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': Bearer ${localStorage.getItem('userToken')}
-            },
-            body: JSON.stringify({ username, commodity })
-        });
-
-        if (!response.ok) {
-            alert('Investment request failed.');
-            return;
+        if (!commodities[commodity] || user.balance < commodities[commodity].price) {
+            return alert("Insufficient balance or invalid commodity.");
         }
 
-        const data = await response.json();
-        investOtpDisplay.textContent = Your OTP: ${data.message};
-        investOtpSection.style.display = 'block';
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('commodity', commodity);
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/invest/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message || 'Investment request created. Proceed to confirm.');
+            } else {
+                alert(data.detail || 'Investment request failed.');
+            }
+        } catch (err) {
+            alert('Network error during investment request.');
+            console.error(err);
+        }
     });
 
-    // ===== INVEST CONFIRM =====
+    // INVEST CONFIRM
     document.getElementById('investConfirmBtn')?.addEventListener('click', async () => {
-        const otp = investOtpInput.value.trim();
-        if (!otp) return alert("Enter OTP");
+        const formData = new URLSearchParams();
+        formData.append('username', username);
 
-        const response = await fetch('http://localhost:8000/invest/confirm', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': Bearer ${localStorage.getItem('userToken')}
-            },
-            body: JSON.stringify({ username, otp })
-        });
+        try {
+            const response = await fetch(`${BACKEND_URL}/invest/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
 
-        if (!response.ok) {
-            alert('Investment confirmation failed.');
-            return;
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message || 'Investment confirmed!');
+                updateUI();
+            } else {
+                alert(data.detail || 'Confirmation failed.');
+            }
+        } catch (err) {
+            alert('Network error during confirmation.');
+            console.error(err);
         }
-
-        alert('Investment confirmed!');
-        investOtpSection.style.display = 'none';
-        investOtpInput.value = '';
-        investOtpDisplay.textContent = '';
-
-        updateUI();
     });
 
-    // ===== WITHDRAW REQUEST =====
+    // WITHDRAW REQUEST
     document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
         const today = new Date();
         if (today.getDay() !== 1) return alert("Withdrawals allowed only on Monday");
 
-        const amount = parseFloat(withdrawAmountInput.value);
-        const user = await fetchUserData();
+        const amount = parseFloat(document.getElementById('withdrawAmount')?.value || 0);
+        if (!amount || amount <= 0) return alert("Enter a valid amount");
 
-        if (!amount || amount <= 0) return alert("Enter valid amount");
+        const user = await fetchUserData();
+        if (!user) return;
+
         if (amount > user.balance) return alert("Insufficient balance");
 
-        // Request OTP from backend
-        const response = await fetch('http://localhost:8000/withdraw/request', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': Bearer ${localStorage.getItem('userToken')}
-            },
-            body: JSON.stringify({ username, amount })
-        });
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('amount', amount);
 
-        if (!response.ok) {
-            alert('Withdrawal request failed.');
-            return;
+        try {
+            const response = await fetch(`${BACKEND_URL}/withdraw/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message || 'Withdrawal request created. Pending admin approval.');
+            } else {
+                alert(data.detail || 'Withdrawal request failed.');
+            }
+        } catch (err) {
+            alert('Network error during withdrawal request.');
+            console.error(err);
         }
-
-        const data = await response.json();
-        withdrawOtpDisplay.textContent = Your OTP: ${data.message};
-        withdrawOtpSection.style.display = 'block';
     });
 
-    // ===== WITHDRAW CONFIRM =====
+    // WITHDRAW CONFIRM
     document.getElementById('withdrawConfirmBtn')?.addEventListener('click', async () => {
-        const otp = withdrawOtpInput.value.trim();
-        if (!otp) return alert("Enter OTP");
+        const formData = new URLSearchParams();
+        formData.append('username', username);
 
-        const response = await fetch('http://localhost:8000/withdraw/confirm', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': Bearer ${localStorage.getItem('userToken')}
-            },
-            body: JSON.stringify({ username, otp })
-        });
+        try {
+            const response = await fetch(`${BACKEND_URL}/withdraw/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
 
-        if (!response.ok) {
-            alert('Withdrawal confirmation failed.');
-            return;
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message || 'Withdrawal confirmed!');
+                updateUI();
+            } else {
+                alert(data.detail || 'Confirmation failed.');
+            }
+        } catch (err) {
+            alert('Network error during confirmation.');
+            console.error(err);
         }
-
-        alert('Withdrawal successful!');
-        withdrawOtpSection.style.display = 'none';
-        withdrawOtpInput.value = '';
-        withdrawOtpDisplay.textContent = '';
-
-        updateUI();
     });
 
     window.logout = function () {
         localStorage.removeItem('username');
-        localStorage.removeItem('userToken');
         window.location.href = 'login.html';
     };
 
-    updateUI(); // Initial UI update
+    // Initial load
+    updateUI();
 });
