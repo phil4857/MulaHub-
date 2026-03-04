@@ -1,67 +1,110 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body{font-family:Arial; padding:20px; background:#f4f4f4;}
-.card{background:white; padding:20px; margin-top:15px; border-radius:8px;}
-button{padding:8px 12px; margin-top:10px;}
-</style>
-</head>
-<body>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-<h2>User Dashboard</h2>
-<button onclick="logout()">Logout</button>
+document.addEventListener('DOMContentLoaded', () => {
+    const username = localStorage.getItem("username");
+    if (!username) {
+        window.location.href = "login.html";
+        return;
+    }
 
-<div class="card">
-<p><strong>Balance:</strong> <span id="balance"></span></p>
-<p><strong>Earnings:</strong> <span id="earnings"></span></p>
-</div>
+    const balanceEl = document.getElementById("balance");
+    const earningsEl = document.getElementById("earnings");
+    const msgEl = document.getElementById("msg");
+    const amountInput = document.getElementById("amount");
 
-<div class="card">
-<h3>Withdraw</h3>
-<input id="amount" placeholder="Amount">
-<button onclick="withdraw()">Request Withdrawal</button>
-<p id="msg"></p>
-</div>
+    async function loadDashboard() {
+        try {
+            const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
 
-<script>
-const BACKEND_URL="https://repo-1red-jipate-bonus.onrender.com";
-const username=localStorage.getItem("username");
-if(!username){window.location="login.html";}
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (res.status === 403) {
+                    msgEl.style.color = "red";
+                    msgEl.textContent = data.detail || "Account not approved yet.";
+                } else {
+                    msgEl.style.color = "red";
+                    msgEl.textContent = data.detail || `Error ${res.status}`;
+                }
+                return;
+            }
 
-async function load(){
-const res=await fetch(`${BACKEND_URL}/dashboard?username=${username}`);
-const data=await res.json();
-if(res.ok){
-balance.innerText=data.balance;
-earnings.innerText=data.earnings;
-}else{
-alert(data.detail);
-}
-}
-load();
+            const data = await res.json();
 
-async function withdraw(){
-const formData=new URLSearchParams();
-formData.append("username",username);
-formData.append("amount",amount.value);
+            if (balanceEl) {
+                balanceEl.textContent = Number(data.balance || 0).toFixed(2);
+            }
+            if (earningsEl) {
+                earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
+            }
 
-const res=await fetch(`${BACKEND_URL}/withdraw/request`,{
-method:"POST",
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:formData
+            // Optional: show total invested
+            let invested = 0;
+            if (data.investments && typeof data.investments === 'object') {
+                Object.values(data.investments).forEach(item => {
+                    invested += Number(item.amount || 0);
+                });
+            }
+            const investedEl = document.getElementById("invested");
+            if (investedEl) {
+                investedEl.textContent = invested.toFixed(2);
+            }
+
+            msgEl.textContent = "";
+        } catch (err) {
+            console.error("Dashboard load error:", err);
+            msgEl.style.color = "red";
+            msgEl.textContent = "Cannot connect to server. Try again later.";
+        }
+    }
+
+    async function requestWithdrawal() {
+        const amount = parseFloat(amountInput?.value || 0);
+        if (!amount || amount <= 0) {
+            msgEl.style.color = "red";
+            msgEl.textContent = "Please enter a valid amount greater than 0.";
+            return;
+        }
+
+        msgEl.textContent = "Processing...";
+        msgEl.style.color = "blue";
+
+        const formData = new URLSearchParams();
+        formData.append("username", username);
+        formData.append("amount", amount);
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                msgEl.style.color = "green";
+                msgEl.textContent = data.message || "Withdrawal request sent. Waiting for admin approval.";
+                amountInput.value = ""; // clear input
+            } else {
+                msgEl.style.color = "red";
+                msgEl.textContent = data.detail || "Request failed.";
+            }
+        } catch (err) {
+            msgEl.style.color = "red";
+            msgEl.textContent = "Network error. Please check connection.";
+            console.error(err);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem("username");
+        window.location.href = "login.html";
+    }
+
+    // Attach events
+    document.querySelector("button[onclick='logout()']")?.addEventListener("click", logout);
+    document.querySelector("button[onclick='withdraw()']")?.addEventListener("click", requestWithdrawal);
+
+    // Load data
+    loadDashboard();
 });
-const data=await res.json();
-msg.innerText=data.message||data.detail;
-}
-
-function logout(){
-localStorage.removeItem("username");
-window.location="login.html";
-}
-</script>
-</body>
-</html>
