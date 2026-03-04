@@ -1,22 +1,35 @@
-const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('loginError');
+    const submitBtn = form?.querySelector('button[type="submit"]');
 
-    if (!form) return;
+    if (!form || !errorMsg || !submitBtn) {
+        console.error("Login form elements not found");
+        return;
+    }
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // Clear previous message
         errorMsg.textContent = '';
 
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        const username = usernameInput?.value.trim();
+        const password = passwordInput?.value;
 
         if (!username || !password) {
             errorMsg.textContent = 'Please enter both username and password.';
             return;
         }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Logging in...';
 
         try {
             const response = await fetch(`${BACKEND_URL}/login`, {
@@ -27,29 +40,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: new URLSearchParams({ username, password })
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Handle specific backend status codes
-                if (response.status === 404) {
-                    errorMsg.textContent = 'User not found. Please register first.';
-                } else if (response.status === 400) {
-                    errorMsg.textContent = 'Incorrect password.';
-                } else if (response.status === 403) {
-                    errorMsg.textContent = data.detail || 'Account pending approval. Please wait for verification.';
-                } else {
-                    errorMsg.textContent = data.detail || 'An error occurred. Please try again.';
-                }
-                return;
+            let data;
+            try {
+                data = await response.json();
+            } catch {
+                data = { detail: 'Invalid response from server' };
             }
 
-            // Successful login: save username and redirect
-            localStorage.setItem('username', data.username);
-            window.location.href = 'dashboard.html';
+            if (response.ok) {
+                // Save the username returned by backend (more secure)
+                localStorage.setItem('username', data.username || username);
 
+                errorMsg.style.color = '#28a745';
+                errorMsg.textContent = 'Login successful! Redirecting...';
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1200);
+            } else {
+                // Handle specific backend errors
+                if (response.status === 403) {
+                    errorMsg.textContent = data.detail || 'Account pending admin approval. Please wait.';
+                } else if (response.status === 404) {
+                    errorMsg.textContent = 'User not found. Please register first.';
+                } else if (response.status === 400) {
+                    errorMsg.textContent = data.detail || 'Invalid username or password.';
+                } else {
+                    errorMsg.textContent = data.detail || `Login failed (error ${response.status}).`;
+                }
+            }
         } catch (error) {
-            console.error('Login error:', error);
-            errorMsg.textContent = 'An unexpected error occurred. Please try again.';
+            console.error('Login request failed:', error);
+            errorMsg.textContent = 'Cannot connect to the server. Check your internet connection.';
+        } finally {
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Login';
         }
     });
 });
