@@ -1,132 +1,106 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const username = localStorage.getItem("username");
-  if(!username){ alert("Please log in."); window.location.href="login.html"; return; }
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-  const commoditySelect = document.getElementById("commodity");
-  const amountInput = document.getElementById("amount");
-  const investOtpInput = document.getElementById("investOtp");
-  const investOtpSection = document.getElementById("otpSection");
-  const otpDisplay = document.getElementById("otpDisplay");
-  const investMessage = document.getElementById("investMessage");
-  const activeInvestmentsEl = document.getElementById("activeInvestments");
-
-  let fakeInvestOTP = null;
-
-  function getUser(){
-    const users = JSON.parse(localStorage.getItem("users")||"{}");
-    return users[username];
-  }
-
-  function saveUser(user){
-    const users = JSON.parse(localStorage.getItem("users")||"{}");
-    users[username]=user;
-    localStorage.setItem("users",JSON.stringify(users));
-  }
-
-  function renderInvestments(){
-    const user = getUser();
-    const investments = user.investments || [];
-    activeInvestmentsEl.innerHTML = "";
-    if(investments.length===0){ activeInvestmentsEl.textContent="No active investments."; return; }
-
-    const commodityImages = {
-      marble:'https://i.imgur.com/0X2U6hX.png',
-      crude_oil:'https://i.imgur.com/6zQyGzK.png',
-      silver:'https://i.imgur.com/T0M2Pz2.png',
-      lead:'https://i.imgur.com/OU8b5wC.png',
-      platinum:'https://i.imgur.com/1oC0fIq.png',
-      diamonds:'https://i.imgur.com/akRhzZk.png',
-      gold:'https://i.imgur.com/9O3qGZx.png',
-      uranium:'https://i.imgur.com/Xxg1XYJ.png'
-    };
-
-    investments.forEach(inv=>{
-      const div = document.createElement("div");
-      div.className="investment-card";
-
-      const img = document.createElement("img");
-      img.src = commodityImages[inv.commodity]||"";
-      img.alt = inv.commodity;
-
-      const info = document.createElement("div");
-      info.className="investment-info";
-      info.innerHTML=`<strong>${inv.commodity.replace('_',' ').toUpperCase()}</strong>
-        <div>Invested: KES ${inv.amount}</div>
-        <div>Daily Earnings: KES ${(inv.amount*0.1).toFixed(2)}</div>
-        <div class="countdown" data-expiry="${new Date(inv.start_date).getTime()+inv.duration_days*24*60*60*1000}"></div>`;
-
-      div.appendChild(img);
-      div.appendChild(info);
-      activeInvestmentsEl.appendChild(div);
-    });
-    startCountdowns();
-  }
-
-  function startCountdowns(){
-    const countdowns = document.querySelectorAll(".countdown");
-    function update(){
-      const now = Date.now();
-      countdowns.forEach(c=>{
-        const expiry = Number(c.dataset.expiry);
-        const diff = expiry-now;
-        if(diff<=0){ c.textContent="Expired"; }
-        else {
-          const d=Math.floor(diff/(1000*60*60*24));
-          const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-          const m=Math.floor((diff%(1000*60*60))/(1000*60));
-          c.textContent=`Expires in: ${d}d ${h}h ${m}m`;
-        }
-      });
+document.addEventListener('DOMContentLoaded', () => {
+    const username = localStorage.getItem('username');
+    if (!username) {
+        window.location.href = 'login.html';
+        return;
     }
-    update();
-    setInterval(update,60000);
-  }
 
-  // Request Investment OTP
-  document.getElementById("investBtn").addEventListener("click",()=>{
-    const commodity = commoditySelect.value;
-    const amount = Number(amountInput.value);
-    if(!commodity){ investMessage.textContent="Select a commodity"; return; }
-    const min = Number(commoditySelect.options[commoditySelect.selectedIndex].dataset.min);
-    if(!amount || amount<min){ investMessage.textContent=`Minimum for ${commodity} is KES ${min}`; return; }
+    const balanceEl = document.getElementById('balance');
+    const earningsEl = document.getElementById('earnings');
+    const investedEl = document.getElementById('invested');
+    const msgEl = document.getElementById('msg') || document.createElement('p'); // fallback
+    const investForm = document.getElementById('investForm');
 
-    fakeInvestOTP = Math.floor(1000+Math.random()*9000).toString();
-    otpDisplay.textContent=`Your OTP: ${fakeInvestOTP}`;
-    investOtpSection.style.display="block";
-    investMessage.textContent="";
-    
-    const user = getUser();
-    user.pendingInvestment={commodity, amount, start_date:new Date().toISOString(), duration_days:7};
-    saveUser(user);
-  });
+    // Load dashboard data
+    async function loadDashboard() {
+        msgEl.textContent = "Loading account info...";
+        msgEl.className = "msg loading";
 
-  // Confirm Investment
-  document.getElementById("investConfirmBtn").addEventListener("click",()=>{
-    const otp = investOtpInput.value.trim();
-    if(otp!==fakeInvestOTP){ investMessage.textContent="Incorrect OTP"; return; }
+        try {
+            const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
 
-    const user = getUser();
-    const inv = user.pendingInvestment;
-    if(!inv){ investMessage.textContent="No pending investment"; return; }
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                msgEl.className = "msg error";
+                msgEl.textContent = data.detail || `Error ${res.status}`;
+                if (res.status === 403) {
+                    msgEl.textContent = "Account not approved yet. Please wait for admin.";
+                }
+                return;
+            }
 
-    user.balance=(user.balance||0)-inv.amount;
-    if(!user.investments) user.investments=[];
-    user.investments.push(inv);
-    delete user.pendingInvestment;
-    saveUser(user);
+            const data = await res.json();
 
-    investOtpInput.value="";
-    investOtpSection.style.display="none";
-    otpDisplay.textContent="";
-    fakeInvestOTP=null;
-    investMessage.textContent="Investment successful!";
-    renderInvestments();
-  });
+            balanceEl.textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
+            earningsEl.textContent = `KES ${Number(data.earnings || 0).toFixed(2)}`;
 
-  window.logout=()=>{
-    localStorage.removeItem("username");
-    window.location.href="login.html";
-  }
+            let invested = 0;
+            if (data.investments && typeof data.investments === 'object') {
+                Object.values(data.investments).forEach(item => {
+                    invested += Number(item.amount || 0);
+                });
+            }
+            investedEl.textContent = `KES ${invested.toFixed(2)}`;
 
-  renderInvestments();
+            msgEl.className = "msg success";
+            msgEl.textContent = "Ready to invest!";
+        } catch (err) {
+            msgEl.className = "msg error";
+            msgEl.textContent = "Cannot load account info. Check connection.";
+            console.error(err);
+        }
+    }
+
+    // Handle investment request
+    investForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const commodity = document.getElementById('commoditySelect').value;
+        if (!commodity) {
+            msgEl.className = "msg error";
+            msgEl.textContent = "Please select a commodity.";
+            return;
+        }
+
+        msgEl.className = "msg loading";
+        msgEl.textContent = "Sending investment request...";
+
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('commodity', commodity);
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/invest/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                msgEl.className = "msg success";
+                msgEl.textContent = data.message || 'Investment request created. Awaiting confirmation.';
+                investForm.reset();
+                loadDashboard(); // refresh numbers
+            } else {
+                msgEl.className = "msg error";
+                msgEl.textContent = data.detail || 'Request failed.';
+            }
+        } catch (err) {
+            msgEl.className = "msg error";
+            msgEl.textContent = "Network error – try again.";
+            console.error(err);
+        }
+    });
+
+    function logout() {
+        localStorage.removeItem('username');
+        window.location.href = 'login.html';
+    }
+
+    // Load data on page open
+    loadDashboard();
 });
