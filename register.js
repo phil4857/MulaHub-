@@ -4,29 +4,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const registerBtn = document.getElementById("registerBtn");
     const msg = document.getElementById("msg");
 
-    // Optional: log the URL once on load so you can confirm what's being used
+    // Optional: helps confirm the correct URL is being used
     console.log("Backend URL loaded:", BACKEND_URL);
 
     registerBtn.addEventListener("click", async () => {
         msg.innerText = "";
         msg.style.color = "black"; // reset color
 
-        const username = document.getElementById("username").value.trim();
-        const phone = document.getElementById("phone").value.trim();
-        const password = document.getElementById("password").value;
+        const username       = document.getElementById("username").value.trim();
+        const phone          = document.getElementById("phone").value.trim();
+        const password       = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirmPassword").value;
-        const referral = document.getElementById("referral").value.trim();
+        const referral       = document.getElementById("referral").value.trim();
 
-        // Client-side validation
+        // ── Client-side validation ────────────────────────────────────────
         if (!username || !phone || !password || !confirmPassword) {
             msg.style.color = "red";
             msg.innerText = "Please fill in all required fields.";
             return;
         }
 
-        if (!/^07\d{8}$/.test(phone)) {
+        // Updated: allow both 07... and 01... prefixes (exactly 10 digits)
+        if (!/^(07|01)\d{8}$/.test(phone)) {
             msg.style.color = "red";
-            msg.innerText = "Phone must be in 07XXXXXXXX format (exactly 10 digits).";
+            msg.innerText = "Phone must start with 07 or 01 followed by exactly 8 digits (e.g. 0712345678 or 0112345678).";
             return;
         }
 
@@ -42,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Prepare form data (matches FastAPI Form fields)
+        // ── Prepare form data ──────────────────────────────────────────────
         const formData = new URLSearchParams();
         formData.append("username", username);
         formData.append("phone", phone);
@@ -51,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
             formData.append("referral", referral);
         }
 
+        // ── Send request to backend ───────────────────────────────────────
         try {
             const res = await fetch(`${BACKEND_URL}/register`, {
                 method: "POST",
@@ -70,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.ok) {
                 msg.style.color = "green";
                 msg.innerText = data.message || "Registration successful! Awaiting admin approval.";
-                // Optional: redirect to login after a short delay
+                // Optional: redirect after success
                 setTimeout(() => {
                     window.location.href = "login.html";
                 }, 2500);
