@@ -57,12 +57,11 @@
         .logout {
             background: linear-gradient(to right, #dc3545, #a71d2a) !important;
         }
-        .otp-section {
+        .msg {
             margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            display: none;
+            text-align: center;
+            font-weight: bold;
+            min-height: 20px;
         }
     </style>
 </head>
@@ -77,7 +76,7 @@
         <p>Username: <span id="usernameDisplay"></span></p>
         <p>Balance: KES <span id="balanceDisplay">0.00</span></p>
         <p>Total Earnings: KES <span id="earningsDisplay">0.00</span></p>
-        <p>Investment: KES <span id="investmentDisplay">0.00</span></p>
+        <p>Total Invested: KES <span id="investedDisplay">0.00</span></p>
     </div>
 
     <div class="actions">
@@ -86,33 +85,7 @@
         <button class="logout" onclick="logout()">🚪 Logout</button>
     </div>
 
-    <!-- Investment Section -->
-    <h3>Invest in Commodity</h3>
-    <select id="commoditySelect">
-        <option value="">Select Commodity</option>
-        <option value="gold">Gold</option>
-        <option value="silver">Silver</option>
-        <option value="platinum">Platinum</option>
-        <!-- Add more from your COMMODITY_INFO when ready -->
-    </select>
-    <button onclick="investRequest()">Invest</button>
-
-    <div id="investOtpSection" class="otp-section">
-        <p id="investOtpDisplay">OTP: </p>
-        <input id="investOtpInput" type="text" placeholder="Enter OTP">
-        <button onclick="investConfirm()">Confirm Investment</button>
-    </div>
-
-    <!-- Withdrawal Section -->
-    <h3>Withdraw Funds</h3>
-    <input id="withdrawAmount" type="number" placeholder="Amount (KES)" min="1" step="1">
-    <button onclick="withdrawRequest()">Withdraw</button>
-
-    <div id="withdrawOtpSection" class="otp-section">
-        <p id="withdrawOtpDisplay">OTP: </p>
-        <input id="withdrawOtpInput" type="text" placeholder="Enter OTP">
-        <button onclick="withdrawConfirm()">Confirm Withdrawal</button>
-    </div>
+    <div class="msg" id="msg"></div>
 </div>
 
 <script>
@@ -125,46 +98,59 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    const msg = document.getElementById('msg');
+
     async function fetchUserData() {
+        msg.textContent = "Loading dashboard...";
+        msg.style.color = "blue";
+
         try {
             const response = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+
             if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
                 if (response.status === 403) {
-                    alert("Account not approved yet or access denied.");
+                    msg.style.color = "red";
+                    msg.textContent = data.detail || "Account not approved yet. Please wait for admin approval.";
                 } else {
-                    console.error(`Dashboard error: ${response.status}`);
+                    msg.style.color = "red";
+                    msg.textContent = data.detail || `Error loading data (status ${response.status})`;
                 }
                 logout();
                 return null;
             }
+
             return await response.json();
         } catch (err) {
-            console.error("Dashboard fetch failed:", err);
-            alert("Cannot load dashboard. Check your internet connection.");
+            msg.style.color = "red";
+            msg.textContent = "Cannot connect to server. Check your internet.";
+            console.error("Dashboard fetch error:", err);
             return null;
         }
     }
 
     async function updateUI() {
         const user = await fetchUserData();
-        if (user) {
-            document.getElementById('usernameDisplay').textContent = user.username || username;
-            document.getElementById('balanceDisplay').textContent = Number(user.balance || 0).toFixed(2);
-            document.getElementById('earningsDisplay').textContent = Number(user.earnings || 0).toFixed(2);
+        if (!user) return;
 
-            // Sum invested amounts from investments object
-            let invested = 0;
-            if (user.investments && typeof user.investments === 'object') {
-                Object.values(user.investments).forEach(item => {
-                    invested += Number(item.amount || 0);
-                });
-            }
-            document.getElementById('investmentDisplay').textContent = invested.toFixed(2);
+        document.getElementById('usernameDisplay').textContent = user.username || username;
+        document.getElementById('balanceDisplay').textContent = Number(user.balance || 0).toFixed(2);
+        document.getElementById('earningsDisplay').textContent = Number(user.earnings || 0).toFixed(2);
+
+        let invested = 0;
+        if (user.investments && typeof user.investments === 'object') {
+            Object.values(user.investments).forEach(item => {
+                invested += Number(item.amount || 0);
+            });
         }
+        document.getElementById('investedDisplay').textContent = invested.toFixed(2);
+
+        msg.textContent = "Dashboard loaded successfully!";
+        msg.style.color = "green";
     }
 
     window.investRequest = async function () {
-        const commodity = document.getElementById('commoditySelect').value;
+        const commodity = document.getElementById('commoditySelect')?.value;
         if (!commodity) return alert('Please select a commodity.');
 
         const formData = new URLSearchParams();
@@ -181,43 +167,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (res.ok) {
-                alert(data.message || 'Investment request created. Click "Confirm Investment" to proceed.');
-                // If you later add OTP, show section here
+                alert(data.message || 'Investment request created. Waiting for confirmation.');
             } else {
                 alert(data.detail || 'Investment request failed.');
             }
         } catch (err) {
-            alert('Network error. Please try again.');
+            alert('Network error during investment request.');
             console.error(err);
         }
     };
 
-    window.investConfirm = async function () {
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-
-        try {
-            const res = await fetch(`${BACKEND_URL}/invest/confirm`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                alert(data.message || 'Investment confirmed successfully!');
-                updateUI();
-            } else {
-                alert(data.detail || 'Confirmation failed.');
-            }
-        } catch (err) {
-            alert('Network error during confirmation.');
-        }
-    };
-
     window.withdrawRequest = async function () {
-        const amount = parseFloat(document.getElementById('withdrawAmount').value);
+        const amount = parseFloat(document.getElementById('withdrawAmount')?.value || 0);
         if (!amount || amount <= 0) return alert('Please enter a valid amount.');
 
         const formData = new URLSearchParams();
@@ -234,37 +195,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (res.ok) {
-                alert(data.message || 'Withdrawal request created. Pending approval.');
+                alert(data.message || 'Withdrawal request sent. Pending admin approval.');
             } else {
                 alert(data.detail || 'Withdrawal request failed.');
             }
         } catch (err) {
-            alert('Network error.');
+            alert('Network error during withdrawal request.');
             console.error(err);
-        }
-    };
-
-    window.withdrawConfirm = async function () {
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-
-        try {
-            const res = await fetch(`${BACKEND_URL}/withdraw/confirm`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                alert(data.message || 'Withdrawal confirmed!');
-                updateUI();
-            } else {
-                alert(data.detail || 'Confirmation failed.');
-            }
-        } catch (err) {
-            alert('Network error during confirmation.');
         }
     };
 
@@ -273,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
     };
 
-    updateUI(); // Load data when page opens
+    updateUI(); // Load data on page open
 });
 </script>
 
