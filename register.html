@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Register - Mkoba Wallet</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Register - Mkoba Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="box">
-  <h2>Register</h2>
-  <input id="username" placeholder="Username">
-  <input id="phone" placeholder="Phone (07XXXXXXXX)">
-  <input id="password" type="password" placeholder="Password">
-  <input id="confirmPassword" type="password" placeholder="Confirm Password">
-  <input id="referral" placeholder="Referral (optional)">
-  <button id="registerBtn">Register</button>
-  <div class="msg" id="msg"></div>
-  <p>Already have an account? <a href="login.html">Login</a></p>
+    <h2>Register</h2>
+    <input id="username" placeholder="Username" required>
+    <input id="phone" placeholder="Phone (07XXXXXXXX or 01XXXXXXXX)" required>
+    <input id="password" type="password" placeholder="Password" required>
+    <input id="confirmPassword" type="password" placeholder="Confirm Password" required>
+    <input id="referral" placeholder="Referral (optional)">
+    <button id="registerBtn">Register</button>
+    <div class="msg" id="msg"></div>
+    <p>Already have an account? <a href="login.html">Login</a></p>
 </div>
 
 <script src="register.js"></script>
 </body>
-</html>
+  </html>
