@@ -1,16 +1,12 @@
-CTYPE html>
-
-
-    
-    
-    Investment Dashboard - Mkoba Wallet 💵🎉
-    
-        /* Your existing styles */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f9ff;
-            margin: 0;
-        }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Dashboard - Mkoba Wallet 💵🎉</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f9ff; margin: 0; }
         header {
             background: linear-gradient(90deg, #0a1d66, #1234a0);
             color: #ffd700;
@@ -60,45 +56,64 @@ CTYPE html>
             background: linear-gradient(to right, #0a1d66, #1234a0);
             color: #ffd700;
         }
-    
+        .msg {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .loading { color: #007bff; }
+    </style>
+</head>
+<body>
 
+<header>
+    <h1>Investment Dashboard 💵🎉</h1>
+</header>
 
+<div class="container">
+    <div class="info">
+        <p>Username: <span id="usernameDisplay"></span></p>
+        <p>Balance: KES <span id="balanceDisplay">0.00</span></p>
+        <p>Total Earnings: KES <span id="earningsDisplay">0.00</span></p>
+        <p>Investment Amount: KES <span id="investmentDisplay">0.00</span></p>
+    </div>
 
+    <p id="msg" class="msg loading">Loading investments...</p>
 
-    Investment Dashboard 💵🎉
+    <div class="investment-list" id="investmentList"></div>
 
+    <div class="actions">
+        <button onclick="investRequest()">💰 Invest</button>
+        <button onclick="logout()">🚪 Logout</button>
+    </div>
 
+    <!-- Investment Section -->
+    <h3>Invest in Commodity</h3>
+    <select id="commoditySelect">
+        <option value="">Select Commodity</option>
+        <option value="marble">Marble - KES 650 (15 days)</option>
+        <option value="crude_oil">Crude Oil - KES 800 (20 days)</option>
+        <option value="silver">Silver - KES 1000 (23 days)</option>
+        <option value="lead">Lead - KES 1200 (25 days)</option>
+        <option value="platinum">Platinum - KES 1350 (28 days)</option>
+        <option value="diamonds">Diamonds - KES 1750 (32 days)</option>
+        <option value="gold">Gold - KES 2200 (35 days)</option>
+        <option value="uranium">Uranium - KES 3000 (45 days)</option>
+    </select>
+    <button onclick="investRequest()">Invest</button>
 
-    
-        Username: 
-        Balance: KES 
-        Total Earnings: KES 
-        Investment Amount: KES 
-    
-    
-    Loading investments...
+    <div id="investOtpSection" style="display:none; margin-top:15px; padding:15px; background:#f8f9fa; border-radius:10px;">
+        <p id="investOtpDisplay"></p>
+        <input id="investOtpInput" type="text" placeholder="Enter OTP" class="w-full p-2 border rounded-md" />
+        <button onclick="investConfirm()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full mt-2">Confirm Investment</button>
+    </div>
+</div>
 
-    
-        💰 Invest
-        🚪 Logout
-    
-
-
-
-
-    Invest in Commodity
-    
-        Gold
-        Silver
-        Platinum
-        
-    
-    Invest
-    
-        
-        
-        Confirm Investment
-    
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const username = localStorage.getItem("username");
@@ -107,30 +122,54 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
+    const msg = document.getElementById("msg");
+
     async function fetchUserData() {
-        const response = await fetch(<span class="highlight">http://localhost:8000/dashboard?username=${username}</span>, {
-            method: 'GET',
-            headers: {
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
+        msg.className = "msg loading";
+        msg.textContent = "Loading dashboard...";
+
+        try {
+            const response = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                msg.className = "msg error";
+                msg.textContent = data.detail || `Error ${response.status}`;
+                if (response.status === 403) {
+                    msg.textContent = "Account not approved yet. Please wait for admin approval.";
+                }
+                logout();
+                return null;
             }
-        });
-        if (!response.ok) {
-            alert('Failed to fetch user data.');
-            logout();
-            return;
+
+            return await response.json();
+        } catch (err) {
+            msg.className = "msg error";
+            msg.textContent = "Cannot connect to server. Check your internet.";
+            console.error("Dashboard fetch error:", err);
+            return null;
         }
-        return await response.json();
     }
 
     async function updateUI() {
         const user = await fetchUserData();
-        if (user) {
-            document.getElementById("usernameDisplay").textContent = username;
-            document.getElementById("balanceDisplay").textContent = user.balance.toFixed(2);
-            document.getElementById("earningsDisplay").textContent = user.earnings.toFixed(2);
-            document.getElementById("investmentDisplay").textContent = user.investment_amount.toFixed(2);
-            renderInvestments(user.investments);
+        if (!user) return;
+
+        document.getElementById("usernameDisplay").textContent = user.username || username;
+        document.getElementById("balanceDisplay").textContent = Number(user.balance || 0).toFixed(2);
+        document.getElementById("earningsDisplay").textContent = Number(user.earnings || 0).toFixed(2);
+
+        let invested = 0;
+        if (user.investments && typeof user.investments === 'object') {
+            Object.values(user.investments).forEach(item => {
+                invested += Number(item.amount || 0);
+            });
         }
+        document.getElementById("investmentDisplay").textContent = invested.toFixed(2);
+
+        renderInvestments(user.investments || {});
+        msg.className = "msg success";
+        msg.textContent = "Dashboard loaded!";
     }
 
     function renderInvestments(investments) {
@@ -145,7 +184,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         for (const [commodity, inv] of Object.entries(investments)) {
             const div = document.createElement("div");
             div.className = "investment-item";
-            div.textContent = <span class="highlight">${commodity}: KES ${inv.amount}, Expiry: ${inv.expiry_date}</span>;
+            const expiry = new Date(inv.expiry_date);
+            const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
+            div.textContent = `${commodity.toUpperCase()}: KES ${inv.amount}, Expires in ${remainingDays} day(s)`;
             container.appendChild(div);
         }
     }
@@ -154,51 +195,44 @@ document.addEventListener("DOMContentLoaded", async () => {
         const commodity = document.getElementById("commoditySelect").value;
         if (!commodity) return alert("Select a commodity.");
 
-        const response = await fetch('http://localhost:8000/invest/request', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
-            },
-            body: JSON.stringify({ username, commodity })
-        });
-        if (!response.ok) {
-            alert('Investment request failed.');
-            return;
+        msg.className = "msg loading";
+        msg.textContent = "Sending investment request...";
+
+        const formData = new URLSearchParams();
+        formData.append("username", username);
+        formData.append("commodity", commodity);
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/invest/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                msg.className = "msg success";
+                msg.textContent = data.message || 'Investment request created. Awaiting confirmation.';
+            } else {
+                msg.className = "msg error";
+                msg.textContent = data.detail || 'Investment request failed.';
+            }
+        } catch (err) {
+            msg.className = "msg error";
+            msg.textContent = "Network error during request.";
+            console.error(err);
         }
-
-        const data = await response.json();
-        document.getElementById("investOtpDisplay").textContent = <span class="highlight">OTP: ${data.message}</span>;
-        document.getElementById("investOtpSection").style.display = 'block';
-    };
-
-    window.investConfirm = async function () {
-        const otp = document.getElementById("investOtpInput").value.trim();
-        if (!otp) return alert("Enter OTP");
-
-        const response = await fetch('http://localhost:8000/invest/confirm', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
-            },
-            body: JSON.stringify({ username, otp })
-        });
-        if (!response.ok) {
-            alert('Investment confirmation failed.');
-            return;
-        }
-
-        alert('Investment confirmed!');
-        document.getElementById("investOtpSection").style.display = 'none';
-        updateUI();
     };
 
     window.logout = function () {
         localStorage.removeItem("username");
-        localStorage.removeItem("userToken");
         window.location.href = "login.html";
     };
 
-    updateUI(); // Initial UI update
+    updateUI(); // Initial load
 });
+</script>
+
+</body>
+</html>
