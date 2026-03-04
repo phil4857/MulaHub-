@@ -1,17 +1,10 @@
-To update your dashboard HTML and JavaScript code for better integration with your FastAPI backend, you'll want to replace the local storage operations with API calls. This will allow you to manage investments and withdrawals more securely and efficiently.
-
-Here's how you can revise the provided JavaScript and HTML code for your dashboard:
-
-Updated Dashboard HTML and JavaScript
-
-CTYPE html>
-
-
-    
-    
-    User Dashboard - Mkoba Wallet 💵🎉
-    
-        /* Your existing styles */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Mkoba Wallet 💵🎉</title>
+    <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f9ff;
@@ -64,58 +57,66 @@ CTYPE html>
         .logout {
             background: linear-gradient(to right, #dc3545, #a71d2a) !important;
         }
-    
+        .otp-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
 
+<header>
+    <h1>Welcome to Mkoba Wallet Dashboard 💵🎉</h1>
+</header>
 
+<div class="container">
+    <div class="info">
+        <p>Username: <span id="usernameDisplay"></span></p>
+        <p>Balance: KES <span id="balanceDisplay">0.00</span></p>
+        <p>Total Earnings: KES <span id="earningsDisplay">0.00</span></p>
+        <p>Investment: KES <span id="investmentDisplay">0.00</span></p>
+    </div>
 
+    <div class="actions">
+        <button onclick="investRequest()">💰 Invest</button>
+        <button onclick="withdrawRequest()">📤 Withdraw</button>
+        <button class="logout" onclick="logout()">🚪 Logout</button>
+    </div>
 
-    Welcome to Mkoba Wallet Dashboard 💵🎉
+    <!-- Investment Section -->
+    <h3>Invest in Commodity</h3>
+    <select id="commoditySelect">
+        <option value="">Select Commodity</option>
+        <option value="gold">Gold</option>
+        <option value="silver">Silver</option>
+        <option value="platinum">Platinum</option>
+        <!-- Add more from your COMMODITY_INFO when ready -->
+    </select>
+    <button onclick="investRequest()">Invest</button>
 
+    <div id="investOtpSection" class="otp-section">
+        <p id="investOtpDisplay">OTP: </p>
+        <input id="investOtpInput" type="text" placeholder="Enter OTP">
+        <button onclick="investConfirm()">Confirm Investment</button>
+    </div>
 
+    <!-- Withdrawal Section -->
+    <h3>Withdraw Funds</h3>
+    <input id="withdrawAmount" type="number" placeholder="Amount (KES)" min="1" step="1">
+    <button onclick="withdrawRequest()">Withdraw</button>
 
-    
-        Username: 
-        Balance: KES 
-        Total Earnings: KES 
-        Investment: KES 
-    
+    <div id="withdrawOtpSection" class="otp-section">
+        <p id="withdrawOtpDisplay">OTP: </p>
+        <input id="withdrawOtpInput" type="text" placeholder="Enter OTP">
+        <button onclick="withdrawConfirm()">Confirm Withdrawal</button>
+    </div>
+</div>
 
-    
-        💰 Invest
-        📤 Withdraw
-        🚪 Logout
-    
-
-
-
-
-    Invest in Commodity
-    
-        Gold
-        Silver
-        Platinum
-        
-    
-    Invest
-    
-        
-        
-        Confirm Investment
-    
-
-
-
-
-    Withdraw Funds
-    
-    Withdraw
-    
-        
-        
-        Confirm Withdrawal
-    
-
-
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('username');
@@ -125,124 +126,156 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchUserData() {
-        const response = await fetch(<span class="highlight">http://localhost:8000/dashboard?username=${username}</span>, {
-            method: 'GET',
-            headers: {
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
+        try {
+            const response = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+            if (!response.ok) {
+                if (response.status === 403) {
+                    alert("Account not approved yet or access denied.");
+                } else {
+                    console.error(`Dashboard error: ${response.status}`);
+                }
+                logout();
+                return null;
             }
-        });
-        if (!response.ok) {
-            logout();
-            return;
+            return await response.json();
+        } catch (err) {
+            console.error("Dashboard fetch failed:", err);
+            alert("Cannot load dashboard. Check your internet connection.");
+            return null;
         }
-        return await response.json();
     }
 
     async function updateUI() {
         const user = await fetchUserData();
         if (user) {
-            document.getElementById('usernameDisplay').textContent = username;
-            document.getElementById('balanceDisplay').textContent = user.balance.toFixed(2);
-            document.getElementById('earningsDisplay').textContent = user.earnings.toFixed(2);
-            document.getElementById('investmentDisplay').textContent = user.investment_amount.toFixed(2);
+            document.getElementById('usernameDisplay').textContent = user.username || username;
+            document.getElementById('balanceDisplay').textContent = Number(user.balance || 0).toFixed(2);
+            document.getElementById('earningsDisplay').textContent = Number(user.earnings || 0).toFixed(2);
+
+            // Sum invested amounts from investments object
+            let invested = 0;
+            if (user.investments && typeof user.investments === 'object') {
+                Object.values(user.investments).forEach(item => {
+                    invested += Number(item.amount || 0);
+                });
+            }
+            document.getElementById('investmentDisplay').textContent = invested.toFixed(2);
         }
     }
 
     window.investRequest = async function () {
         const commodity = document.getElementById('commoditySelect').value;
-        if (!commodity) return alert('Select a commodity.');
+        if (!commodity) return alert('Please select a commodity.');
 
-        // Requesting OTP from backend
-        const response = await fetch('http://localhost:8000/invest/request', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
-            },
-            body: JSON.stringify({ username, commodity })
-        });
-        if (!response.ok) {
-            alert('Investment request failed.');
-            return;
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('commodity', commodity);
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/invest/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert(data.message || 'Investment request created. Click "Confirm Investment" to proceed.');
+                // If you later add OTP, show section here
+            } else {
+                alert(data.detail || 'Investment request failed.');
+            }
+        } catch (err) {
+            alert('Network error. Please try again.');
+            console.error(err);
         }
-
-        const data = await response.json();
-        document.getElementById('investOtpDisplay').textContent = <span class="highlight">OTP: ${data.otp}</span>;
-        document.getElementById('investOtpSection').style.display = 'block';
     };
 
     window.investConfirm = async function () {
-        const otp = document.getElementById('investOtpInput').value.trim();
-        if (!otp) return alert('Enter OTP');
+        const formData = new URLSearchParams();
+        formData.append('username', username);
 
-        const response = await fetch('http://localhost:8000/invest/confirm', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
-            },
-            body: JSON.stringify({ username, otp })
-        });
-        if (!response.ok) {
-            alert('Investment confirmation failed.');
-            return;
+        try {
+            const res = await fetch(`${BACKEND_URL}/invest/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert(data.message || 'Investment confirmed successfully!');
+                updateUI();
+            } else {
+                alert(data.detail || 'Confirmation failed.');
+            }
+        } catch (err) {
+            alert('Network error during confirmation.');
         }
-
-        alert('Investment confirmed!');
-        document.getElementById('investOtpSection').style.display = 'none';
-        updateUI();
     };
 
     window.withdrawRequest = async function () {
         const amount = parseFloat(document.getElementById('withdrawAmount').value);
-        if (!amount || amount <= 0) return alert('Enter valid amount');
+        if (!amount || amount <= 0) return alert('Please enter a valid amount.');
 
-        // Requesting OTP from backend
-        const response = await fetch('http://localhost:8000/withdraw/request', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
-            },
-            body: JSON.stringify({ username, amount })
-        });
-        if (!response.ok) {
-            alert('Withdrawal request failed.');
-            return;
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('amount', amount);
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert(data.message || 'Withdrawal request created. Pending approval.');
+            } else {
+                alert(data.detail || 'Withdrawal request failed.');
+            }
+        } catch (err) {
+            alert('Network error.');
+            console.error(err);
         }
-
-        const data = await response.json();
-        document.getElementById('withdrawOtpDisplay').textContent = <span class="highlight">OTP: ${data.otp}</span>;
-        document.getElementById('withdrawOtpSection').style.display = 'block';
     };
 
     window.withdrawConfirm = async function () {
-        const otp = document.getElementById('withdrawOtpInput').value.trim();
-        if (!otp) return alert('Enter OTP');
+        const formData = new URLSearchParams();
+        formData.append('username', username);
 
-        const response = await fetch('http://localhost:8000/withdraw/confirm', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': <span class="highlight">Bearer ${localStorage.getItem('userToken')}</span>
-            },
-            body: JSON.stringify({ username, otp })
-        });
-        if (!response.ok) {
-            alert('Withdrawal confirmation failed.');
-            return;
+        try {
+            const res = await fetch(`${BACKEND_URL}/withdraw/confirm`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert(data.message || 'Withdrawal confirmed!');
+                updateUI();
+            } else {
+                alert(data.detail || 'Confirmation failed.');
+            }
+        } catch (err) {
+            alert('Network error during confirmation.');
         }
-
-        alert('Withdrawal successful!');
-        document.getElementById('withdrawOtpSection').style.display = 'none';
-        updateUI();
     };
 
     window.logout = function () {
         localStorage.removeItem('username');
-        localStorage.removeItem('userToken');
         window.location.href = 'login.html';
     };
 
-    updateUI(); // Initial UI update
+    updateUI(); // Load data when page opens
 });
+</script>
+
+</body>
+</html>
