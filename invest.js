@@ -10,25 +10,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const balanceEl = document.getElementById('balance');
     const earningsEl = document.getElementById('earnings');
     const investedEl = document.getElementById('invested');
-    const msgEl = document.getElementById('msg') || document.createElement('p'); // fallback if no #msg
-    const investForm = document.getElementById('investForm');
+    const msgEl = document.getElementById('msg');
+    const investBtn = document.getElementById('investBtn');
+    const selectedDisplay = document.getElementById('selectedCommodity');
 
-    // Load user data from backend
+    let selectedCommodity = null;
+
+    // Load dashboard data
     async function loadDashboard() {
-        msgEl.textContent = "Loading account info...";
-        msgEl.className = "msg loading";
+        if (msgEl) {
+            msgEl.className = "msg loading";
+            msgEl.textContent = "Loading account info...";
+        }
 
         try {
             const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
-                msgEl.className = "msg error";
-
-                if (res.status === 403) {
-                    msgEl.textContent = data.detail || "Account not approved yet. Please wait for admin approval.";
-                } else {
-                    msgEl.textContent = data.detail || `Error loading data (status ${res.status})`;
+                if (msgEl) {
+                    msgEl.className = "msg error";
+                    msgEl.textContent = data.detail || `Error ${res.status}`;
+                    if (res.status === 403) {
+                        msgEl.textContent = "Account not approved yet. Please wait for admin.";
+                    }
                 }
                 return;
             }
@@ -46,63 +51,91 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (investedEl) investedEl.textContent = `KES ${invested.toFixed(2)}`;
 
-            msgEl.className = "msg success";
-            msgEl.textContent = "Ready to invest!";
+            if (msgEl) {
+                msgEl.className = "msg success";
+                msgEl.textContent = "Ready to invest!";
+            }
         } catch (err) {
-            msgEl.className = "msg error";
-            msgEl.textContent = "Cannot connect to server. Check your internet.";
+            if (msgEl) {
+                msgEl.className = "msg error";
+                msgEl.textContent = "Cannot connect to server. Check internet.";
+            }
             console.error("Dashboard load error:", err);
         }
     }
 
+    // Select commodity card
+    window.selectCommodity = function(commodity) {
+        selectedCommodity = commodity;
+
+        document.querySelectorAll('.commodity-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+
+        if (selectedDisplay) {
+            selectedDisplay.textContent = commodity.charAt(0).toUpperCase() + commodity.slice(1).replace('_', ' ');
+        }
+
+        if (investBtn) investBtn.disabled = false;
+    };
+
     // Handle investment request
-    investForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const commodity = document.getElementById('commoditySelect')?.value;
-        if (!commodity) {
-            msgEl.className = "msg error";
-            msgEl.textContent = "Please select a commodity.";
-            return;
-        }
-
-        msgEl.className = "msg loading";
-        msgEl.textContent = "Sending investment request...";
-
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('commodity', commodity);
-
-        try {
-            const res = await fetch(`${BACKEND_URL}/invest/request`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                msgEl.className = "msg success";
-                msgEl.textContent = data.message || 'Investment request created. Awaiting confirmation.';
-                investForm.reset(); // clear form
-                loadDashboard();    // refresh numbers
-            } else {
-                msgEl.className = "msg error";
-                msgEl.textContent = data.detail || 'Investment request failed.';
+    if (investBtn) {
+        investBtn.addEventListener('click', async () => {
+            if (!selectedCommodity) {
+                if (msgEl) {
+                    msgEl.className = "msg error";
+                    msgEl.textContent = "Please select a commodity first.";
+                }
+                return;
             }
-        } catch (err) {
-            msgEl.className = "msg error";
-            msgEl.textContent = "Network error – please try again.";
-            console.error(err);
-        }
-    });
+
+            if (msgEl) {
+                msgEl.className = "msg loading";
+                msgEl.textContent = "Sending investment request...";
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('commodity', selectedCommodity);
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/invest/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    if (msgEl) {
+                        msgEl.className = "msg success";
+                        msgEl.textContent = data.message || `Investment request for ${selectedCommodity} created. Awaiting confirmation.`;
+                    }
+                    loadDashboard(); // refresh numbers
+                } else {
+                    if (msgEl) {
+                        msgEl.className = "msg error";
+                        msgEl.textContent = data.detail || 'Request failed.';
+                    }
+                }
+            } catch (err) {
+                if (msgEl) {
+                    msgEl.className = "msg error";
+                    msgEl.textContent = "Network error – try again.";
+                }
+                console.error(err);
+            }
+        });
+    }
 
     function logout() {
         localStorage.removeItem('username');
         window.location.href = 'login.html';
     }
 
-    // Load data when page opens
+    // Load on open
     loadDashboard();
 });
