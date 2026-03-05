@@ -22,7 +22,7 @@
             background: #fff;
             margin: 20px auto;
             padding: 25px;
-            max-width: 700px;
+            max-width: 900px;
             border-radius: 15px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.1);
         }
@@ -63,6 +63,41 @@
             font-weight: bold;
             min-height: 20px;
         }
+        .commodity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .commodity-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .commodity-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        .commodity-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+        }
+        .commodity-info {
+            padding: 12px;
+        }
+        .commodity-info h4 {
+            margin: 0 0 8px;
+            color: #0a1d66;
+        }
+        .commodity-info p {
+            margin: 4px 0;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -80,12 +115,20 @@
     </div>
 
     <div class="actions">
-        <button onclick="investRequest()">💰 Invest</button>
-        <button onclick="withdrawRequest()">📤 Withdraw</button>
-        <button class="logout" onclick="logout()">🚪 Logout</button>
+        <button onclick="logout()">🚪 Logout</button>
     </div>
 
-    <div class="msg" id="msg"></div>
+    <div class="msg" id="msg">Loading dashboard...</div>
+
+    <!-- Commodity Cards Section -->
+    <h3 style="text-align:center; color:#0a1d66; margin:30px 0 20px;">Invest in Commodity</h3>
+    <div class="commodity-grid" id="commodityGrid">
+        <!-- Cards will be added by JS -->
+    </div>
+
+    <!-- Active Investments -->
+    <h3 style="text-align:center; color:#0a1d66; margin:40px 0 20px;">Your Active Investments</h3>
+    <div id="investmentList" style="display:grid; gap:15px;"></div>
 </div>
 
 <script>
@@ -101,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const msg = document.getElementById('msg');
 
     async function fetchUserData() {
-        msg.textContent = "Loading dashboard...";
+        msg.textContent = "Loading your dashboard...";
         msg.style.color = "blue";
 
         try {
@@ -109,12 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
-                if (response.status === 403) {
-                    msg.style.color = "red";
-                    msg.textContent = data.detail || "Account not approved yet. Please wait for admin approval.";
+                msg.style.color = "red";
+                if (response.status === 404) {
+                    msg.textContent = "Dashboard not found. Contact support or check backend.";
+                } else if (response.status === 403) {
+                    msg.textContent = data.detail || "Account not approved yet. Please wait for admin.";
                 } else {
-                    msg.style.color = "red";
-                    msg.textContent = data.detail || `Error loading data (status ${response.status})`;
+                    msg.textContent = data.detail || `Error ${response.status}`;
                 }
                 logout();
                 return null;
@@ -123,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return await response.json();
         } catch (err) {
             msg.style.color = "red";
-            msg.textContent = "Cannot connect to server. Check your internet.";
+            msg.textContent = "Cannot connect to server. Check internet or backend URL.";
             console.error("Dashboard fetch error:", err);
             return null;
         }
@@ -145,13 +189,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         document.getElementById('investedDisplay').textContent = invested.toFixed(2);
 
+        renderInvestments(user.investments || {});
+        renderCommodityCards(); // Show image cards
+
         msg.textContent = "Dashboard loaded successfully!";
         msg.style.color = "green";
     }
 
-    window.investRequest = async function () {
-        const commodity = document.getElementById('commoditySelect')?.value;
-        if (!commodity) return alert('Please select a commodity.');
+    function renderInvestments(investments) {
+        const container = document.getElementById('investmentList');
+        container.innerHTML = "";
+
+        if (!investments || Object.keys(investments).length === 0) {
+            container.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet. Start investing!</p>";
+            return;
+        }
+
+        for (const [commodity, inv] of Object.entries(investments)) {
+            const expiry = new Date(inv.expiry_date);
+            const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
+            const card = document.createElement('div');
+            card.style.background = '#f0f8f0';
+            card.style.padding = '15px';
+            card.style.borderRadius = '10px';
+            card.style.border = '1px solid #28a745';
+            card.innerHTML = `
+                <strong>${commodity.toUpperCase()}</strong><br>
+                Amount: KES ${inv.amount}<br>
+                Expires in: ${remainingDays} day(s)
+            `;
+            container.appendChild(card);
+        }
+    }
+
+    function renderCommodityCards() {
+        const grid = document.getElementById('commodityGrid');
+        grid.innerHTML = "";
+
+        const commodities = [
+            { key: "marble", name: "Marble", price: 650, days: 15, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "crude_oil", name: "Crude Oil", price: 800, days: 20, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "silver", name: "Silver", price: 1000, days: 23, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "lead", name: "Lead", price: 1200, days: 25, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "platinum", name: "Platinum", price: 1350, days: 28, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "diamonds", name: "Diamonds", price: 1750, days: 32, img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "gold", name: "Gold", price: 2200, days: 35, img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "uranium", name: "Uranium", price: 3000, days: 45, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
+        ];
+
+        commodities.forEach(com => {
+            const card = document.createElement('div');
+            card.className = 'commodity-card';
+            card.innerHTML = `
+                <img src="\( {com.img}" alt=" \){com.name}">
+                <div class="commodity-info">
+                    <h4>${com.name}</h4>
+                    <p>KES ${com.price}</p>
+                    <p>${com.days} days</p>
+                </div>
+            `;
+            card.onclick = () => investRequest(com.key);
+            grid.appendChild(card);
+        });
+    }
+
+    window.investRequest = async function (commodity) {
+        if (!commodity) {
+            msg.textContent = "Please select a commodity.";
+            msg.style.color = "red";
+            return;
+        }
+
+        msg.textContent = "Sending investment request...";
+        msg.style.color = "blue";
 
         const formData = new URLSearchParams();
         formData.append('username', username);
@@ -167,40 +277,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (res.ok) {
-                alert(data.message || 'Investment request created. Waiting for confirmation.');
+                msg.style.color = "green";
+                msg.textContent = data.message || `Investment request for ${commodity} created. Awaiting confirmation.`;
+                updateUI(); // refresh dashboard
             } else {
-                alert(data.detail || 'Investment request failed.');
+                msg.style.color = "red";
+                msg.textContent = data.detail || 'Investment request failed.';
             }
         } catch (err) {
-            alert('Network error during investment request.');
-            console.error(err);
-        }
-    };
-
-    window.withdrawRequest = async function () {
-        const amount = parseFloat(document.getElementById('withdrawAmount')?.value || 0);
-        if (!amount || amount <= 0) return alert('Please enter a valid amount.');
-
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('amount', amount);
-
-        try {
-            const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                alert(data.message || 'Withdrawal request sent. Pending admin approval.');
-            } else {
-                alert(data.detail || 'Withdrawal request failed.');
-            }
-        } catch (err) {
-            alert('Network error during withdrawal request.');
+            msg.style.color = "red";
+            msg.textContent = "Network error during request.";
             console.error(err);
         }
     };
