@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Invest - Mkoba Wallet</title>
+<title>Invest - Mkoba Wallet 💸</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -29,12 +29,12 @@
   }
   .commodity-card img { 
     width: 100%; 
-    height: 120px; 
+    height: 140px; 
     object-fit: cover; 
     border-radius: 8px; 
     margin-bottom: 12px;
   }
-  .msg { margin-top: 12px; font-weight: bold; text-align: center; min-height: 24px; }
+  .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
   .success { color: #28a745; }
   .error { color: #dc3545; }
   .loading { color: #007bff; }
@@ -73,15 +73,13 @@
   <div>
     <h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">Choose Your Investment</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-      <!-- Marble -->
       <div class="commodity-card" onclick="selectCommodity('marble')">
-        <img src="https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Marble">
+        <img src="https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Marble">
         <p class="font-semibold mt-2">Marble</p>
         <p class="text-sm text-gray-600">KES 650</p>
         <p class="text-xs text-gray-500">15 days</p>
       </div>
 
-      <!-- Crude Oil -->
       <div class="commodity-card" onclick="selectCommodity('crude_oil')">
         <img src="https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Crude Oil">
         <p class="font-semibold mt-2">Crude Oil</p>
@@ -89,7 +87,6 @@
         <p class="text-xs text-gray-500">20 days</p>
       </div>
 
-      <!-- Silver -->
       <div class="commodity-card" onclick="selectCommodity('silver')">
         <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Silver">
         <p class="font-semibold mt-2">Silver</p>
@@ -97,7 +94,6 @@
         <p class="text-xs text-gray-500">23 days</p>
       </div>
 
-      <!-- Lead -->
       <div class="commodity-card" onclick="selectCommodity('lead')">
         <img src="https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Lead">
         <p class="font-semibold mt-2">Lead</p>
@@ -105,7 +101,6 @@
         <p class="text-xs text-gray-500">25 days</p>
       </div>
 
-      <!-- Platinum -->
       <div class="commodity-card" onclick="selectCommodity('platinum')">
         <img src="https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Platinum">
         <p class="font-semibold mt-2">Platinum</p>
@@ -113,7 +108,6 @@
         <p class="text-xs text-gray-500">28 days</p>
       </div>
 
-      <!-- Diamonds -->
       <div class="commodity-card" onclick="selectCommodity('diamonds')">
         <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Diamonds">
         <p class="font-semibold mt-2">Diamonds</p>
@@ -121,7 +115,6 @@
         <p class="text-xs text-gray-500">32 days</p>
       </div>
 
-      <!-- Gold -->
       <div class="commodity-card" onclick="selectCommodity('gold')">
         <img src="https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Gold">
         <p class="font-semibold mt-2">Gold</p>
@@ -129,7 +122,6 @@
         <p class="text-xs text-gray-500">35 days</p>
       </div>
 
-      <!-- Uranium -->
       <div class="commodity-card" onclick="selectCommodity('uranium')">
         <img src="https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Uranium">
         <p class="font-semibold mt-2">Uranium</p>
@@ -209,16 +201,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.selectCommodity = function(commodity) {
         selectedCommodity = commodity;
 
-        // Highlight selected card
         document.querySelectorAll('.commodity-card').forEach(card => {
             card.classList.remove('selected');
         });
         event.currentTarget.classList.add('selected');
 
-        // Update display
         selectedDisplay.textContent = commodity.charAt(0).toUpperCase() + commodity.slice(1).replace('_', ' ');
 
-        // Enable button
         investBtn.disabled = false;
     };
 
@@ -248,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 msg.className = "msg success";
-                msg.textContent = data.message || `Investment request for ${selectedCommodity} created. Awaiting confirmation.`;
+                msg.textContent = data.message || `Investment request for ${selectedCommodity} created. Send KES ${data.price || 'amount'} to M-Pesa: 0752964507`;
                 loadDashboard(); // refresh numbers
             } else {
                 msg.className = "msg error";
