@@ -3,18 +3,31 @@ const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('loginError');
+    const successMsg = document.getElementById('loginSuccess');
     const submitBtn = form?.querySelector('button[type="submit"]');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
 
     if (!form || !errorMsg || !submitBtn) {
         console.error("Login form elements not found");
         return;
     }
 
+    // Password visibility toggle (optional — add eye icon in HTML if needed)
+    if (togglePassword) {
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    }
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Clear previous message
+        // Clear previous messages
         errorMsg.textContent = '';
+        if (successMsg) successMsg.textContent = '';
 
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
@@ -24,20 +37,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!username || !password) {
             errorMsg.textContent = 'Please enter both username and password.';
+            errorMsg.style.color = '#dc3545';
             return;
         }
 
-        // Show loading state
+        // Disable button & show loading
         submitBtn.disabled = true;
         submitBtn.textContent = 'Logging in...';
 
         try {
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+
             const response = await fetch(`${BACKEND_URL}/login`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({ username, password })
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
             });
 
             let data;
@@ -48,19 +64,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (response.ok) {
-                // Save the username returned by backend (more secure)
+                // Save username (backend returns it or use input)
                 localStorage.setItem('username', data.username || username);
 
-                errorMsg.style.color = '#28a745';
-                errorMsg.textContent = 'Login successful! Redirecting...';
+                if (successMsg) {
+                    successMsg.textContent = 'Login successful! Redirecting...';
+                    successMsg.style.color = '#28a745';
+                }
 
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
-                }, 1200);
+                }, 1500); // Delay to show success message
             } else {
                 // Handle specific backend errors
+                errorMsg.style.color = '#dc3545';
                 if (response.status === 403) {
-                    errorMsg.textContent = data.detail || 'Account pending admin approval. Please wait.';
+                    errorMsg.textContent = data.detail || 'Your account is pending approval. Please wait for admin confirmation.';
                 } else if (response.status === 404) {
                     errorMsg.textContent = 'User not found. Please register first.';
                 } else if (response.status === 400) {
@@ -71,7 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Login request failed:', error);
-            errorMsg.textContent = 'Cannot connect to the server. Check your internet connection.';
+            errorMsg.style.color = '#dc3545';
+            errorMsg.textContent = 'Cannot connect to server. Please check your internet connection.';
         } finally {
             // Reset button state
             submitBtn.disabled = false;
