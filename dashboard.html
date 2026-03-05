@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         msg.style.color = "blue";
 
         try {
+            // ── FIXED LINE ──
             const response = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
 
             if (!response.ok) {
