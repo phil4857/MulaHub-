@@ -1,185 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Mkoba Wallet - Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<title>Admin Dashboard - Mkoba Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+  }
 
-    h2 {
-      color: #28a745;
-      text-align: center;
-    }
+  h2 {
+    color: #28a745;
+    text-align: center;
+    margin-bottom: 20px;
+  }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
 
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-    }
+  th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+  }
 
-    th {
-      background-color: #28a745;
-      color: white;
-    }
+  th {
+    background-color: #28a745;
+    color: white;
+  }
 
-    button {
-      padding: 6px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      color: white;
-    }
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
 
-    .approve-btn {
-      background-color: #007bff;
-    }
+  .action-btn {
+    padding: 6px 12px;
+    margin: 0 4px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+  }
 
-    .withdraw-btn {
-      background-color: #ff9800;
-    }
+  .approve-btn   { background: #007bff; }
+  .withdraw-btn  { background: #ff9800; }
+  .reset-btn     { background: #ffc107; color: black; }
+  .terminate-btn { background: #dc3545; }
 
-    .success-msg {
-      color: green;
-      text-align: center;
-      margin-top: 10px;
-    }
+  .msg {
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: bold;
+  }
 
-    .error-msg {
-      color: red;
-      text-align: center;
-      margin-top: 10px;
-    }
-  </style>
+  .success { background: #d4edda; color: #155724; }
+  .error   { background: #f8d7da; color: #721c24; }
+</style>
 </head>
 <body>
-  <h2>Admin Dashboard</h2>
-  <div class="success-msg" id="successMsg"></div>
-  <div class="error-msg" id="errorMsg"></div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Approved</th>
-        <th>Balance</th>
-        <th>Earnings</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="usersTableBody">
-      <!-- Users will be populated here -->
-    </tbody>
-  </table>
+<h2>Admin Dashboard - Mkoba Wallet</h2>
 
-  <script>
-    const BACKEND_URL = "https://repo-1red-jipate-bonus.onrender.com";
+<div id="msg" class="msg" style="display:none;"></div>
 
-    const successMsg = document.getElementById('successMsg');
-    const errorMsg = document.getElementById('errorMsg');
-    const usersTableBody = document.getElementById('usersTableBody');
+<table id="usersTable">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Phone</th>
+      <th>Password</th>
+      <th>Approved</th>
+      <th>Balance</th>
+      <th>Earnings</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="usersTableBody">
+    <!-- Users will be populated here -->
+  </tbody>
+</table>
 
-    function resetMessages() {
-      successMsg.textContent = '';
-      errorMsg.textContent = '';
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const tableBody = document.getElementById("usersTableBody");
+  const msg = document.getElementById("msg");
+
+  function showMessage(type, text) {
+    msg.className = `msg ${type}`;
+    msg.textContent = text;
+    msg.style.display = "block";
+    setTimeout(() => { msg.style.display = "none"; }, 6000);
+  }
+
+  async function fetchUsers() {
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/users`);
+      if (!res.ok) throw new Error(await res.text());
+
+      const users = await res.json();
+      tableBody.innerHTML = "";
+
+      users.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.username}</td>
+          <td>${user.phone}</td>
+          <td>${user.password || "••••••••"}</td>
+          <td>${user.approved ? "Yes" : "No"}</td>
+          <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
+          <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
+          <td>
+            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : ""}
+            <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
+            <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error("Fetch users error:", err);
+      showMessage("error", "Failed to load users: " + err.message);
+      tableBody.innerHTML = `<tr><td colspan="7">Error loading users</td></tr>`;
     }
+  }
 
-    async function fetchUsers() {
-      resetMessages();
-      try {
-        const response = await fetch(`${BACKEND_URL}/admin/users`);
-        const users = await response.json();
-        usersTableBody.innerHTML = '';
+  async function approveUser(username) {
+    if (!confirm(`Approve user ${username}?`)) return;
+    await adminAction("approve-user", username, "User approved successfully");
+  }
 
-        users.forEach(user => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${user.username}</td>
-            <td>${user.approved ? 'Yes' : 'No'}</td>
-            <td>${user.balance.toFixed(2)}</td>
-            <td>${user.earnings.toFixed(2)}</td>
-            <td>
-              ${!user.approved ? `<button class="approve-btn" onclick="approveUser('${user.username}')">Approve User</button>` : ''}
-              <button class="withdraw-btn" onclick="approveWithdrawal('${user.username}')">Approve Withdrawal</button>
-            </td>
-          `;
-          usersTableBody.appendChild(tr);
-        });
+  async function resetPassword(username) {
+    if (!confirm(`Reset password for ${username}?`)) return;
 
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        errorMsg.textContent = 'Failed to load users';
+    try {
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+
+      const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showMessage("success", `New password for \( {username}: <strong> \){data.new_password}</strong>`);
+        fetchUsers();
+      } else {
+        showMessage("error", data.detail || "Failed to reset password");
       }
+    } catch (err) {
+      showMessage("error", "Network error: " + err.message);
     }
+  }
 
-    async function approveUser(username) {
-      resetMessages();
-      try {
-        const formData = new URLSearchParams();
-        formData.append('username', username);
+  async function terminateUser(username) {
+    if (!confirm(`Terminate user ${username}? This cannot be undone!`)) return;
 
-        const response = await fetch(`${BACKEND_URL}/admin/approve-user`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: formData
-        });
+    await adminAction("terminate-user", username, "User terminated successfully");
+  }
 
-        if (!response.ok) {
-          const data = await response.json();
-          errorMsg.textContent = data.detail || 'Failed to approve user';
-          return;
-        }
+  async function adminAction(endpoint, username, successMsg) {
+    try {
+      const formData = new URLSearchParams();
+      formData.append("username", username);
 
-        successMsg.textContent = `User ${username} approved successfully`;
-        fetchUsers(); // Refresh table
-      } catch (error) {
-        console.error('Approve user error:', error);
-        errorMsg.textContent = 'Error approving user';
+      const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showMessage("success", successMsg);
+        fetchUsers();
+      } else {
+        showMessage("error", data.detail || "Action failed");
       }
+    } catch (err) {
+      showMessage("error", "Network error: " + err.message);
     }
+  }
 
-    async function approveWithdrawal(username) {
-      resetMessages();
-      try {
-        const formData = new URLSearchParams();
-        formData.append('username', username);
+  // Load users on page open
+  fetchUsers();
+});
+</script>
 
-        const response = await fetch(`${BACKEND_URL}/admin/approve-withdrawal`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: formData
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          errorMsg.textContent = data.detail || 'Failed to approve withdrawal';
-          return;
-        }
-
-        const data = await response.json();
-        successMsg.textContent = data.message;
-        fetchUsers(); // Refresh table
-      } catch (error) {
-        console.error('Approve withdrawal error:', error);
-        errorMsg.textContent = 'Error approving withdrawal';
-      }
-    }
-
-    // Initial load
-    fetchUsers();
-  </script>
 </body>
 </html>
