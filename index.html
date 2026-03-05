@@ -1,110 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mkoba Wallet 💸🎉💵</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f9f4ec;
-      color: #2e2e2e;
-      padding: 40px;
-      text-align: center;
-      margin: 0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mkoba Wallet 💸🎉💵 - Grow Your Money Daily</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    color: #2c3e50;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    overflow-x: hidden;
+  }
 
-    h1 {
-      color: #a25c00;
-      margin-bottom: 10px;
-    }
+  h1 {
+    font-size: 3.5rem;
+    color: #fff;
+    text-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+    margin: 0;
+    animation: pulse 2s infinite;
+  }
 
-    h2 {
-      color: #444;
-      margin-bottom: 20px;
-    }
+  h2 {
+    font-size: 2rem;
+    color: #ff6b6b;
+    margin: 10px 0 30px;
+    text-align: center;
+  }
 
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 30px;
-    }
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    max-width: 1200px;
+  }
 
-    .card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 30px;
-      width: 300px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      transition: 0.3s ease;
-    }
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    width: 320px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+  }
 
-    .card:hover {
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
+  .card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  }
 
-    .card h3 {
-      color: #a25c00;
-    }
+  .card h3 {
+    color: #2ecc71;
+    font-size: 2rem;
+    margin-bottom: 15px;
+  }
 
-    .card p {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 15px;
-    }
+  .card p {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 25px;
+  }
 
-    .btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #a25c00;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      transition: background-color 0.2s ease;
-    }
+  .btn {
+    display: inline-block;
+    padding: 14px 30px;
+    background: #27ae60;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(39,174,96,0.4);
+  }
 
-    .btn:hover {
-      background-color: #844900;
-    }
+  .btn:hover {
+    background: #219653;
+    transform: scale(1.08);
+    box-shadow: 0 10px 25px rgba(39,174,96,0.5);
+  }
 
-    footer {
-      margin-top: 60px;
-      font-size: 14px;
-      color: #777;
-    }
+  .launch-banner {
+    background: rgba(255,255,255,0.9);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 30px 0;
+    text-align: center;
+    font-size: 1.4rem;
+    color: #e74c3c;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    animation: bounce 2s infinite;
+  }
 
-    @media (max-width: 768px) {
-      .card {
-        width: 90%;
-      }
-    }
-  </style>
+  footer {
+    margin-top: 60px;
+    color: white;
+    text-align: center;
+    font-size: 1.1rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @media (max-width: 768px) {
+    h1 { font-size: 2.8rem; }
+    .card { width: 90%; }
+  }
+</style>
 </head>
 <body>
 
-  <h1>Welcome to Mkoba Wallet 💸🎉💵</h1>
-  <h2>Grow your money, invest in commodities, and earn daily returns!</h2>
+  <h1>Mkoba Wallet 💸🥳🤑</h1>
+  <h2>Grow Your Money • Invest in Commodities • Earn Daily Returns!</h2>
+
+  <div class="launch-banner">
+    🚀 BIG LAUNCH THIS FRIDAY MIDNIGHT! 🚀<br>
+    Limited Edition Rewards + Massive Bonuses Await!
+  </div>
 
   <div class="container">
     <div class="card">
-      <h3>Register</h3>
-      <p>Create your account, start investing, and claim your daily returns. Referral bonuses available.</p>
-      <a class="btn" href="register.html">Register Now</a>
+      <h3>Register Now</h3>
+      <p>Create your account, start investing, claim daily returns & get referral bonuses 🤑</p>
+      <a href="register.html" class="btn">Get Started 💰</a>
     </div>
 
     <div class="card">
       <h3>Login</h3>
-      <p>Already a member? Login to your dashboard to manage investments and withdrawals.</p>
-      <a class="btn" href="login.html">Login</a>
+      <p>Access your dashboard, manage investments, and withdraw earnings daily 🎉</p>
+      <a href="login.html" class="btn">Login 🔑</a>
     </div>
   </div>
 
   <footer>
-    <p>📱 MPESA POCHI LA BIASHARA: <strong>0748066116</strong> | 💰 Daily returns: <strong>10%</strong> | 💸 Withdrawals allowed on Mondays only</p>
+    📱 M-Pesa Pochi La Biashara: <strong>0752964507</strong> | 💰 Daily Returns: <strong>Up to 10%</strong> | 💸 Withdrawals: Daily (after approval)
   </footer>
 
 </body>
