@@ -126,6 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 msg.className = 'msg error';
                 if (res.status === 403) {
                     msg.textContent = data.detail || 'Account not approved yet. Please wait for admin approval.';
+                } else if (res.status === 404) {
+                    msg.textContent = 'Dashboard not found on server. Contact support.';
                 } else {
                     msg.textContent = data.detail || `Error ${res.status}`;
                 }
