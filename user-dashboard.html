@@ -1,72 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard - Mkoba Wallet 💵🎉</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f9ff;
+      margin: 0;
+    }
+    header {
+      background: linear-gradient(90deg, #0a1d66, #1234a0);
+      color: #ffd700;
+      padding: 20px;
+      text-align: center;
+      border-bottom-left-radius: 15px;
+      border-bottom-right-radius: 15px;
+    }
+    .container {
+      background: #fff;
+      margin: 20px auto;
+      padding: 25px;
+      max-width: 700px;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    .info p {
+      background: #f0f8f0;
+      padding: 12px;
+      border-left: 5px solid #0a1d66;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .info span {
+      font-weight: bold;
+      color: #1234a0;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    .actions button {
+      flex: 1 1 45%;
+      margin: 10px 5px;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(to right, #0a1d66, #1234a0);
+      color: #ffd700;
+    }
+    .logout {
+      background: linear-gradient(to right, #dc3545, #a71d2a) !important;
+    }
+    .msg {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 20px;
+    }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+    .loading { color: #007bff; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    .withdraw-section {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Welcome to Mkoba Wallet Dashboard 💵🎉</h1>
+</header>
+
+<div class="container">
+  <div class="info">
+    <p>Username: <span id="usernameDisplay"></span></p>
+    <p>Balance: KES <span id="balance">0.00</span></p>
+    <p>Total Earnings: KES <span id="earnings">0.00</span></p>
+    <p>Total Invested: KES <span id="invested">0.00</span></p>
+  </div>
+
+  <div class="actions">
+    <button onclick="logout()" class="logout">🚪 Logout</button>
+  </div>
+
+  <div class="msg" id="msg">Loading dashboard...</div>
+
+  <!-- Active Investments -->
+  <div id="investmentList" style="margin-top:30px;">
+    <h3 style="text-align:center; color:#0a1d66;">Your Active Investments</h3>
+  </div>
+
+  <!-- Withdrawal Section -->
+  <div class="withdraw-section">
+    <h3 style="color:#0a1d66;">Request Withdrawal</h3>
+    <input type="number" id="amount" placeholder="Enter amount (KES)" min="1" step="1">
+    <button onclick="requestWithdrawal()">Withdraw</button>
+  </div>
+</div>
+
+<script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
-    const username = localStorage.getItem("username");
+    const username = localStorage.getItem('username');
     if (!username) {
-        window.location.href = "login.html";
+        window.location.href = 'login.html';
         return;
     }
 
-    const balanceEl = document.getElementById("balance");
-    const earningsEl = document.getElementById("earnings");
-    const msgEl = document.getElementById("msg");
-    const amountInput = document.getElementById("amount");
+    document.getElementById('usernameDisplay').textContent = username;
+
+    const balanceEl = document.getElementById('balance');
+    const earningsEl = document.getElementById('earnings');
+    const investedEl = document.getElementById('invested');
+    const msg = document.getElementById('msg');
+    const amountInput = document.getElementById('amount');
+    const investmentList = document.getElementById('investmentList');
 
     async function loadDashboard() {
+        msg.className = "msg loading";
+        msg.textContent = "Loading dashboard...";
+
         try {
             const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
+                msg.className = "msg error";
                 if (res.status === 403) {
-                    msgEl.style.color = "red";
-                    msgEl.textContent = data.detail || "Account not approved yet.";
+                    msg.textContent = data.detail || "Account not approved yet.";
                 } else {
-                    msgEl.style.color = "red";
-                    msgEl.textContent = data.detail || `Error ${res.status}`;
+                    msg.textContent = data.detail || `Error ${res.status}`;
                 }
                 return;
             }
 
             const data = await res.json();
 
-            if (balanceEl) {
-                balanceEl.textContent = Number(data.balance || 0).toFixed(2);
-            }
-            if (earningsEl) {
-                earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
-            }
+            balanceEl.textContent = Number(data.balance || 0).toFixed(2);
+            earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
 
-            // Optional: show total invested
             let invested = 0;
             if (data.investments && typeof data.investments === 'object') {
                 Object.values(data.investments).forEach(item => {
                     invested += Number(item.amount || 0);
                 });
             }
-            const investedEl = document.getElementById("invested");
-            if (investedEl) {
-                investedEl.textContent = invested.toFixed(2);
-            }
+            investedEl.textContent = invested.toFixed(2);
 
-            msgEl.textContent = "";
+            renderInvestments(data.investments || {});
+
+            msg.className = "msg success";
+            msg.textContent = "Dashboard loaded!";
         } catch (err) {
-            console.error("Dashboard load error:", err);
-            msgEl.style.color = "red";
-            msgEl.textContent = "Cannot connect to server. Try again later.";
+            msg.className = "msg error";
+            msg.textContent = "Cannot connect to server. Check connection.";
+            console.error(err);
         }
     }
 
-    async function requestWithdrawal() {
-        const amount = parseFloat(amountInput?.value || 0);
-        if (!amount || amount <= 0) {
-            msgEl.style.color = "red";
-            msgEl.textContent = "Please enter a valid amount greater than 0.";
+    function renderInvestments(investments) {
+        investmentList.innerHTML = "<h3 style='text-align:center; color:#0a1d66;'>Your Active Investments</h3>";
+
+        if (!investments || Object.keys(investments).length === 0) {
+            investmentList.innerHTML += "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
             return;
         }
 
-        msgEl.textContent = "Processing...";
-        msgEl.style.color = "blue";
+        for (const [commodity, inv] of Object.entries(investments)) {
+            const expiry = new Date(inv.expiry_date);
+            const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
+            const div = document.createElement('div');
+            div.style.background = '#f0f8f0';
+            div.style.padding = '15px';
+            div.style.borderRadius = '10px';
+            div.style.border = '1px solid #28a745';
+            div.style.marginBottom = '10px';
+            div.innerHTML = `
+                <strong>${commodity.toUpperCase()}</strong><br>
+                Amount: KES ${inv.amount}<br>
+                Expires in: ${remainingDays} day(s)
+            `;
+            investmentList.appendChild(div);
+        }
+    }
+
+    window.requestWithdrawal = async function () {
+        const amount = parseFloat(amountInput?.value || 0);
+        if (!amount || amount <= 0) {
+            msg.className = "msg error";
+            msg.textContent = "Please enter a valid amount greater than 0.";
+            return;
+        }
+
+        msg.className = "msg loading";
+        msg.textContent = "Processing withdrawal request...";
 
         const formData = new URLSearchParams();
         formData.append("username", username);
@@ -82,29 +227,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (res.ok) {
-                msgEl.style.color = "green";
-                msgEl.textContent = data.message || "Withdrawal request sent. Waiting for admin approval.";
+                msg.className = "msg success";
+                msg.textContent = data.message || "Withdrawal request sent. Waiting for admin approval.";
                 amountInput.value = ""; // clear input
+                loadDashboard(); // refresh numbers
             } else {
-                msgEl.style.color = "red";
-                msgEl.textContent = data.detail || "Request failed.";
+                msg.className = "msg error";
+                msg.textContent = data.detail || "Request failed.";
             }
         } catch (err) {
-            msgEl.style.color = "red";
-            msgEl.textContent = "Network error. Please check connection.";
+            msg.className = "msg error";
+            msg.textContent = "Network error. Please check connection.";
             console.error(err);
         }
-    }
+    };
 
     function logout() {
         localStorage.removeItem("username");
         window.location.href = "login.html";
     }
 
-    // Attach events
-    document.querySelector("button[onclick='logout()']")?.addEventListener("click", logout);
-    document.querySelector("button[onclick='withdraw()']")?.addEventListener("click", requestWithdrawal);
-
-    // Load data
+    // Load dashboard on page open
     loadDashboard();
 });
+</script>
+
+</body>
+</html>
