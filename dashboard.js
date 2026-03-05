@@ -1,6 +1,6 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('username');
     if (!username) {
         window.location.href = 'login.html';
@@ -8,211 +8,149 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const balanceEl = document.getElementById('balanceDisplay');
-    const investmentListEl = document.getElementById('investmentList');
+    const earningsEl = document.getElementById('earningsDisplay');
+    const investedEl = document.getElementById('investedDisplay');
+    const msgEl = document.getElementById('msg');
+    const commodityGrid = document.getElementById('commodityGrid');
+    const investmentList = document.getElementById('investmentList');
 
-    const commodities = {
-        marble: { price: 650, days: 15 },
-        crude_oil: { price: 800, days: 20 },
-        silver: { price: 1000, days: 23 },
-        lead: { price: 1200, days: 25 },
-        platinum: { price: 1350, days: 28 },
-        diamonds: { price: 1750, days: 32 },
-        gold: { price: 2200, days: 35 },
-        uranium: { price: 3000, days: 45 }
-    };
+    // Load dashboard data
+    async function updateUI() {
+        msgEl.textContent = "Loading dashboard...";
+        msgEl.style.color = "blue";
 
-    async function fetchUserData() {
         try {
-            const response = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
-            if (!response.ok) {
-                console.error(`Dashboard fetch failed: ${response.status} ${response.statusText}`);
-                if (response.status === 403) {
-                    alert("Account not approved or access denied. Please wait for admin approval.");
+            const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                msgEl.style.color = "red";
+                if (res.status === 404) {
+                    msgEl.textContent = "Dashboard endpoint not found. Check backend deployment.";
+                } else if (res.status === 403) {
+                    msgEl.textContent = data.detail || "Account not approved yet.";
                 } else {
-                    alert(`Failed to load dashboard data (status ${response.status}).`);
+                    msgEl.textContent = data.detail || `Error ${res.status}`;
                 }
                 logout();
-                return null;
+                return;
             }
-            return await response.json();
+
+            const data = await res.json();
+
+            balanceEl.textContent = Number(data.balance || 0).toFixed(2);
+            earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
+
+            let invested = 0;
+            if (data.investments && typeof data.investments === 'object') {
+                Object.values(data.investments).forEach(item => {
+                    invested += Number(item.amount || 0);
+                });
+            }
+            investedEl.textContent = invested.toFixed(2);
+
+            renderInvestments(data.investments || {});
+            renderCommodityCards();
+
+            msgEl.style.color = "green";
+            msgEl.textContent = "Dashboard loaded successfully!";
         } catch (err) {
-            console.error("Dashboard fetch error:", err);
-            alert("Cannot connect to the server. Check your internet.");
-            return null;
+            msgEl.style.color = "red";
+            msgEl.textContent = "Cannot connect to server. Check internet or backend.";
+            console.error(err);
         }
-    }
-
-    async function updateUI() {
-        const user = await fetchUserData();
-        if (!user) return;
-
-        if (balanceEl) {
-            balanceEl.textContent = `KES ${Number(user.balance || 0).toFixed(2)}`;
-        }
-
-        renderInvestments(user.investments || {});
     }
 
     function renderInvestments(investments) {
-        if (!investmentListEl) return;
-
-        investmentListEl.innerHTML = '';
+        investmentList.innerHTML = "";
 
         if (!investments || Object.keys(investments).length === 0) {
-            investmentListEl.textContent = 'No active investments.';
+            investmentList.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
             return;
         }
 
-        const now = new Date();
-
         for (const [commodity, inv] of Object.entries(investments)) {
-            const div = document.createElement('div');
-            div.className = 'investment-item';
-
             const expiry = new Date(inv.expiry_date);
-            const diff = expiry - now;
-
-            let timeText = 'Expired';
-            if (diff > 0) {
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                timeText = `${days} days remaining`;
-            }
-
-            div.textContent = `${commodity.toUpperCase()} | KES ${inv.amount} | ${timeText}`;
-            investmentListEl.appendChild(div);
+            const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
+            const div = document.createElement('div');
+            div.style.background = '#f0f8f0';
+            div.style.padding = '15px';
+            div.style.borderRadius = '10px';
+            div.style.border = '1px solid #28a745';
+            div.innerHTML = `
+                <strong>${commodity.toUpperCase()}</strong><br>
+                Amount: KES ${inv.amount}<br>
+                Expires in: ${remainingDays} day(s)
+            `;
+            investmentList.appendChild(div);
         }
     }
 
-    // INVEST REQUEST
-    document.getElementById('investBtn')?.addEventListener('click', async () => {
-        const commodity = document.getElementById('commodity')?.value;
-        if (!commodity) return alert("Please select a commodity.");
+    function renderCommodityCards() {
+        const commodities = [
+            { key: "marble", name: "Marble", price: 650, days: 15, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "crude_oil", name: "Crude Oil", price: 800, days: 20, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "silver", name: "Silver", price: 1000, days: 23, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "lead", name: "Lead", price: 1200, days: 25, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "platinum", name: "Platinum", price: 1350, days: 28, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "diamonds", name: "Diamonds", price: 1750, days: 32, img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "gold", name: "Gold", price: 2200, days: 35, img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "uranium", name: "Uranium", price: 3000, days: 45, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
+        ];
 
-        const user = await fetchUserData();
-        if (!user) return;
+        commodityGrid.innerHTML = "";
+        commodities.forEach(com => {
+            const card = document.createElement('div');
+            card.className = 'commodity-card';
+            card.innerHTML = `
+                <img src="\( {com.img}" alt=" \){com.name}">
+                <div class="commodity-info">
+                    <h4>${com.name}</h4>
+                    <p>KES ${com.price}</p>
+                    <p>${com.days} days</p>
+                </div>
+            `;
+            card.onclick = () => investRequest(com.key);
+            commodityGrid.appendChild(card);
+        });
+    }
 
-        if (!commodities[commodity] || user.balance < commodities[commodity].price) {
-            return alert("Insufficient balance or invalid commodity.");
-        }
+    window.investRequest = async function (commodity) {
+        msgEl.textContent = "Sending investment request...";
+        msgEl.style.color = "blue";
 
         const formData = new URLSearchParams();
         formData.append('username', username);
         formData.append('commodity', commodity);
 
         try {
-            const response = await fetch(`${BACKEND_URL}/invest/request`, {
+            const res = await fetch(`${BACKEND_URL}/invest/request`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formData
             });
 
-            const data = await response.json();
+            const data = await res.json();
 
-            if (response.ok) {
-                alert(data.message || 'Investment request created. Proceed to confirm.');
+            if (res.ok) {
+                msgEl.style.color = "green";
+                msgEl.textContent = data.message || `Request for ${commodity} created. Send KES ${COMMODITY_INFO[commodity].price} to M-Pesa: 0752964507`;
             } else {
-                alert(data.detail || 'Investment request failed.');
+                msgEl.style.color = "red";
+                msgEl.textContent = data.detail || 'Request failed.';
             }
         } catch (err) {
-            alert('Network error during investment request.');
+            msgEl.style.color = "red";
+            msgEl.textContent = "Network error during request.";
             console.error(err);
         }
-    });
-
-    // INVEST CONFIRM
-    document.getElementById('investConfirmBtn')?.addEventListener('click', async () => {
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-
-        try {
-            const response = await fetch(`${BACKEND_URL}/invest/confirm`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert(data.message || 'Investment confirmed!');
-                updateUI();
-            } else {
-                alert(data.detail || 'Confirmation failed.');
-            }
-        } catch (err) {
-            alert('Network error during confirmation.');
-            console.error(err);
-        }
-    });
-
-    // WITHDRAW REQUEST
-    document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
-        const today = new Date();
-        if (today.getDay() !== 1) return alert("Withdrawals allowed only on Monday");
-
-        const amount = parseFloat(document.getElementById('withdrawAmount')?.value || 0);
-        if (!amount || amount <= 0) return alert("Enter a valid amount");
-
-        const user = await fetchUserData();
-        if (!user) return;
-
-        if (amount > user.balance) return alert("Insufficient balance");
-
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('amount', amount);
-
-        try {
-            const response = await fetch(`${BACKEND_URL}/withdraw/request`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert(data.message || 'Withdrawal request created. Pending admin approval.');
-            } else {
-                alert(data.detail || 'Withdrawal request failed.');
-            }
-        } catch (err) {
-            alert('Network error during withdrawal request.');
-            console.error(err);
-        }
-    });
-
-    // WITHDRAW CONFIRM
-    document.getElementById('withdrawConfirmBtn')?.addEventListener('click', async () => {
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-
-        try {
-            const response = await fetch(`${BACKEND_URL}/withdraw/confirm`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert(data.message || 'Withdrawal confirmed!');
-                updateUI();
-            } else {
-                alert(data.detail || 'Confirmation failed.');
-            }
-        } catch (err) {
-            alert('Network error during confirmation.');
-            console.error(err);
-        }
-    });
+    };
 
     window.logout = function () {
         localStorage.removeItem('username');
         window.location.href = 'login.html';
     };
 
-    // Initial load
-    updateUI();
+    updateUI(); // Initial load
 });
+</script>
