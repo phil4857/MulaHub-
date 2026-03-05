@@ -1,94 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Mkoba Wallet - Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Mkoba Wallet - Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      background: linear-gradient(135deg, #28a745, #007bff);
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
+<style>
+  body {
+    background: linear-gradient(135deg, #28a745, #007bff);
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
 
-    .login-box {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      width: 340px;
-      text-align: center;
-    }
+  .login-box {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    width: 340px;
+    text-align: center;
+  }
 
-    h2 {
-      margin-bottom: 20px;
-      color: #28a745;
-    }
+  h2 {
+    margin-bottom: 20px;
+    color: #28a745;
+  }
 
-    input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-    }
+  .password-container {
+    position: relative;
+    margin: 15px 0;
+  }
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      font-size: 15px;
-    }
+  input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
 
-    button:disabled {
-      background: #6c757d;
-      cursor: not-allowed;
-    }
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+  }
 
-    button:hover:not(:disabled) {
-      background: #0056b3;
-    }
+  button {
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 15px;
+  }
 
-    .error-message {
-      color: #dc3545;
-      font-size: 14px;
-      margin-top: 10px;
-      min-height: 18px;
-    }
+  button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+  }
 
-    .success-message {
-      color: #28a745;
-      font-size: 14px;
-      margin-top: 10px;
-      min-height: 18px;
-    }
+  button:hover:not(:disabled) {
+    background: #0056b3;
+  }
 
-    .register-link {
-      margin-top: 15px;
-      font-size: 14px;
-    }
+  .error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 10px;
+    min-height: 18px;
+  }
 
-    .register-link a {
-      color: #007bff;
-      text-decoration: none;
-    }
+  .success-message {
+    color: #28a745;
+    font-size: 14px;
+    margin-top: 10px;
+    min-height: 18px;
+  }
 
-    .register-link a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  .register-link {
+    margin-top: 15px;
+    font-size: 14px;
+  }
+
+  .register-link a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  .register-link a:hover {
+    text-decoration: underline;
+  }
+</style>
 </head>
 <body>
 
@@ -97,14 +111,20 @@
 
   <form id="loginForm">
     <input type="text" id="username" placeholder="Username" required autocomplete="username">
-    <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+
+    <div class="password-container">
+      <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+      <span class="toggle-password" id="togglePassword">👁️</span>
+    </div>
+
     <button type="submit" id="loginBtn">Login</button>
-    <div id="loginError" class="error-message"></div>
-    <div id="loginSuccess" class="success-message"></div>
   </form>
 
+  <div class="error-message" id="loginError"></div>
+  <div class="success-message" id="loginSuccess"></div>
+
   <div class="register-link">
-    Don't have an account? <a href="register.html">Register</a>
+    Don't have an account? <a href="register.html">Register here</a>
   </div>
 </div>
 
@@ -116,6 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginBtn = document.getElementById('loginBtn');
   const loginError = document.getElementById('loginError');
   const loginSuccess = document.getElementById('loginSuccess');
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+
+  // Password visibility toggle
+  togglePassword.addEventListener('click', () => {
+    const type = passwordInput.type === 'password' ? 'text' : 'password';
+    passwordInput.type = type;
+    togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+  });
 
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -137,10 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
     loginBtn.textContent = 'Logging in...';
 
     try {
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+
       const response = await fetch(`${BACKEND_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ username, password })
+        body: formData
       });
 
       const data = await response.json();
