@@ -1,3 +1,4 @@
+// withdrawal.js
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -7,31 +8,61 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Monday only check (client-side early warning)
+    // Client-side Monday-only restriction
     const today = new Date();
-    if (today.getDay() !== 1) {
+    if (today.getDay() !== 1) {  // 1 = Monday
         alert("Withdrawals are only allowed on Mondays.");
         window.location.href = "dashboard.html";
         return;
     }
 
-    const withdrawForm = document.getElementById("withdrawForm");
-    const otpSection = document.getElementById("otpSection"); // can keep if you want to add OTP later, but hidden for now
-    const amountInput = document.getElementById("amount");
-    const msg = document.getElementById("msg") || document.createElement("div"); // fallback
+    // DOM elements
+    const form          = document.getElementById("withdrawForm");
+    const amountInput   = document.getElementById("amount");
+    const submitBtn     = form.querySelector('button[type="submit"]');
+    const msgDiv        = document.getElementById("msg") || document.createElement("div");
+    msgDiv.id = "msg";
+    msgDiv.style.marginTop = "1rem";
+    form.appendChild(msgDiv); // append if not already in HTML
 
-    // Hide OTP section permanently (no OTP in current backend)
-    if (otpSection) otpSection.style.display = "none";
+    // Optional: you can fetch current balance here if your backend supports it
+    // For now we assume balance is shown in HTML and validated on backend
 
-    withdrawForm.addEventListener("submit", async (e) => {
+    // Quick amount buttons (if you have them in HTML)
+    document.querySelectorAll(".amount-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            amountInput.value = btn.dataset.amount || btn.textContent.replace(/[^0-9]/g, "");
+            amountInput.focus();
+            clearMessage();
+        });
+    });
+
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        clearMessage();
 
-        const amount = parseFloat(amountInput.value);
+        const amount = parseFloat(amountInput.value.trim());
 
-        if (!amount || amount <= 0) {
-            alert("Enter a valid amount greater than 0.");
+        // Basic client-side validation
+        if (!amount || isNaN(amount) || amount <= 0) {
+            showError("Please enter a valid amount greater than 0.");
             return;
         }
+
+        if (amount < 500) {
+            showError("Minimum withdrawal amount is KES 500.");
+            return;
+        }
+
+        if (amount > 100000) { // example upper limit — adjust as needed
+            showError("Maximum withdrawal per request is KES 100,000.");
+            return;
+        }
+
+        // Disable button & show loading
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Processing...";
+        showInfo("Processing your withdrawal request...");
 
         const formData = new URLSearchParams();
         formData.append("username", username);
@@ -41,27 +72,64 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch(`${BACKEND_URL}/withdraw/request`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-                body: formData
+                body: formData,
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alert(data.message || "Withdrawal request submitted successfully! Pending admin approval.");
-                // Optional: clear input
-                amountInput.value = "";
-                // Redirect back to dashboard or refresh balance
+                showSuccess(data.message || "Withdrawal request submitted successfully! Awaiting admin approval.");
+                amountInput.value = ""; // clear field
+
+                // Redirect after short delay so user sees success message
                 setTimeout(() => {
                     window.location.href = "dashboard.html";
-                }, 2000);
+                }, 2200);
             } else {
-                alert(data.detail || "Withdrawal request failed. Please try again.");
+                // Handle different kinds of backend errors
+                const errorMsg = data.detail || data.error || data.message || "Withdrawal request failed.";
+                showError(errorMsg);
             }
         } catch (err) {
-            console.error("Withdrawal request error:", err);
-            alert("Network error. Please check your connection and try again.");
+            console.error("Withdrawal error:", err);
+            showError("Network error. Please check your internet connection and try again.");
+        } finally {
+            // Always re-enable button
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Withdraw Now";
         }
     });
+
+    // ────────────────────────────────────────────────
+    // Helper functions for better UX
+    // ────────────────────────────────────────────────
+
+    function showMessage(text, type = "info") {
+        msgDiv.textContent = text;
+        msgDiv.className = ""; // reset
+        msgDiv.classList.add(`msg-${type}`);
+        
+        // Optional: auto-clear after 8 seconds
+        setTimeout(clearMessage, 8000);
+    }
+
+    function showSuccess(text) {
+        showMessage(text, "success");
+    }
+
+    function showError(text) {
+        showMessage(text, "error");
+        amountInput.focus();
+    }
+
+    function showInfo(text) {
+        showMessage(text, "info");
+    }
+
+    function clearMessage() {
+        msgDiv.textContent = "";
+        msgDiv.className = "";
+    }
 });
