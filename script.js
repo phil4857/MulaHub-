@@ -1,79 +1,114 @@
+// daily-bonus.js
 document.addEventListener("DOMContentLoaded", () => {
-  const countdownDisplay = document.getElementById("countdown");
-  const grabBtn = document.getElementById("grabBonusBtn");
-
-  // Set attractive background gradient
-  document.body.style.background = "linear-gradient(to bottom right, #004aad, #28a745)";
-  document.body.style.color = "#fff";
-  document.body.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-
-  const username = localStorage.getItem("username");
-  if (!username) {
-    alert("Please log in first.");
-    window.location.href = "login.html";
-    return;
-  }
-
-  // ---------------- Countdown for daily earnings ----------------
-  function updateCountdown() {
-    if (!countdownDisplay) return;
-
-    const lastEarning = localStorage.getItem("lastEarning");
-    if (!lastEarning) {
-      countdownDisplay.textContent = "🎉 You can now claim your daily earnings!";
-      countdownDisplay.style.color = "#ffeb3b";
-      return;
+    // ── Early exit if not logged in ──
+    const username = localStorage.getItem("username");
+    if (!username) {
+        alert("Please log in to claim your daily bonus.");
+        window.location.href = "login.html";
+        return;
     }
 
-    const now = Date.now();
-    const nextEarning = parseInt(lastEarning) + 24 * 60 * 60 * 1000; // 24 hours in ms
-    const remaining = nextEarning - now;
+    // ── DOM elements ──
+    const countdownEl = document.getElementById("countdown");
+    const grabBtn     = document.getElementById("grabBonusBtn");
 
-    if (remaining > 0) {
-      const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((remaining / (1000 * 60)) % 60);
-      const seconds = Math.floor((remaining / 1000) % 60);
-
-      countdownDisplay.textContent = `⏳ Next earnings in: ${hours}h ${minutes}m ${seconds}s`;
-      countdownDisplay.style.color = "#ffeb3b";
-    } else {
-      countdownDisplay.textContent = "🎉 You can now claim your daily earnings!";
-      countdownDisplay.style.color = "#ffeb3b";
+    if (!countdownEl || !grabBtn) {
+        console.warn("Required elements #countdown or #grabBonusBtn not found.");
+        return;
     }
-  }
 
-  setInterval(updateCountdown, 1000);
-  updateCountdown();
-
-  // ---------------- Grab daily bonus ----------------
-  if (grabBtn) {
-    grabBtn.addEventListener("click", async () => {
-      grabBtn.disabled = true;
-      grabBtn.textContent = "Processing...";
-
-      try {
-        const form = new URLSearchParams();
-        form.append("username", username);
-
-        const res = await fetch("https://repo-1red-jipate-bonus.onrender.com/bonus/grab", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: form
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || "Bonus claim failed");
-
-        alert(`✅ ${data.message || "Bonus claimed!"}`);
-        localStorage.setItem("lastEarning", Date.now().toString());
-        updateCountdown();
-      } catch (err) {
-        console.error(err);
-        alert(`❌ ${err.message || "An error occurred. Try again."}`);
-      } finally {
-        grabBtn.disabled = false;
-        grabBtn.textContent = "Grab Bonus";
-      }
+    // ── Visual setup ──
+    Object.assign(document.body.style, {
+        background: "linear-gradient(135deg, #004aad 0%, #28a745 100%)",
+        color: "#ffffff",
+        fontFamily: "'Segoe UI', system-ui, sans-serif",
+        minHeight: "100vh",
+        margin: "0",
+        padding: "20px"
     });
-  }
+
+    // ── Countdown Logic ──
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+    function updateCountdown() {
+        const lastClaimStr = localStorage.getItem("lastEarning");
+        const now = Date.now();
+
+        if (!lastClaimStr) {
+            countdownEl.textContent = "🎉 You can claim your daily bonus now!";
+            countdownEl.style.color = "#ffeb3b";
+            grabBtn.disabled = false;
+            return;
+        }
+
+        const lastClaim = parseInt(lastClaimStr, 10);
+        const nextClaim = lastClaim + ONE_DAY_MS;
+        const remaining = nextClaim - now;
+
+        if (remaining <= 0) {
+            countdownEl.textContent = "🎉 Ready! Claim your daily bonus now!";
+            countdownEl.style.color = "#4caf50";
+            grabBtn.disabled = false;
+        } else {
+            const hours   = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+            countdownEl.textContent = `⏳ Next claim in: ${hours.toString().padStart(2,'0')}h ${minutes.toString().padStart(2,'0')}m ${seconds.toString().padStart(2,'0')}s`;
+            countdownEl.style.color = "#ffeb3b";
+            grabBtn.disabled = true;
+        }
+    }
+
+    // Update every second + initial call
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // ── Claim Button Handler ──
+    grabBtn.addEventListener("click", async () => {
+        // Already disabled by countdown → extra safety
+        if (grabBtn.disabled) return;
+
+        grabBtn.disabled = true;
+        grabBtn.textContent = "Processing...";
+
+        try {
+            const body = new URLSearchParams({ username });
+
+            const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/bonus/grab", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || data.message || "Failed to claim bonus");
+            }
+
+            // Success
+            alert(`✅ ${data.message || "Daily bonus claimed successfully!"}`);
+            
+            // Update last claim time
+            localStorage.setItem("lastEarning", Date.now().toString());
+            
+            // Immediately refresh UI
+            updateCountdown();
+
+        } catch (err) {
+            console.error("Bonus claim error:", err);
+            alert(`❌ ${err.message || "Could not claim bonus. Please try again later."}`);
+        } finally {
+            grabBtn.disabled = false;
+            grabBtn.textContent = "Grab Daily Bonus";
+        }
+    });
+
+    // ── Cleanup (good practice) ──
+    window.addEventListener("beforeunload", () => {
+        clearInterval(countdownInterval);
+    });
 });
