@@ -109,18 +109,18 @@
 <div class="container">
     <div class="info">
         <p>Username: <span id="usernameDisplay"></span></p>
-        <p>Balance: KES <span id="balanceDisplay">0.00</span></p>
-        <p>Total Earnings: KES <span id="earningsDisplay">0.00</span></p>
-        <p>Total Invested: KES <span id="investedDisplay">0.00</span></p>
+        <p>Balance: KES <span id="balance">0.00</span></p>
+        <p>Total Earnings: KES <span id="earnings">0.00</span></p>
+        <p>Total Invested: KES <span id="invested">0.00</span></p>
     </div>
 
     <div class="actions">
-        <button onclick="logout()">🚪 Logout</button>
+        <button onclick="logout()" class="logout">🚪 Logout</button>
     </div>
 
     <div class="msg" id="msg">Loading dashboard...</div>
 
-    <!-- Commodity Cards Section -->
+    <!-- Commodity Cards -->
     <h3 style="text-align:center; color:#0a1d66; margin:30px 0 20px;">Invest in Commodity</h3>
     <div class="commodity-grid" id="commodityGrid"></div>
 
@@ -142,32 +142,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const msg = document.getElementById('msg');
 
     async function fetchUserData() {
-        msg.textContent = "Loading your dashboard...";
+        msg.textContent = "Loading dashboard...";
         msg.style.color = "blue";
 
         try {
-            // ── THIS IS THE CORRECTED LINE ──
+            // Corrected fetch line
             const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
-            console.log("Fetching dashboard from:", url); // ← helps you see exact URL
+            console.log("Fetching user data from:", url);
 
             const response = await fetch(url);
 
             if (!response.ok) {
                 let data = {};
                 try { data = await response.json(); } catch {}
-                
                 msg.style.color = "red";
-                if (response.status === 404) {
-                    msg.textContent = "User not found on server (404). Try registering again or contact support.";
-                } else if (response.status === 403) {
-                    msg.textContent = data.detail || "Account not approved yet. Please wait for admin approval.";
-                } else if (response.status === 422) {
-                    msg.textContent = "Invalid request format (422). Check username parameter.";
-                } else {
-                    msg.textContent = data.detail || `Server error (${response.status})`;
-                }
+                msg.textContent = data.detail || `Error loading data (status ${response.status})`;
                 console.error("Dashboard error:", response.status, data);
-                // logout();  ← comment this out during testing
                 return null;
             }
 
@@ -175,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Dashboard data received:", user);
 
             document.getElementById('usernameDisplay').textContent = user.username || username;
-            document.getElementById('balanceDisplay').textContent = Number(user.balance || 0).toFixed(2);
-            document.getElementById('earningsDisplay').textContent = Number(user.earnings || 0).toFixed(2);
+            document.getElementById('balance').textContent = Number(user.balance || 0).toFixed(2);
+            document.getElementById('earnings').textContent = Number(user.earnings || 0).toFixed(2);
 
             let invested = 0;
             if (user.investments && typeof user.investments === 'object') {
@@ -184,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     invested += Number(item.amount || 0);
                 });
             }
-            document.getElementById('investedDisplay').textContent = invested.toFixed(2);
+            document.getElementById('invested').textContent = invested.toFixed(2);
 
             renderInvestments(user.investments || {});
             renderCommodityCards();
@@ -202,10 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderInvestments(investments) {
         const container = document.getElementById('investmentList');
-        container.innerHTML = "";
+        container.innerHTML = '<h3 style="text-align:center; color:#0a1d66;">Your Active Investments</h3>';
 
         if (!investments || Object.keys(investments).length === 0) {
-            container.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet. Start investing!</p>";
+            container.innerHTML += "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
             return;
         }
 
@@ -248,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="\( {com.img}" alt=" \){com.name}">
                 <div class="commodity-info">
                     <h4>${com.name}</h4>
-                    <p>KES ${com.price}</p>
+                    <p>KES ${com.price.toLocaleString()}</p>
                     <p>${com.days} days</p>
                 </div>
             `;
@@ -300,7 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
     };
 
-    fetchUserData(); // start loading
+    // Start loading
+    fetchUserData();
 });
 </script>
 
