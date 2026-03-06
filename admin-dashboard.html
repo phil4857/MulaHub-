@@ -7,7 +7,7 @@
 <style>
   body { font-family: Arial, sans-serif; background: #f4f9ff; margin: 0; padding: 20px; }
   .box { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-  h2 { color: #0a1d66; text-align: center; }
+  h2 { color: #0a1d66; text-align: center; margin-bottom: 20px; }
   table { width: 100%; border-collapse: collapse; margin-top: 20px; }
   th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
   th { background-color: #0a1d66; color: white; }
@@ -19,6 +19,7 @@
   .msg { margin: 15px 0; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; display: none; }
   .success { background: #d4edda; color: #155724; }
   .error { background: #f8d7da; color: #721c24; }
+  .loading { background: #e3f2fd; color: #1976d2; }
 </style>
 </head>
 <body>
@@ -39,7 +40,7 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody id="usersTableBody"></tbody>
   </table>
 </div>
 
@@ -47,37 +48,48 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const tableBody = document.querySelector("#usersTable tbody");
+  if (localStorage.getItem("adminLoggedIn") !== "true") {
+    alert("Please login as admin first");
+    window.location.href = "admin-login.html";
+    return;
+  }
+
+  const tableBody = document.getElementById("usersTableBody");
   const msg = document.getElementById("msg");
 
+  if (!tableBody) console.error("Table body not found - check HTML ID");
+
   function showMessage(type, text) {
-    msg.className = `msg ${type}`;
-    msg.textContent = text;
-    msg.style.display = "block";
-    setTimeout(() => msg.style.display = "none", 8000);
+    if (msg) {
+      msg.className = `msg ${type}`;
+      msg.textContent = text;
+      msg.style.display = "block";
+      setTimeout(() => msg.style.display = "none", 8000);
+    }
   }
 
   async function fetchUsers() {
-    tableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
-    showMessage("", "Loading users...");
+    if (!tableBody) return;
+    tableBody.innerHTML = '<tr><td colspan="7" class="loading">Loading users...</td></tr>';
+    showMessage("loading", "Loading users...");
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      console.log("Fetch status:", res.status);
+      console.log("Status:", res.status);
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `Error ${res.status}`);
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
       }
 
       const users = await res.json();
-      console.log("Users received:", users);
+      console.log("Users:", users);
 
       tableBody.innerHTML = "";
 
       if (users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users registered yet</td></tr>';
-        showMessage("success", "No users in database");
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#777;">No users registered yet</td></tr>';
+        showMessage("success", "No users found");
         return;
       }
 
@@ -101,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       showMessage("success", `Loaded ${users.length} users`);
     } catch (err) {
-      console.error("Fetch failed:", err);
+      console.error("Fetch error:", err);
       tableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
       showMessage("error", "Failed to load users: " + err.message);
     }
@@ -114,15 +126,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.resetPassword = async (username) => {
     if (!confirm(`Reset password for ${username}?`)) return;
+
     try {
       const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
+
       const data = await res.json();
       if (res.ok) {
-        showMessage("success", `New password: ${data.new_password}`);
+        showMessage("success", `New password for ${username}: ${data.new_password}`);
         fetchUsers();
       } else {
         showMessage("error", data.detail || "Reset failed");
@@ -133,8 +147,25 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.terminateUser = async (username) => {
-    if (!confirm(`Terminate ${username}? Permanent!`)) return;
-    await adminAction("terminate-user", username, `${username} terminated`);
+    if (!confirm(`Terminate ${username}? Permanent action!`)) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/terminate-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showMessage("success", `${username} terminated successfully`);
+        fetchUsers();
+      } else {
+        showMessage("error", data.detail || "Termination failed");
+      }
+    } catch (err) {
+      showMessage("error", "Network error: " + err.message);
+    }
   };
 
   async function adminAction(endpoint, username, successMsg) {
@@ -144,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
+
       const data = await res.json();
       if (res.ok) {
         showMessage("success", successMsg);
@@ -156,6 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Load users on page load
   fetchUsers();
 });
 </script>
