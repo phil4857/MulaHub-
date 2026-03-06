@@ -1,44 +1,53 @@
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
-const ADMIN_PASSWORD = "PHIL4857"; // only used if you decide to add it later
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Optional weak admin check
+  // Check if admin is logged in (from localStorage set during login)
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     alert("Please login as admin first");
     window.location.href = "admin-login.html";
     return;
   }
 
-  const tableBody = document.querySelector("#usersTable tbody");
-  const msgDiv = document.getElementById("msg") || document.createElement("div");
-  msgDiv.id = "msg";
-  msgDiv.className = "msg";
+  const tableBody = document.querySelector("#usersTable tbody") || document.getElementById("usersTableBody");
+  const msg = document.getElementById("msg");
 
   function showMessage(type, text) {
-    msgDiv.className = `msg ${type}`;
-    msgDiv.textContent = text;
-    msgDiv.style.display = "block";
-    setTimeout(() => { msgDiv.style.display = "none"; }, 8000);
+    if (msg) {
+      msg.className = `msg ${type}`;
+      msg.textContent = text;
+      msg.style.display = "block";
+      setTimeout(() => msg.style.display = "none", 8000);
+    }
+    console.log(`[${type.toUpperCase()}] ${text}`); // for debugging
   }
 
   async function fetchUsers() {
-    tableBody.innerHTML = '<tr><td colspan="6">Loading users...</td></tr>';
+    if (!tableBody) {
+      showMessage("error", "Table body not found in HTML");
+      return;
+    }
+
+    tableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
     showMessage("", "Loading users...");
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
+      console.log("Admin users request status:", res.status);
+
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || `Error ${res.status}`);
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server returned ${res.status}`);
       }
 
       const users = await res.json();
+      console.log("Users data received:", users); // ← check this in console!
 
       tableBody.innerHTML = "";
-      if (users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No users registered yet</td></tr>';
-        showMessage("success", "No users found in the database");
+
+      if (!users || users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users registered yet</td></tr>';
+        showMessage("success", "No users found in database");
         return;
       }
 
@@ -50,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${user.approved ? '<span style="color:green;">Yes</span>' : '<span style="color:red;">No</span>'}</td>
           <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
           <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
+          <td>${user.referral || "-"}</td>
           <td>
             \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
             <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
@@ -61,19 +71,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       showMessage("success", `Loaded ${users.length} user(s)`);
     } catch (err) {
-      console.error("Fetch users failed:", err);
-      tableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
+      console.error("Fetch users error:", err);
+      tableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
       showMessage("error", "Failed to load users: " + err.message);
     }
   }
 
-  // Approve user
   window.approveUser = async (username) => {
-    if (!confirm(`Approve user ${username}?`)) return;
-    await adminAction("approve-user", username, `User ${username} approved successfully`);
+    if (!confirm(`Approve ${username}?`)) return;
+    await adminAction("approve-user", username, `${username} approved successfully`);
   };
 
-  // Reset password
   window.resetPassword = async (username) => {
     if (!confirm(`Reset password for ${username}?`)) return;
 
@@ -87,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
       if (res.ok) {
         showMessage("success", `New password for \( {username}: <strong> \){data.new_password}</strong>`);
-        fetchUsers(); // refresh
+        fetchUsers();
       } else {
         showMessage("error", data.detail || "Failed to reset password");
       }
@@ -96,13 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Terminate user
   window.terminateUser = async (username) => {
-    if (!confirm(`Terminate user ${username}? This cannot be undone!`)) return;
-    await adminAction("terminate-user", username, `User ${username} terminated successfully`);
+    if (!confirm(`Terminate ${username}? This is permanent!`)) return;
+    await adminAction("terminate-user", username, `${username} terminated`);
   };
 
-  // Generic action helper
   async function adminAction(endpoint, username, successMsg) {
     try {
       const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
@@ -123,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Load users when page opens
+  // Start loading users
   fetchUsers();
 });
 </script>
