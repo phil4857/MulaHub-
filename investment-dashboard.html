@@ -98,47 +98,35 @@
             margin: 4px 0;
             color: #555;
         }
-        .investment-list {
-            margin-top: 30px;
-        }
-        .investment-item {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Investment Dashboard 💵🎉</h1>
+    <h1>Investment Dashboard - Mkoba Wallet 💵🎉</h1>
 </header>
 
 <div class="container">
     <div class="info">
         <p>Username: <span id="usernameDisplay"></span></p>
-        <p>Balance: KES <span id="balanceDisplay">0.00</span></p>
-        <p>Total Earnings: KES <span id="earningsDisplay">0.00</span></p>
-        <p>Investment Amount: KES <span id="investedDisplay">0.00</span></p>
+        <p>Balance: KES <span id="balance">0.00</span></p>
+        <p>Total Earnings: KES <span id="earnings">0.00</span></p>
+        <p>Total Invested: KES <span id="invested">0.00</span></p>
     </div>
 
     <div class="actions">
-        <button onclick="logout()">🚪 Logout</button>
+        <button onclick="logout()" class="logout">🚪 Logout</button>
     </div>
 
-    <div class="msg" id="msg">Loading investments...</div>
+    <div class="msg" id="msg">Loading dashboard...</div>
+
+    <!-- Commodity Cards -->
+    <h3 style="text-align:center; color:#0a1d66; margin:30px 0 20px;">Invest in Commodity</h3>
+    <div class="commodity-grid" id="commodityGrid"></div>
 
     <!-- Active Investments -->
-    <div class="investment-list" id="investmentList">
-        <h3 style="text-align:center; color:#0a1d66;">Your Active Investments</h3>
-    </div>
-
-    <!-- Commodity Selection (Image Cards) -->
-    <h3 style="text-align:center; color:#0a1d66; margin:40px 0 20px;">Invest in Commodity</h3>
-    <div class="commodity-grid" id="commodityGrid">
-        <!-- Cards populated by JS -->
-    </div>
+    <h3 style="text-align:center; color:#0a1d66; margin:40px 0 20px;">Your Active Investments</h3>
+    <div id="investmentList" style="display:grid; gap:15px;"></div>
 </div>
 
 <script>
@@ -153,61 +141,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const msg = document.getElementById('msg');
 
-    async function fetchUserData() {
+    async function updateUI() {
         msg.textContent = "Loading dashboard...";
         msg.style.color = "blue";
 
         try {
-            const response = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+            // Corrected fetch
+            const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
+            console.log("Fetching investments from:", url);
 
-            if (!response.ok) {
-                const data = await response.json().catch(() => ({}));
+            const res = await fetch(url);
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
                 msg.style.color = "red";
-                msg.textContent = data.detail || `Error ${response.status}`;
-                if (response.status === 403) {
-                    msg.textContent = "Account not approved yet. Please wait for admin approval.";
-                } else if (response.status === 404) {
-                    msg.textContent = "Dashboard not found on server. Contact support.";
-                }
-                logout();
-                return null;
+                msg.textContent = data.detail || `Error loading data (status ${res.status})`;
+                console.error("Dashboard error:", res.status, data);
+                return;
             }
 
-            return await response.json();
+            const data = await res.json();
+            console.log("Dashboard data:", data);
+
+            document.getElementById('usernameDisplay').textContent = username;
+            document.getElementById('balance').textContent = Number(data.balance || 0).toFixed(2);
+            document.getElementById('earnings').textContent = Number(data.earnings || 0).toFixed(2);
+
+            let invested = 0;
+            if (data.investments && typeof data.investments === 'object') {
+                Object.values(data.investments).forEach(item => {
+                    invested += Number(item.amount || 0);
+                });
+            }
+            document.getElementById('invested').textContent = invested.toFixed(2);
+
+            renderInvestments(data.investments || {});
+            renderCommodityCards();
+
+            msg.style.color = "green";
+            msg.textContent = "Dashboard loaded successfully!";
         } catch (err) {
             msg.style.color = "red";
-            msg.textContent = "Cannot connect to server. Check internet.";
-            console.error("Dashboard fetch error:", err);
-            return null;
+            msg.textContent = "Cannot connect to server. Check internet or backend.";
+            console.error("Fetch error:", err);
         }
-    }
-
-    async function updateUI() {
-        const user = await fetchUserData();
-        if (!user) return;
-
-        document.getElementById('usernameDisplay').textContent = user.username || username;
-        document.getElementById('balanceDisplay').textContent = Number(user.balance || 0).toFixed(2);
-        document.getElementById('earningsDisplay').textContent = Number(user.earnings || 0).toFixed(2);
-
-        let invested = 0;
-        if (user.investments && typeof user.investments === 'object') {
-            Object.values(user.investments).forEach(item => {
-                invested += Number(item.amount || 0);
-            });
-        }
-        document.getElementById('investedDisplay').textContent = invested.toFixed(2);
-
-        renderInvestments(user.investments || {});
-        renderCommodityCards();
-
-        msg.textContent = "Dashboard loaded!";
-        msg.style.color = "green";
     }
 
     function renderInvestments(investments) {
         const container = document.getElementById('investmentList');
-        container.innerHTML = "<h3 style='text-align:center; color:#0a1d66;'>Your Active Investments</h3>";
+        container.innerHTML = '<h3 style="text-align:center; color:#0a1d66;">Your Active Investments</h3>';
 
         if (!investments || Object.keys(investments).length === 0) {
             container.innerHTML += "<p style='text-align:center; color:#777;'>No active investments yet. Start investing!</p>";
@@ -217,14 +199,17 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const [commodity, inv] of Object.entries(investments)) {
             const expiry = new Date(inv.expiry_date);
             const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
-            const item = document.createElement('div');
-            item.className = 'investment-item';
-            item.innerHTML = `
+            const card = document.createElement('div');
+            card.style.background = '#f0f8f0';
+            card.style.padding = '15px';
+            card.style.borderRadius = '10px';
+            card.style.border = '1px solid #28a745';
+            card.innerHTML = `
                 <strong>${commodity.toUpperCase()}</strong><br>
-                Amount: KES ${inv.amount}<br>
+                Amount: KES ${Number(inv.amount || 0).toFixed(2)}<br>
                 Expires in: ${remainingDays} day(s)
             `;
-            container.appendChild(item);
+            container.appendChild(card);
         }
     }
 
@@ -250,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="\( {com.img}" alt=" \){com.name}">
                 <div class="commodity-info">
                     <h4>${com.name}</h4>
-                    <p>KES ${com.price}</p>
+                    <p>KES ${com.price.toLocaleString()}</p>
                     <p>${com.days} days</p>
                 </div>
             `;
@@ -278,7 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 msg.style.color = "green";
-                msg.textContent = data.message || `Investment request for ${commodity} created. Send KES ${data.price || 'amount'} to M-Pesa: 0752964507`;
+                msg.textContent = data.message || `Investment request for ${commodity} created. Awaiting confirmation.`;
+                updateUI(); // refresh dashboard
             } else {
                 msg.style.color = "red";
                 msg.textContent = data.detail || 'Investment request failed.';
@@ -295,7 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
     };
 
-    updateUI(); // Load data on page open
+    // Load data on page open
+    updateUI();
 });
 </script>
 
