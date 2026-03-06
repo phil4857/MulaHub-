@@ -57,8 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("usersTableBody");
   const msg = document.getElementById("msg");
 
-  if (!tableBody) console.error("Table body not found - check HTML ID");
-
   function showMessage(type, text) {
     if (msg) {
       msg.className = `msg ${type}`;
@@ -69,21 +67,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function fetchUsers() {
-    if (!tableBody) return;
+    if (!tableBody) {
+      showMessage("error", "Table body not found - check HTML");
+      return;
+    }
+
     tableBody.innerHTML = '<tr><td colspan="7" class="loading">Loading users...</td></tr>';
     showMessage("loading", "Loading users...");
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      console.log("Status:", res.status);
+      console.log("Fetch status:", res.status);
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${res.status}`);
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `HTTP ${res.status}`);
       }
 
       const users = await res.json();
-      console.log("Users:", users);
+      console.log("Users loaded:", users);
 
       tableBody.innerHTML = "";
 
@@ -126,14 +128,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.resetPassword = async (username) => {
     if (!confirm(`Reset password for ${username}?`)) return;
-
     try {
       const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
-
       const data = await res.json();
       if (res.ok) {
         showMessage("success", `New password for ${username}: ${data.new_password}`);
@@ -142,30 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
         showMessage("error", data.detail || "Reset failed");
       }
     } catch (err) {
-      showMessage("error", "Network error: " + err.message);
+      showMessage("error", "Network error");
     }
   };
 
   window.terminateUser = async (username) => {
-    if (!confirm(`Terminate ${username}? Permanent action!`)) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/terminate-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        showMessage("success", `${username} terminated successfully`);
-        fetchUsers();
-      } else {
-        showMessage("error", data.detail || "Termination failed");
-      }
-    } catch (err) {
-      showMessage("error", "Network error: " + err.message);
-    }
+    if (!confirm(`Terminate ${username}? Permanent!`)) return;
+    await adminAction("terminate-user", username, `${username} terminated`);
   };
 
   async function adminAction(endpoint, username, successMsg) {
@@ -175,7 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
-
       const data = await res.json();
       if (res.ok) {
         showMessage("success", successMsg);
@@ -184,14 +166,13 @@ document.addEventListener("DOMContentLoaded", () => {
         showMessage("error", data.detail || "Action failed");
       }
     } catch (err) {
-      showMessage("error", "Network error: " + err.message);
+      showMessage("error", "Network error");
     }
   }
 
-  // Load users on page load
   fetchUsers();
 });
 </script>
 
 </body>
-</html>
+</html>have
