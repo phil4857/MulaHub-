@@ -19,23 +19,12 @@
   .msg { margin: 15px 0; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; display: none; }
   .success { background: #d4edda; color: #155724; }
   .error { background: #f8d7da; color: #721c24; }
-  #loginForm { max-width: 400px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-  input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; }
-  button { width: 100%; padding: 12px; background: #0a1d66; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-  button:hover { background: #1234a0; }
 </style>
 </head>
 <body>
 
-<div id="loginForm">
-  <h2>Admin Login</h2>
-  <input type="password" id="adminPassword" placeholder="Enter admin password" />
-  <button onclick="adminLogin()">Login</button>
-  <div id="loginMsg" class="msg"></div>
-</div>
-
-<div class="box" id="dashboard" style="display:none;">
-  <h2>Admin Dashboard</h2>
+<div class="box">
+  <h2>Admin Dashboard - Mkoba Wallet</h2>
   <div id="msg" class="msg"></div>
 
   <table id="usersTable">
@@ -56,139 +45,119 @@
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
-const ADMIN_PASSWORD = "PHIL4857";
 
-function showMessage(elementId, type, text) {
-  const msg = document.getElementById(elementId);
-  msg.className = `msg ${type}`;
-  msg.textContent = text;
-  msg.style.display = "block";
-  setTimeout(() => { msg.style.display = "none"; }, 8000);
-}
-
-async function adminLogin() {
-  const password = document.getElementById("adminPassword").value.trim();
-  if (!password) return showMessage("loginMsg", "error", "Enter password");
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/admin/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ password })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      document.getElementById("loginForm").style.display = "none";
-      document.getElementById("dashboard").style.display = "block";
-      loadUsers();
-    } else {
-      showMessage("loginMsg", "error", data.detail || "Login failed");
-    }
-  } catch (err) {
-    showMessage("loginMsg", "error", "Network error: " + err.message);
-  }
-}
-
-async function loadUsers() {
+document.addEventListener("DOMContentLoaded", () => {
+  const tableBody = document.querySelector("#usersTable tbody");
   const msg = document.getElementById("msg");
-  msg.className = "msg";
-  msg.textContent = "Loading users...";
-  msg.style.display = "block";
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/admin/users`);
-    if (!res.ok) throw new Error(await res.text());
-
-    const users = await res.json();
-    const tbody = document.querySelector("#usersTable tbody");
-    tbody.innerHTML = "";
-
-    if (users.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users found in the system</td></tr>';
-      msg.textContent = "No users registered yet.";
-      msg.className = "msg success";
-      return;
-    }
-
-    users.forEach(user => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${user.username}</td>
-        <td>${user.phone || "N/A"}</td>
-        <td>${user.approved ? '<span style="color:green;">Yes</span>' : '<span style="color:red;">No</span>'}</td>
-        <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
-        <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
-        <td>${user.referral || "-"}</td>
-        <td>
-          \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
-          <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
-          <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
-
-    msg.style.display = "none";
-  } catch (err) {
-    msg.className = "msg error";
-    msg.textContent = "Failed to load users: " + err.message;
-    console.error(err);
+  function showMessage(type, text) {
+    msg.className = `msg ${type}`;
+    msg.textContent = text;
+    msg.style.display = "block";
+    setTimeout(() => msg.style.display = "none", 8000);
   }
-}
 
-async function approveUser(username) {
-  if (!confirm(`Approve user ${username}?`)) return;
-  await adminAction("approve-user", username, "User approved successfully");
-}
+  async function fetchUsers() {
+    tableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
+    showMessage("", "Loading users...");
 
-async function resetPassword(username) {
-  if (!confirm(`Reset password for ${username}?`)) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/users`);
+      console.log("Fetch status:", res.status);
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ username })
-    });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Error ${res.status}`);
+      }
 
-    const data = await res.json();
-    if (res.ok) {
-      showMessage("msg", "success", `New password for ${username}: ${data.new_password}`);
-      loadUsers();
-    } else {
-      showMessage("msg", "error", data.detail || "Failed to reset password");
+      const users = await res.json();
+      console.log("Users received:", users);
+
+      tableBody.innerHTML = "";
+
+      if (users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users registered yet</td></tr>';
+        showMessage("success", "No users in database");
+        return;
+      }
+
+      users.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.username}</td>
+          <td>${user.phone || "N/A"}</td>
+          <td>${user.approved ? '<span style="color:green;">Yes</span>' : '<span style="color:red;">No</span>'}</td>
+          <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
+          <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
+          <td>${user.referral || "-"}</td>
+          <td>
+            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
+            <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
+            <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      showMessage("success", `Loaded ${users.length} users`);
+    } catch (err) {
+      console.error("Fetch failed:", err);
+      tableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
+      showMessage("error", "Failed to load users: " + err.message);
     }
-  } catch (err) {
-    showMessage("msg", "error", "Network error: " + err.message);
   }
-}
 
-async function terminateUser(username) {
-  if (!confirm(`Terminate user ${username}? This cannot be undone!`)) return;
-  await adminAction("terminate-user", username, "User terminated successfully");
-}
+  window.approveUser = async (username) => {
+    if (!confirm(`Approve ${username}?`)) return;
+    await adminAction("approve-user", username, `${username} approved`);
+  };
 
-async function adminAction(endpoint, username, successMsg) {
-  try {
-    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ username })
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      showMessage("msg", "success", successMsg);
-      loadUsers();
-    } else {
-      showMessage("msg", "error", data.detail || "Action failed");
+  window.resetPassword = async (username) => {
+    if (!confirm(`Reset password for ${username}?`)) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showMessage("success", `New password: ${data.new_password}`);
+        fetchUsers();
+      } else {
+        showMessage("error", data.detail || "Reset failed");
+      }
+    } catch (err) {
+      showMessage("error", "Network error: " + err.message);
     }
-  } catch (err) {
-    showMessage("msg", "error", "Network error: " + err.message);
+  };
+
+  window.terminateUser = async (username) => {
+    if (!confirm(`Terminate ${username}? Permanent!`)) return;
+    await adminAction("terminate-user", username, `${username} terminated`);
+  };
+
+  async function adminAction(endpoint, username, successMsg) {
+    try {
+      const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showMessage("success", successMsg);
+        fetchUsers();
+      } else {
+        showMessage("error", data.detail || "Action failed");
+      }
+    } catch (err) {
+      showMessage("error", "Network error: " + err.message);
+    }
   }
-}
+
+  fetchUsers();
+});
 </script>
 
 </body>
