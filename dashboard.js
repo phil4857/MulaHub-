@@ -1,16 +1,16 @@
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-// Define commodity info client-side (must match backend)
+// Commodity info must match backend
 const COMMODITY_INFO = {
-    "marble":    { price: 650,  days: 15 },
-    "crude_oil": { price: 800,  days: 20 },
-    "silver":    { price: 1000, days: 23 },
-    "lead":      { price: 1200, days: 25 },
-    "platinum":  { price: 1350, days: 28 },
-    "diamonds":  { price: 1750, days: 32 },
-    "gold":      { price: 2200, days: 35 },
-    "uranium":   { price: 3000, days: 45 }
+    marble:     { price: 650,  days: 15 },
+    crude_oil:  { price: 800,  days: 20 },
+    silver:     { price: 1000, days: 23 },
+    lead:       { price: 1200, days: 25 },
+    platinum:   { price: 1350, days: 28 },
+    diamonds:   { price: 1750, days: 32 },
+    gold:       { price: 2200, days: 35 },
+    uranium:    { price: 3000, days: 45 }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,15 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const commodityGrid = document.getElementById('commodityGrid');
     const investmentList = document.getElementById('investmentList');
 
-    // Load dashboard data
     async function updateUI() {
         msgEl.textContent = "Loading dashboard...";
         msgEl.style.color = "blue";
 
         try {
-            // FIXED: proper template literal
+            // ── CORRECTED: proper template literal ──
             const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
-            console.log("Fetching:", url); // ← helpful for debugging
+            console.log("→ Fetching:", url);  // debug: check this in console
 
             const res = await fetch(url);
 
@@ -46,18 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 msgEl.style.color = "red";
                 if (res.status === 404) {
-                    msgEl.textContent = "User/dashboard not found. Contact support.";
+                    msgEl.textContent = "User not found (404). Try logging in again or contact support.";
                 } else if (res.status === 403) {
                     msgEl.textContent = data.detail || "Account not approved yet.";
                 } else if (res.status === 422) {
-                    msgEl.textContent = "Invalid request format (username missing?).";
+                    msgEl.textContent = "Invalid request (422). Username may be missing or malformed.";
                 } else {
                     msgEl.textContent = data.detail || `Server error (${res.status})`;
                 }
+                console.error("Dashboard failed:", res.status, data);
                 return;
             }
 
             const data = await res.json();
+            console.log("Dashboard data:", data);  // debug: see what backend sent
 
             balanceEl.textContent  = Number(data.balance  || 0).toFixed(2);
             earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
@@ -77,8 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
             msgEl.textContent = "Dashboard loaded successfully!";
         } catch (err) {
             msgEl.style.color = "red";
-            msgEl.textContent = "Cannot connect to server. Check internet / backend status.";
-            console.error("Dashboard fetch failed:", err);
+            msgEl.textContent = "Cannot reach server. Check connection or backend.";
+            console.error("Fetch error:", err);
         }
     }
 
@@ -100,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.style.border = '1px solid #28a745';
             div.innerHTML = `
                 <strong>${commodity.toUpperCase()}</strong><br>
-                Amount: KES ${Number(inv.amount).toFixed(2)}<br>
+                Amount: KES ${Number(inv.amount || 0).toFixed(2)}<br>
                 Expires in: ${remainingDays} day(s)
             `;
             investmentList.appendChild(div);
@@ -181,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
     };
 
-    // Start loading
     updateUI();
 });
 </script>
