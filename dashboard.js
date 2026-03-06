@@ -1,7 +1,7 @@
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-// Commodity info must match backend
+// Commodity info (must match backend)
 const COMMODITY_INFO = {
     marble:     { price: 650,  days: 15 },
     crude_oil:  { price: 800,  days: 20 },
@@ -33,9 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
         msgEl.style.color = "blue";
 
         try {
-            // ── CORRECTED: proper template literal ──
+            // FIXED: correct template literal
             const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
-            console.log("→ Fetching:", url);  // debug: check this in console
+            console.log("→ Fetching dashboard:", url); // debug: see exact URL
 
             const res = await fetch(url);
 
@@ -45,20 +45,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 msgEl.style.color = "red";
                 if (res.status === 404) {
-                    msgEl.textContent = "User not found (404). Try logging in again or contact support.";
+                    msgEl.textContent = "User/dashboard not found (404). Try logging in again.";
                 } else if (res.status === 403) {
                     msgEl.textContent = data.detail || "Account not approved yet.";
                 } else if (res.status === 422) {
-                    msgEl.textContent = "Invalid request (422). Username may be missing or malformed.";
+                    msgEl.textContent = "Invalid request (422). Check username.";
                 } else {
                     msgEl.textContent = data.detail || `Server error (${res.status})`;
                 }
-                console.error("Dashboard failed:", res.status, data);
+                console.error("Dashboard error:", res.status, data);
                 return;
             }
 
             const data = await res.json();
-            console.log("Dashboard data:", data);  // debug: see what backend sent
+            console.log("Dashboard data:", data); // debug: see real data
 
             balanceEl.textContent  = Number(data.balance  || 0).toFixed(2);
             earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             msgEl.textContent = "Dashboard loaded successfully!";
         } catch (err) {
             msgEl.style.color = "red";
-            msgEl.textContent = "Cannot reach server. Check connection or backend.";
+            msgEl.textContent = "Cannot connect to server. Check internet / backend.";
             console.error("Fetch error:", err);
         }
     }
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         investmentList.innerHTML = "";
 
         if (!investments || Object.keys(investments).length === 0) {
-            investmentList.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet. Start investing!</p>";
+            investmentList.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
             return;
         }
 
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.style.border = '1px solid #28a745';
             div.innerHTML = `
                 <strong>${commodity.toUpperCase()}</strong><br>
-                Amount: KES ${Number(inv.amount || 0).toFixed(2)}<br>
+                Amount: KES ${Number(inv.amount).toFixed(2)}<br>
                 Expires in: ${remainingDays} day(s)
             `;
             investmentList.appendChild(div);
@@ -112,14 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
         commodityGrid.innerHTML = "";
 
         const commodities = [
-            { key: "marble",    name: "Marble",    price: 650,  days: 15,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "crude_oil", name: "Crude Oil", price: 800,  days: 20,  img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "silver",    name: "Silver",    price: 1000, days: 23,  img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "lead",      name: "Lead",      price: 1200, days: 25,  img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "platinum",  name: "Platinum",  price: 1350, days: 28,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "diamonds",  name: "Diamonds",  price: 1750, days: 32,  img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "gold",      name: "Gold",      price: 2200, days: 35,  img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "uranium",   name: "Uranium",   price: 3000, days: 45,  img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
+            { key: "marble", name: "Marble", price: 650, days: 15, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "crude_oil", name: "Crude Oil", price: 800, days: 20, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "silver", name: "Silver", price: 1000, days: 23, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "lead", name: "Lead", price: 1200, days: 25, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "platinum", name: "Platinum", price: 1350, days: 28, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "diamonds", name: "Diamonds", price: 1750, days: 32, img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "gold", name: "Gold", price: 2200, days: 35, img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+            { key: "uranium", name: "Uranium", price: 3000, days: 45, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
         ];
 
         commodities.forEach(com => {
@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
     };
 
+    // Start loading
     updateUI();
 });
 </script>
