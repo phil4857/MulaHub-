@@ -1,8 +1,7 @@
-<script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Check admin login status (from admin-login.html)
+  // Require login
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     alert("Please login as admin first");
     window.location.href = "admin-login.html";
@@ -12,10 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("usersTableBody") || document.querySelector("#usersTable tbody");
   const msg = document.getElementById("msg");
 
-  if (!tableBody) {
-    console.error("ERROR: No table body found. Check HTML has <tbody id='usersTableBody'> or <tbody>");
-  }
-
   function showMessage(type, text) {
     if (msg) {
       msg.className = `msg ${type}`;
@@ -23,18 +18,21 @@ document.addEventListener("DOMContentLoaded", () => {
       msg.style.display = "block";
       setTimeout(() => msg.style.display = "none", 8000);
     }
-    console.log(`[${type.toUpperCase()}] ${text}`);
+    console.log(`[${type}] ${text}`);
   }
 
   async function fetchUsers() {
-    if (!tableBody) return;
+    if (!tableBody) {
+      showMessage("error", "Table body element missing in HTML");
+      return;
+    }
 
-    tableBody.innerHTML = '<tr><td colspan="7" class="loading">Loading users...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
     showMessage("loading", "Loading users...");
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      console.log("Admin users fetch status:", res.status);
+      console.log("Fetch status:", res.status);
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -42,13 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const users = await res.json();
-      console.log("Admin users loaded:", users);
+      console.log("Users loaded:", users);
 
       tableBody.innerHTML = "";
 
       if (users.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users registered yet</td></tr>';
-        showMessage("success", "No users found in database");
+        showMessage("success", "No users found");
         return;
       }
 
@@ -70,67 +68,44 @@ document.addEventListener("DOMContentLoaded", () => {
         tableBody.appendChild(tr);
       });
 
-      showMessage("success", `Loaded ${users.length} user(s)`);
+      showMessage("success", `Loaded ${users.length} users`);
     } catch (err) {
-      console.error("Fetch users error:", err);
+      console.error("Fetch error:", err);
       tableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
       showMessage("error", "Failed to load users: " + err.message);
     }
   }
 
-  // Approve user
   window.approveUser = async (username) => {
-    if (!confirm(`Approve user ${username}?`)) return;
-    await adminAction("approve-user", username, `User ${username} approved successfully`);
+    if (!confirm(`Approve ${username}?`)) return;
+    await adminAction("approve-user", username, `${username} approved`);
   };
 
-  // Reset password
   window.resetPassword = async (username) => {
     if (!confirm(`Reset password for ${username}?`)) return;
-
     try {
       const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
-
       const data = await res.json();
       if (res.ok) {
-        showMessage("success", `New password for \( {username}: <strong> \){data.new_password}</strong>`);
-        fetchUsers(); // refresh table
+        showMessage("success", `New password for ${username}: ${data.new_password}`);
+        fetchUsers();
       } else {
-        showMessage("error", data.detail || "Failed to reset password");
+        showMessage("error", data.detail || "Reset failed");
       }
     } catch (err) {
-      showMessage("error", "Network error: " + err.message);
+      showMessage("error", "Network error");
     }
   };
 
-  // Terminate user
   window.terminateUser = async (username) => {
-    if (!confirm(`Terminate user ${username}? This cannot be undone!`)) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/terminate-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        showMessage("success", `User ${username} terminated successfully`);
-        fetchUsers(); // refresh
-      } else {
-        showMessage("error", data.detail || "Termination failed");
-      }
-    } catch (err) {
-      showMessage("error", "Network error: " + err.message);
-    }
+    if (!confirm(`Terminate ${username}? Permanent!`)) return;
+    await adminAction("terminate-user", username, `${username} terminated`);
   };
 
-  // Generic action helper
   async function adminAction(endpoint, username, successMsg) {
     try {
       const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
@@ -138,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
-
       const data = await res.json();
       if (res.ok) {
         showMessage("success", successMsg);
@@ -147,11 +121,11 @@ document.addEventListener("DOMContentLoaded", () => {
         showMessage("error", data.detail || "Action failed");
       }
     } catch (err) {
-      showMessage("error", "Network error: " + err.message);
+      showMessage("error", "Network error");
     }
   }
 
-  // Start loading
+  // Load users
   fetchUsers();
 });
 </script>
