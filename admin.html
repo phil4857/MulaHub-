@@ -11,13 +11,11 @@
     margin: 0;
     padding: 20px;
   }
-
   h2 {
     color: #28a745;
     text-align: center;
     margin-bottom: 20px;
   }
-
   table {
     width: 100%;
     border-collapse: collapse;
@@ -25,22 +23,18 @@
     background: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
-
   th, td {
     padding: 12px;
     border-bottom: 1px solid #ddd;
     text-align: center;
   }
-
   th {
     background-color: #28a745;
     color: white;
   }
-
   tr:nth-child(even) {
     background-color: #f9f9f9;
   }
-
   .action-btn {
     padding: 6px 12px;
     margin: 0 4px;
@@ -50,36 +44,33 @@
     color: white;
     font-size: 14px;
   }
-
   .approve-btn   { background: #007bff; }
-  .withdraw-btn  { background: #ff9800; }
   .reset-btn     { background: #ffc107; color: black; }
   .terminate-btn { background: #dc3545; }
-
   .msg {
     padding: 12px;
     margin: 15px 0;
     border-radius: 6px;
     text-align: center;
     font-weight: bold;
+    display: none;
   }
-
   .success { background: #d4edda; color: #155724; }
   .error   { background: #f8d7da; color: #721c24; }
+  .loading { background: #e3f2fd; color: #1976d2; }
 </style>
 </head>
 <body>
 
 <h2>Admin Dashboard - Mkoba Wallet</h2>
 
-<div id="msg" class="msg" style="display:none;"></div>
+<div id="msg" class="msg"></div>
 
 <table id="usersTable">
   <thead>
     <tr>
       <th>Username</th>
       <th>Phone</th>
-      <th>Password</th>
       <th>Approved</th>
       <th>Balance</th>
       <th>Earnings</th>
@@ -102,86 +93,96 @@ document.addEventListener("DOMContentLoaded", () => {
     msg.className = `msg ${type}`;
     msg.textContent = text;
     msg.style.display = "block";
-    setTimeout(() => { msg.style.display = "none"; }, 6000);
+    setTimeout(() => { msg.style.display = "none"; }, 8000);
   }
 
   async function fetchUsers() {
+    tableBody.innerHTML = '<tr><td colspan="6" class="loading">Loading users...</td></tr>';
+    showMessage("loading", "Fetching user list...");
+
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      if (!res.ok) throw new Error(await res.text());
+      console.log("Fetch status:", res.status); // debug
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error ${res.status}`);
+      }
 
       const users = await res.json();
+      console.log("Users data:", users); // debug - check this in console!
+
       tableBody.innerHTML = "";
+
+      if (users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No users registered in the system yet</td></tr>';
+        showMessage("success", "No users found");
+        return;
+      }
 
       users.forEach(user => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${user.username}</td>
-          <td>${user.phone}</td>
-          <td>${user.password || "••••••••"}</td>
-          <td>${user.approved ? "Yes" : "No"}</td>
+          <td>${user.phone || "N/A"}</td>
+          <td>${user.approved ? '<span style="color:green;">Yes</span>' : '<span style="color:red;">No</span>'}</td>
           <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
           <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
           <td>
-            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : ""}
+            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
             <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
             <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
           </td>
         `;
         tableBody.appendChild(tr);
       });
+
+      showMessage("success", `Loaded ${users.length} user(s)`);
     } catch (err) {
-      console.error("Fetch users error:", err);
+      console.error("Error loading users:", err);
+      tableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
       showMessage("error", "Failed to load users: " + err.message);
-      tableBody.innerHTML = `<tr><td colspan="7">Error loading users</td></tr>`;
     }
   }
 
-  async function approveUser(username) {
+  window.approveUser = async (username) => {
     if (!confirm(`Approve user ${username}?`)) return;
-    await adminAction("approve-user", username, "User approved successfully");
-  }
+    await adminAction("approve-user", username, `User ${username} approved successfully`);
+  };
 
-  async function resetPassword(username) {
+  window.resetPassword = async (username) => {
     if (!confirm(`Reset password for ${username}?`)) return;
 
     try {
-      const formData = new URLSearchParams();
-      formData.append("username", username);
-
       const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData,
+        body: new URLSearchParams({ username })
       });
 
       const data = await res.json();
       if (res.ok) {
         showMessage("success", `New password for \( {username}: <strong> \){data.new_password}</strong>`);
-        fetchUsers();
+        fetchUsers(); // refresh
       } else {
         showMessage("error", data.detail || "Failed to reset password");
       }
     } catch (err) {
       showMessage("error", "Network error: " + err.message);
     }
-  }
+  };
 
-  async function terminateUser(username) {
-    if (!confirm(`Terminate user ${username}? This cannot be undone!`)) return;
-
-    await adminAction("terminate-user", username, "User terminated successfully");
-  }
+  window.terminateUser = async (username) => {
+    if (!confirm(`Terminate user ${username}? This is permanent!`)) return;
+    await adminAction("terminate-user", username, `User ${username} terminated`);
+  };
 
   async function adminAction(endpoint, username, successMsg) {
     try {
-      const formData = new URLSearchParams();
-      formData.append("username", username);
-
       const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData,
+        body: new URLSearchParams({ username })
       });
 
       const data = await res.json();
@@ -196,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Load users on page open
+  // Load users immediately
   fetchUsers();
 });
 </script>
