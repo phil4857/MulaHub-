@@ -81,7 +81,7 @@
     <h2>Register to Mkoba Wallet</h2>
 
     <input id="username" placeholder="Username (no spaces)" required>
-    <input id="phone" placeholder="Phone (07XXXXXXXX or 01XXXXXXXX)" required>
+    <input id="phone" type="tel" placeholder="Phone (e.g. 0712345678)" required>
     <input id="password" type="password" placeholder="Password" required>
     <input id="confirmPassword" type="password" placeholder="Confirm Password" required>
     <input id="referral" placeholder="Referral code (optional)">
@@ -96,16 +96,15 @@
 </div>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
     const registerBtn = document.getElementById("registerBtn");
     const msg = document.getElementById("msg");
-
-    // Real-time password match validation
     const passwordInput = document.getElementById("password");
     const confirmPasswordInput = document.getElementById("confirmPassword");
 
+    // Real-time password match feedback
     confirmPasswordInput.addEventListener("input", () => {
         const password = passwordInput.value;
         const confirm = confirmPasswordInput.value;
@@ -122,19 +121,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     registerBtn.addEventListener("click", async () => {
-        // Reset message
         msg.innerText = "";
         msg.style.color = "black";
 
-        // Get form values
-        const username       = document.getElementById("username")?.value.trim();
-        const phone          = document.getElementById("phone")?.value.trim();
-        const password       = document.getElementById("password")?.value;
-        const confirmPassword = document.getElementById("confirmPassword")?.value;
-        const referral       = document.getElementById("referral")?.value.trim() || "";
+        const username   = document.getElementById("username")?.value.trim();
+        const phone      = document.getElementById("phone")?.value.trim();
+        const pwd        = passwordInput?.value;
+        const confirmPwd = confirmPasswordInput?.value;
+        const referral   = document.getElementById("referral")?.value.trim() || "";
 
-        // ── Client-side validation ────────────────────────────────────────
-        if (!username || !phone || !password || !confirmPassword) {
+        // Client-side validation
+        if (!username || !phone || !pwd || !confirmPwd) {
             msg.style.color = "red";
             msg.innerText = "Please fill in all required fields.";
             return;
@@ -142,39 +139,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (username.includes(" ") || username.length < 3) {
             msg.style.color = "red";
-            msg.innerText = "Username must be at least 3 characters and contain no spaces.";
+            msg.innerText = "Username: ≥3 chars, no spaces.";
             return;
         }
 
         if (!/^(07|01)\d{8}$/.test(phone)) {
             msg.style.color = "red";
-            msg.innerText = "Phone must start with 07 or 01 and be exactly 10 digits (e.g. 0712345678).";
+            msg.innerText = "Phone: 07XXXXXXXX or 01XXXXXXXX";
             return;
         }
 
-        if (password.length < 6) {
+        if (pwd.length < 6) {
             msg.style.color = "red";
-            msg.innerText = "Password must be at least 6 characters long.";
+            msg.innerText = "Password: ≥6 characters.";
             return;
         }
 
-        if (password !== confirmPassword) {
+        if (pwd !== confirmPwd) {
             msg.style.color = "red";
             msg.innerText = "Passwords do not match.";
             return;
         }
 
-        // Disable button & show loading
         registerBtn.disabled = true;
         registerBtn.innerText = "Registering...";
         msg.style.color = "blue";
         msg.innerText = "Creating your account...";
 
-        // Prepare form data
         const formData = new URLSearchParams();
         formData.append("username", username);
         formData.append("phone", phone);
-        formData.append("password", password);
+        formData.append("password", pwd);
         if (referral) formData.append("referral", referral);
 
         try {
@@ -188,19 +183,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (res.ok) {
                 msg.style.color = "green";
-                msg.innerText = data.message || "Registration successful! Redirecting to login...";
-
-                // Auto-redirect after 2.5 seconds
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 2500);
+                msg.innerText = data.message || "Registration successful! Redirecting...";
+                setTimeout(() => window.location.href = "login.html", 2200);
             } else {
                 msg.style.color = "red";
-                msg.innerText = data.detail || `Registration failed (error ${res.status})`;
+                let errorText = data.detail || `Error ${res.status}`;
+                if (errorText.toLowerCase().includes("already exists")) {
+                    errorText += " – choose another username.";
+                }
+                msg.innerText = errorText;
             }
         } catch (err) {
             msg.style.color = "red";
-            msg.innerText = "Could not connect to the server. Please try again later.";
+            msg.innerText = "Cannot connect to server. Check internet.";
             console.error("Registration error:", err);
         } finally {
             registerBtn.disabled = false;
