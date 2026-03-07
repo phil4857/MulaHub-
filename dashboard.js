@@ -1,4 +1,3 @@
-<script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 // Commodity info (must match backend)
@@ -76,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             msgEl.style.color = "green";
             msgEl.textContent = "Dashboard loaded successfully!";
+            setTimeout(() => { msgEl.textContent = ""; }, 3000); // Clear success msg after 3s
         } catch (err) {
             msgEl.style.color = "red";
             msgEl.textContent = "Cannot connect to server. Check internet / backend.";
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.style.border = '1px solid #28a745';
             div.innerHTML = `
                 <strong>${commodity.toUpperCase()}</strong><br>
-                Amount: KES ${Number(inv.amount).toFixed(2)}<br>
+                Amount: KES ${Number(inv.amount || 0).toFixed(2)}<br>
                 Expires in: ${remainingDays} day(s)
             `;
             investmentList.appendChild(div);
@@ -185,4 +185,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start loading
     updateUI();
 });
-</script>
