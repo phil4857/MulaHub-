@@ -1,5 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Mkoba Wallet</title>
+    <link rel="stylesheet" href="style.css"> <!-- your global CSS -->
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7fa; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: #28a745; }
+        .logout-btn { padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card h3 { margin: 0 0 10px; color: #555; }
+        .stat-card p { font-size: 1.8rem; font-weight: bold; margin: 0; color: #28a745; }
+        #commodityGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .commodity-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; }
+        .commodity-card:hover { transform: translateY(-5px); }
+        .commodity-card img { width: 100%; height: 160px; object-fit: cover; }
+        .commodity-info { padding: 15px; text-align: center; }
+        .commodity-info h4 { margin: 0 0 8px; }
+        .commodity-info p { margin: 4px 0; color: #555; }
+        #msg { text-align: center; font-weight: bold; margin: 20px 0; min-height: 24px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Mkoba Wallet Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div id="msg"></div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Balance</h3>
+            <p id="balance">0.00</p>
+        </div>
+        <div class="stat-card">
+            <h3>Earnings</h3>
+            <p id="earnings">0.00</p>
+        </div>
+        <div class="stat-card">
+            <h3>Invested</h3>
+            <p id="invested">0.00</p>
+        </div>
+    </div>
+
+    <h2>Available Commodities to Invest In</h2>
+    <div id="commodityGrid"></div>
+
+    <h2 id="usernameDisplay" style="text-align:center; margin-top:40px;"></h2>
+</div>
+
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com"; // stable one
 
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('username');
@@ -9,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const msg = document.getElementById('msg');
+    document.getElementById('usernameDisplay').textContent = `Welcome, ${username}!`;
 
     async function loadDashboard() {
         msg.textContent = "Loading dashboard...";
@@ -23,15 +82,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 msg.style.color = "red";
-                msg.textContent = data.detail || `Error (status ${res.status})`;
-                console.error("Error:", res.status, data);
+                msg.textContent = data.detail || `Error ${res.status}`;
+                if (res.status === 403) msg.textContent += " - Account not approved?";
                 return;
             }
 
             const data = await res.json();
-            console.log("User data:", data);
+            console.log("Dashboard data:", data);
 
-            document.getElementById('usernameDisplay').textContent = username;
             document.getElementById('balance').textContent = Number(data.balance || 0).toFixed(2);
             document.getElementById('earnings').textContent = Number(data.earnings || 0).toFixed(2);
 
@@ -43,14 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             document.getElementById('invested').textContent = invested.toFixed(2);
 
-            renderInvestments(data.investments || {});
             renderCommodityCards();
+            // renderInvestments(data.investments || {}); // add this function if you want to show active investments
 
             msg.style.color = "green";
-            msg.textContent = "Dashboard loaded!";
+            msg.textContent = "Dashboard loaded successfully!";
         } catch (err) {
             msg.style.color = "red";
-            msg.textContent = "Cannot connect to server.";
+            msg.textContent = "Failed to load dashboard. Check connection.";
             console.error(err);
         }
     }
@@ -60,24 +118,24 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.innerHTML = "";
 
         const commodities = [
-            { key: "marble", name: "Marble", price: 650, days: 15, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "crude_oil", name: "Crude Oil", price: 800, days: 20, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "silver", name: "Silver", price: 1000, days: 23, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "lead", name: "Lead", price: 1200, days: 25, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "platinum", name: "Platinum", price: 1350, days: 28, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "diamonds", name: "Diamonds", price: 1750, days: 32, img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "gold", name: "Gold", price: 2200, days: 35, img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "uranium", name: "Uranium", price: 3000, days: 45, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
+            { key: "marble",     name: "Marble",     price: 650,  days: 15,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=800&q=80" },
+            { key: "crude_oil",  name: "Crude Oil",  price: 800,  days: 20,  img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=800&q=80" },
+            { key: "silver",     name: "Silver",     price: 1000, days: 23,  img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" },
+            { key: "lead",       name: "Lead",       price: 1200, days: 25,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=800&q=80" },
+            { key: "platinum",   name: "Platinum",   price: 1350, days: 28,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=800&q=80" },
+            { key: "diamonds",   name: "Diamonds",   price: 1750, days: 32,  img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80" },
+            { key: "gold",       name: "Gold",       price: 2200, days: 35,  img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?auto=format&fit=crop&w=800&q=80" },
+            { key: "uranium",    name: "Uranium",    price: 3000, days: 45,  img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=800&q=80" }
         ];
 
         commodities.forEach(com => {
             const card = document.createElement('div');
             card.className = 'commodity-card';
             card.innerHTML = `
-                <img src="\( {com.img}" alt=" \){com.name}">
+                <img src="\( {com.img}" alt=" \){com.name}" onerror="this.src='https://via.placeholder.com/800x160?text=${com.name}'">
                 <div class="commodity-info">
                     <h4>${com.name}</h4>
-                    <p>KES ${com.price}</p>
+                    <p>KES ${com.price.toLocaleString()}</p>
                     <p>${com.days} days</p>
                 </div>
             `;
@@ -86,8 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    window.investRequest = async function (commodity) {
-        msg.textContent = "Sending request...";
+    async function investRequest(commodity) {
+        if (!confirm(`Invest in ${commodity} for KES ${getPrice(commodity)}?`)) return;
+
+        msg.textContent = `Requesting ${commodity} investment...`;
         msg.style.color = "blue";
 
         const formData = new URLSearchParams();
@@ -105,17 +165,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 msg.style.color = "green";
-                msg.textContent = data.message || `Request for ${commodity} created. Awaiting confirmation.`;
+                msg.innerHTML = `${data.message}<br><strong>Pay via M-Pesa: ${data.mpesa_payment || '0752964507'}</strong>`;
             } else {
                 msg.style.color = "red";
-                msg.textContent = data.detail || 'Request failed.';
+                msg.textContent = data.detail || 'Investment request failed.';
             }
         } catch (err) {
             msg.style.color = "red";
             msg.textContent = "Network error.";
             console.error(err);
         }
-    };
+    }
+
+    function getPrice(commodity) {
+        const prices = { marble:650, crude_oil:800, silver:1000, lead:1200, platinum:1350, diamonds:1750, gold:2200, uranium:3000 };
+        return prices[commodity] || 0;
+    }
 
     window.logout = function () {
         localStorage.removeItem('username');
@@ -125,3 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
 });
 </script>
+
+</body>
+</html>
