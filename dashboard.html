@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         msg.style.color = "blue";
 
         try {
-            // Corrected fetch line
+            // Fixed URL syntax
             const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
             console.log("Fetching user data from:", url);
 
@@ -156,7 +156,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 let data = {};
                 try { data = await response.json(); } catch {}
                 msg.style.color = "red";
-                msg.textContent = data.detail || `Error loading data (status ${response.status})`;
+                if (response.status === 404) {
+                    msg.textContent = "User not found on server (404). Try registering again or contact support.";
+                } else if (response.status === 403) {
+                    msg.textContent = "Account not approved. Contact admin to get approved.";
+                } else {
+                    msg.textContent = data.detail || "Dashboard not found. Contact support or check backend.";
+                }
                 console.error("Dashboard error:", response.status, data);
                 return null;
             }
@@ -181,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             msg.textContent = "Dashboard loaded successfully!";
             msg.style.color = "green";
+            setTimeout(() => { msg.textContent = ""; }, 3000); // Clear success msg after 3s
             return user;
         } catch (err) {
             msg.style.color = "red";
@@ -192,10 +199,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderInvestments(investments) {
         const container = document.getElementById('investmentList');
-        container.innerHTML = '<h3 style="text-align:center; color:#0a1d66;">Your Active Investments</h3>';
+        container.innerHTML = '';
 
         if (!investments || Object.keys(investments).length === 0) {
-            container.innerHTML += "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
+            container.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
             return;
         }
 
