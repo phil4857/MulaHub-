@@ -1,6 +1,6 @@
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
 
-// Commodity info (must match backend)
+// Commodity info (must match backend exactly)
 const COMMODITY_INFO = {
     marble:     { price: 650,  days: 15 },
     crude_oil:  { price: 800,  days: 20 },
@@ -19,143 +19,144 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // DOM elements
-    const balanceEl    = document.getElementById('balanceDisplay');
-    const earningsEl   = document.getElementById('earningsDisplay');
-    const investedEl   = document.getElementById('investedDisplay');
-    const msgEl        = document.getElementById('msg');
+    // DOM elements – make sure these IDs exist in your HTML
+    const balanceEl     = document.getElementById('balanceDisplay');
+    const earningsEl    = document.getElementById('earningsDisplay');
+    const investedEl    = document.getElementById('investedDisplay');
+    const msgEl         = document.getElementById('msg');
     const commodityGrid = document.getElementById('commodityGrid');
     const investmentList = document.getElementById('investmentList');
 
-    async function updateUI() {
-        msgEl.textContent = "Loading dashboard...";
+    if (!msgEl || !commodityGrid) {
+        console.error("Critical DOM elements missing");
+        if (msgEl) msgEl.textContent = "Page loading error – missing elements";
+        return;
+    }
+
+    async function loadData() {
+        msgEl.textContent = "Loading investment options...";
         msgEl.style.color = "blue";
 
         try {
-            // FIXED: correct template literal
             const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
-            console.log("→ Fetching dashboard:", url); // debug: see exact URL
+            console.log("Fetching:", url);
 
             const res = await fetch(url);
 
             if (!res.ok) {
                 let data = {};
                 try { data = await res.json(); } catch {}
-                
                 msgEl.style.color = "red";
-                if (res.status === 404) {
-                    msgEl.textContent = "User/dashboard not found (404). Try logging in again.";
-                } else if (res.status === 403) {
-                    msgEl.textContent = data.detail || "Account not approved yet.";
-                } else if (res.status === 422) {
-                    msgEl.textContent = "Invalid request (422). Check username.";
-                } else {
-                    msgEl.textContent = data.detail || `Server error (${res.status})`;
-                }
-                console.error("Dashboard error:", res.status, data);
+                msgEl.textContent = data.detail || `Error ${res.status}`;
+                if (res.status === 403) msgEl.textContent += " – account not approved";
                 return;
             }
 
             const data = await res.json();
-            console.log("Dashboard data:", data); // debug: see real data
+            console.log("Data:", data);
 
-            balanceEl.textContent  = Number(data.balance  || 0).toFixed(2);
-            earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
+            if (balanceEl)    balanceEl.textContent  = Number(data.balance  || 0).toFixed(2);
+            if (earningsEl)   earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
 
             let invested = 0;
-            if (data.investments && typeof data.investments === 'object') {
+            if (data.investments) {
                 Object.values(data.investments).forEach(item => {
                     invested += Number(item.amount || 0);
                 });
             }
-            investedEl.textContent = invested.toFixed(2);
+            if (investedEl) investedEl.textContent = invested.toFixed(2);
 
             renderInvestments(data.investments || {});
             renderCommodityCards();
 
             msgEl.style.color = "green";
-            msgEl.textContent = "Dashboard loaded successfully!";
-            setTimeout(() => { msgEl.textContent = ""; }, 3000); // Clear success msg after 3s
+            msgEl.textContent = "Ready to invest";
+            setTimeout(() => { msgEl.textContent = ""; }, 4000);
         } catch (err) {
             msgEl.style.color = "red";
-            msgEl.textContent = "Cannot connect to server. Check internet / backend.";
-            console.error("Fetch error:", err);
+            msgEl.textContent = "Failed to load data";
+            console.error(err);
         }
     }
 
     function renderInvestments(investments) {
+        if (!investmentList) return;
+
         investmentList.innerHTML = "";
 
-        if (!investments || Object.keys(investments).length === 0) {
-            investmentList.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
+        if (Object.keys(investments).length === 0) {
+            investmentList.innerHTML = '<p style="text-align:center; color:#777;">No active investments</p>';
             return;
         }
 
-        for (const [commodity, inv] of Object.entries(investments)) {
+        Object.entries(investments).forEach(([commodity, inv]) => {
             const expiry = new Date(inv.expiry_date);
-            const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
-            const div = document.createElement('div');
-            div.style.background = '#f0f8f0';
-            div.style.padding = '15px';
-            div.style.borderRadius = '10px';
-            div.style.border = '1px solid #28a745';
-            div.innerHTML = `
-                <strong>${commodity.toUpperCase()}</strong><br>
-                Amount: KES ${Number(inv.amount || 0).toFixed(2)}<br>
-                Expires in: ${remainingDays} day(s)
+            const daysLeft = Math.max(0, Math.floor((expiry - new Date()) / 86400000));
+
+            const item = document.createElement('div');
+            item.style.cssText = 'background:#f0f8f0; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #28a745;';
+            item.innerHTML = `
+                <strong>${commodity.replace('_', ' ').toUpperCase()}</strong><br>
+                KES ${Number(inv.amount).toLocaleString(undefined, {minimumFractionDigits:2})}<br>
+                Expires in ${daysLeft} day(s)
             `;
-            investmentList.appendChild(div);
-        }
+            investmentList.appendChild(item);
+        });
     }
 
     function renderCommodityCards() {
         commodityGrid.innerHTML = "";
 
-        const commodities = [
-            { key: "marble", name: "Marble", price: 650, days: 15, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "crude_oil", name: "Crude Oil", price: 800, days: 20, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "silver", name: "Silver", price: 1000, days: 23, img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "lead", name: "Lead", price: 1200, days: 25, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "platinum", name: "Platinum", price: 1350, days: 28, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "diamonds", name: "Diamonds", price: 1750, days: 32, img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "gold", name: "Gold", price: 2200, days: 35, img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { key: "uranium", name: "Uranium", price: 3000, days: 45, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
+        const items = [
+            { key: "marble",     name: "Marble",     price: 650,  days: 15 },
+            { key: "crude_oil",  name: "Crude Oil",  price: 800,  days: 20 },
+            { key: "silver",     name: "Silver",     price: 1000, days: 23 },
+            { key: "lead",       name: "Lead",       price: 1200, days: 25 },
+            { key: "platinum",   name: "Platinum",   price: 1350, days: 28 },
+            { key: "diamonds",   name: "Diamonds",   price: 1750, days: 32 },
+            { key: "gold",       name: "Gold",       price: 2200, days: 35 },
+            { key: "uranium",    name: "Uranium",    price: 3000, days: 45 }
         ];
 
-        commodities.forEach(com => {
+        items.forEach(com => {
             const card = document.createElement('div');
-            card.className = 'commodity-card';
+            card.style.cssText = 'background:white; border-radius:10px; overflow:hidden; box-shadow:0 3px 10px rgba(0,0,0,0.12); cursor:pointer; transition:transform 0.15s;';
+            card.onmouseover = () => card.style.transform = 'translateY(-4px)';
+            card.onmouseout  = () => card.style.transform = 'translateY(0)';
+            card.onclick = () => investRequest(com.key);
+
             card.innerHTML = `
-                <img src="\( {com.img}" alt=" \){com.name}">
-                <div class="commodity-info">
-                    <h4>${com.name}</h4>
-                    <p>KES ${com.price.toLocaleString()}</p>
-                    <p>${com.days} days</p>
+                <div style="height:140px; background:#eee; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#777;">
+                    ${com.name}
+                </div>
+                <div style="padding:12px; text-align:center;">
+                    <h4 style="margin:0 0 6px;">${com.name}</h4>
+                    <p style="margin:4px 0; color:#555;">KES ${com.price.toLocaleString()}</p>
+                    <p style="margin:4px 0; color:#777; font-size:0.9rem;">${com.days} days</p>
                 </div>
             `;
-            card.onclick = () => investRequest(com.key);
             commodityGrid.appendChild(card);
         });
     }
 
-    window.investRequest = async function (commodity) {
-        if (!commodity || !COMMODITY_INFO[commodity]) {
-            msgEl.textContent = "Invalid commodity selected.";
-            msgEl.style.color = "red";
+    window.investRequest = async function(commodity) {
+        if (!COMMODITY_INFO[commodity]) return;
+
+        if (!confirm(`Invest KES ${COMMODITY_INFO[commodity].price.toLocaleString()} in ${commodity.replace('_',' ')}?`)) {
             return;
         }
 
-        msgEl.textContent = "Sending investment request...";
+        msgEl.textContent = "Sending request...";
         msgEl.style.color = "blue";
 
         const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('commodity', commodity);
+        formData.append("username", username);
+        formData.append("commodity", commodity);
 
         try {
             const res = await fetch(`${BACKEND_URL}/invest/request`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData
             });
 
@@ -163,25 +164,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 msgEl.style.color = "green";
-                const price = COMMODITY_INFO[commodity].price;
-                msgEl.textContent = data.message || 
-                    `Request created for ${commodity}. Send KES ${price.toLocaleString()} to M-Pesa: 0752964507`;
+                msgEl.innerHTML = data.message + `<br><br>Pay <strong>KES ${COMMODITY_INFO[commodity].price.toLocaleString()}</strong> to M-Pesa: <strong>0752964507</strong>`;
             } else {
                 msgEl.style.color = "red";
-                msgEl.textContent = data.detail || 'Investment request failed.';
+                msgEl.textContent = data.detail || "Request failed";
             }
         } catch (err) {
             msgEl.style.color = "red";
-            msgEl.textContent = "Network error during request.";
-            console.error("Invest request error:", err);
+            msgEl.textContent = "Connection error";
+            console.error(err);
         }
     };
 
-    window.logout = function () {
+    window.logout = () => {
         localStorage.removeItem('username');
         window.location.href = 'login.html';
     };
 
-    // Start loading
-    updateUI();
+    loadData();
 });
