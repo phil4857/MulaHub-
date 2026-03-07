@@ -1,18 +1,22 @@
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+// js/register.js
+
+const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
     const registerBtn = document.getElementById("registerBtn");
     const msg = document.getElementById("msg");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
 
-    // Real-time password match validation
-    const password = document.getElementById("password");
-    const confirmPassword = document.getElementById("confirmPassword");
+    // Real-time password match feedback
+    confirmPasswordInput.addEventListener("input", () => {
+        const password = passwordInput.value;
+        const confirm = confirmPasswordInput.value;
 
-    confirmPassword.addEventListener("input", () => {
-        if (confirmPassword.value && password.value !== confirmPassword.value) {
+        if (confirm && password !== confirm) {
             msg.style.color = "red";
             msg.innerText = "Passwords do not match";
-        } else if (confirmPassword.value) {
+        } else if (confirm) {
             msg.style.color = "green";
             msg.innerText = "Passwords match!";
         } else {
@@ -21,18 +25,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     registerBtn.addEventListener("click", async () => {
-        // Reset message
         msg.innerText = "";
         msg.style.color = "black";
 
-        // Get form values
         const username   = document.getElementById("username")?.value.trim();
         const phone      = document.getElementById("phone")?.value.trim();
-        const pwd        = password?.value;
-        const confirmPwd = confirmPassword?.value;
+        const pwd        = passwordInput?.value;
+        const confirmPwd = confirmPasswordInput?.value;
         const referral   = document.getElementById("referral")?.value.trim() || "";
 
-        // ── Client-side validation ────────────────────────────────────────
+        // Client-side validation
         if (!username || !phone || !pwd || !confirmPwd) {
             msg.style.color = "red";
             msg.innerText = "Please fill in all required fields.";
@@ -41,19 +43,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (username.includes(" ") || username.length < 3) {
             msg.style.color = "red";
-            msg.innerText = "Username must be at least 3 characters and contain no spaces.";
+            msg.innerText = "Username: ≥3 chars, no spaces.";
             return;
         }
 
         if (!/^(07|01)\d{8}$/.test(phone)) {
             msg.style.color = "red";
-            msg.innerText = "Phone must start with 07 or 01 and be exactly 10 digits.";
+            msg.innerText = "Phone: 07XXXXXXXX or 01XXXXXXXX";
             return;
         }
 
         if (pwd.length < 6) {
             msg.style.color = "red";
-            msg.innerText = "Password must be at least 6 characters long.";
+            msg.innerText = "Password: ≥6 characters.";
             return;
         }
 
@@ -63,13 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Disable button & show loading
         registerBtn.disabled = true;
         registerBtn.innerText = "Registering...";
         msg.style.color = "blue";
         msg.innerText = "Creating your account...";
 
-        // Prepare form data (no email)
         const formData = new URLSearchParams();
         formData.append("username", username);
         formData.append("phone", phone);
@@ -87,19 +87,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (res.ok) {
                 msg.style.color = "green";
-                msg.innerText = data.message || "Registration successful! Redirecting to login...";
-
-                // Auto-redirect after 2.5 seconds
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 2500);
+                msg.innerText = data.message || "Registration successful! Redirecting...";
+                setTimeout(() => window.location.href = "login.html", 2200);
             } else {
                 msg.style.color = "red";
-                msg.innerText = data.detail || `Registration failed (error ${res.status})`;
+                let errorText = data.detail || `Error ${res.status}`;
+                if (errorText.toLowerCase().includes("already exists")) {
+                    errorText += " – choose another username.";
+                }
+                msg.innerText = errorText;
             }
         } catch (err) {
             msg.style.color = "red";
-            msg.innerText = "Could not connect to the server. Please try again later.";
+            msg.innerText = "Cannot connect to server. Check internet.";
             console.error("Registration error:", err);
         } finally {
             registerBtn.disabled = false;
