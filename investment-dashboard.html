@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // DOM elements – make sure these IDs exist in your HTML
-    const balanceEl     = document.getElementById('balanceDisplay');
-    const earningsEl    = document.getElementById('earningsDisplay');
-    const investedEl    = document.getElementById('investedDisplay');
-    const msgEl         = document.getElementById('msg');
-    const commodityGrid = document.getElementById('commodityGrid');
+    // DOM elements
+    const balanceEl      = document.getElementById('balanceDisplay');
+    const earningsEl     = document.getElementById('earningsDisplay');
+    const investedEl     = document.getElementById('investedDisplay');
+    const msgEl          = document.getElementById('msg');
+    const commodityGrid  = document.getElementById('commodityGrid');
     const investmentList = document.getElementById('investmentList');
 
     if (!msgEl || !commodityGrid) {
@@ -38,10 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
         msgEl.style.color = "blue";
 
         try {
-            const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
+            // Corrected URL
+            const url = `${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`;
             console.log("Fetching:", url);
 
-            const res = await fetch(url);
+            const res = await fetch(url, { method: "GET" });
 
             if (!res.ok) {
                 let data = {};
@@ -55,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             console.log("Data:", data);
 
-            if (balanceEl)    balanceEl.textContent  = Number(data.balance  || 0).toFixed(2);
-            if (earningsEl)   earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
+            if (balanceEl)  balanceEl.textContent  = Number(data.balance || 0).toFixed(2);
+            if (earningsEl) earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
 
             let invested = 0;
             if (data.investments) {
@@ -107,30 +108,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderCommodityCards() {
         commodityGrid.innerHTML = "";
 
-        const items = [
-            { key: "marble",     name: "Marble",     price: 650,  days: 15 },
-            { key: "crude_oil",  name: "Crude Oil",  price: 800,  days: 20 },
-            { key: "silver",     name: "Silver",     price: 1000, days: 23 },
-            { key: "lead",       name: "Lead",       price: 1200, days: 25 },
-            { key: "platinum",   name: "Platinum",   price: 1350, days: 28 },
-            { key: "diamonds",   name: "Diamonds",   price: 1750, days: 32 },
-            { key: "gold",       name: "Gold",       price: 2200, days: 35 },
-            { key: "uranium",    name: "Uranium",    price: 3000, days: 45 }
-        ];
-
-        items.forEach(com => {
+        Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
             const card = document.createElement('div');
             card.style.cssText = 'background:white; border-radius:10px; overflow:hidden; box-shadow:0 3px 10px rgba(0,0,0,0.12); cursor:pointer; transition:transform 0.15s;';
             card.onmouseover = () => card.style.transform = 'translateY(-4px)';
             card.onmouseout  = () => card.style.transform = 'translateY(0)';
-            card.onclick = () => investRequest(com.key);
+            card.onclick = () => investRequest(key);
 
             card.innerHTML = `
                 <div style="height:140px; background:#eee; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#777;">
-                    ${com.name}
+                    ${key.replace('_',' ').toUpperCase()}
                 </div>
                 <div style="padding:12px; text-align:center;">
-                    <h4 style="margin:0 0 6px;">${com.name}</h4>
+                    <h4 style="margin:0 0 6px;">${key.replace('_',' ').toUpperCase()}</h4>
                     <p style="margin:4px 0; color:#555;">KES ${com.price.toLocaleString()}</p>
                     <p style="margin:4px 0; color:#777; font-size:0.9rem;">${com.days} days</p>
                 </div>
@@ -181,5 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'login.html';
     };
 
+    // Initial load
     loadData();
 });
