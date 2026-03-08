@@ -1,171 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnings - Mkoba Wallet 💵</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom right, #e6f3ff, #f0f9f5);
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        h1 {
-            text-align: center;
-            color: #0a1d66;
-            margin-bottom: 30px;
-        }
-        .card {
-            background: #f8fff8;
-            border-left: 6px solid #28a745;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 8px;
-        }
-        .card p {
-            margin: 12px 0;
-            font-size: 18px;
-        }
-        .card strong {
-            color: #0a1d66;
-        }
-        .msg {
-            text-align: center;
-            font-weight: bold;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 20px 0;
-            min-height: 24px;
-        }
-        .loading { background: #e3f2fd; color: #1976d2; }
-        .success  { background: #e8f5e9; color: #2e7d32; }
-        .error    { background: #ffebee; color: #c62828; }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-refresh {
-            background: #28a745;
-            color: white;
-            display: block;
-            margin: 20px auto;
-        }
-        .btn-refresh:hover {
-            background: #218838;
-        }
-        .btn-logout {
-            background: #dc3545;
-            color: white;
-            display: block;
-            margin: 30px auto;
-        }
-        .btn-logout:hover {
-            background: #c82333;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mkoba Wallet 💸💵</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{
+    background: linear-gradient(to right,#f0f9f7,#fff);
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+}
+.navbar { background:#4f46e5; color:white; padding:16px; display:flex; justify-content:space-between; align-items:center; border-radius:8px; margin-bottom:20px;}
+.navbar h1{ font-weight:bold;}
+.navbar button{ background:#ef4444; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;}
+.tab-buttons{ display:flex; justify-content:center; margin-bottom:20px; gap:12px;}
+.tab-buttons button{ padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;}
+.tab-buttons button.active{ background:#4f46e5; color:white;}
+.tab-content{ display:none;}
+.tab-content.active{ display:block;}
+.commodity-card{
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    padding:16px;
+    text-align:center;
+    transition:all .3s;
+    cursor:pointer;
+    border:2px solid transparent;
+}
+.commodity-card:hover{ transform:translateY(-8px); box-shadow:0 12px 24px rgba(0,0,0,0.15); border-color:#6366f1;}
+.commodity-card.selected{ border-color:#6366f1; background:#eef2ff; box-shadow:0 0 0 4px rgba(99,102,241,0.2);}
+.commodity-card img{ width:100%; height:140px; object-fit:cover; border-radius:8px; margin-bottom:12px;}
+.msg{ margin-top:20px; font-weight:bold; text-align:center; min-height:24px; font-size:1.1rem;}
+.success{color:#28a745;}
+.error{color:#dc3545;}
+.loading{color:#007bff;}
+</style>
 </head>
-<body>
+<body class="p-4">
 
-<div class="container">
-    <h1>Mkoba Wallet - Earnings Overview 💵</h1>
+<!-- NAVBAR -->
+<div class="navbar">
+    <h1>Mkoba Wallet Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+</div>
 
-    <div id="msg" class="msg loading">
-        Loading your earnings...
+<!-- TAB SWITCH -->
+<div class="tab-buttons">
+    <button id="tabInvestBtn" class="active">Invest</button>
+    <button id="tabEarningsBtn">Earnings</button>
+</div>
+
+<!-- INVEST TAB -->
+<div id="tabInvest" class="tab-content active">
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
+            <h2 class="text-gray-500 text-sm">Balance</h2>
+            <p id="balance" class="text-3xl font-bold text-indigo-600">KES 0.00</p>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
+            <h2 class="text-gray-500 text-sm">Earnings</h2>
+            <p id="earnings" class="text-3xl font-bold text-green-600">KES 0.00</p>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
+            <h2 class="text-gray-500 text-sm">Total Invested</h2>
+            <p id="invested" class="text-3xl font-bold text-purple-600">KES 0.00</p>
+        </div>
     </div>
 
-    <div class="card">
-        <p><strong>Username:</strong> <span id="usernameDisplay">—</span></p>
-        <p><strong>Current Balance:</strong> KES <span id="balanceDisplay">0.00</span></p>
-        <p><strong>Total Earnings:</strong> KES <span id="earningsDisplay">0.00</span></p>
-        <p><strong>Total Invested Amount:</strong> KES <span id="investedDisplay">0.00</span></p>
+    <p id="msg" class="msg loading">Loading account info...</p>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="commodityGrid">
+        <!-- Commodity cards inserted by JS -->
     </div>
 
-    <div class="text-center">
-        <button class="btn-refresh" onclick="loadDashboard()">Refresh Earnings</button>
-        <button class="btn-logout" onclick="logout()">Logout</button>
+    <div class="mt-10 text-center">
+        <p class="text-xl font-medium mb-4">Selected: 
+            <span id="selectedCommodity" class="text-indigo-700 font-bold">-- None --</span>
+        </p>
+        <button id="investBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-lg font-bold text-lg w-full max-w-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Request Investment
+        </button>
+    </div>
+</div>
+
+<!-- EARNINGS TAB -->
+<div id="tabEarnings" class="tab-content">
+    <div class="container mx-auto p-4 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-center mb-4">Earnings Overview</h2>
+        <div class="card p-4 bg-green-50 rounded-lg">
+            <p><strong>Username:</strong> <span id="usernameDisplay">—</span></p>
+            <p><strong>Current Balance:</strong> KES <span id="balanceDisplay">0.00</span></p>
+            <p><strong>Total Earnings:</strong> KES <span id="earningsDisplay">0.00</span></p>
+            <p><strong>Total Invested Amount:</strong> KES <span id="investedDisplay">0.00</span></p>
+        </div>
+        <p id="earnMsg" class="msg loading"></p>
+        <div class="text-center">
+            <button class="btn-refresh bg-green-500 text-white px-6 py-2 rounded-lg mt-4" onclick="loadEarnings()">Refresh Earnings</button>
+        </div>
     </div>
 </div>
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-document.addEventListener('DOMContentLoaded', () => {
-    const username = localStorage.getItem('username');
-    if (!username) {
-        window.location.href = 'login.html';
-        return;
-    }
+const COMMODITY_INFO = {
+    marble: { price: 650, days: 15, img:"https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e" },
+    crude_oil: { price: 800, days: 20, img:"https://images.unsplash.com/photo-1581092160560-1c1e428e9d65" },
+    silver: { price: 1000, days: 23, img:"https://images.unsplash.com/photo-1610375461246-83df859d849d" },
+    lead: { price: 1200, days: 25, img:"https://images.unsplash.com/photo-1581093588401-22d0f1b3c9f0" },
+    platinum: { price: 1350, days: 28, img:"https://images.unsplash.com/photo-1603791440384-56cd371ee9a7" },
+    diamonds: { price: 1750, days: 32, img:"https://images.unsplash.com/photo-1605100804763-247f67b3557e" },
+    gold: { price: 2200, days: 35, img:"https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c" },
+    uranium: { price: 3000, days: 45, img:"https://images.unsplash.com/photo-1581091870627-3c6b6f0b8e4c" }
+};
 
-    document.getElementById('usernameDisplay').textContent = username;
+let selectedCommodity = null;
 
-    async function loadDashboard() {
-        const msg = document.getElementById('msg');
-        msg.className = 'msg loading';
-        msg.textContent = 'Loading your earnings...';
+document.addEventListener('DOMContentLoaded',()=>{
 
-        try {
-            // ✅ Correct fetch URL
-            const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+const username = localStorage.getItem("username");
+if(!username){ window.location.href="login.html"; return; }
 
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                msg.className = 'msg error';
-                if (res.status === 403) {
-                    msg.textContent = data.detail || 'Account not approved yet. Please wait for admin approval.';
-                } else if (res.status === 404) {
-                    msg.textContent = 'Dashboard not found on server. Contact support.';
-                } else {
-                    msg.textContent = data.detail || `Error ${res.status}`;
-                }
-                return;
-            }
+document.getElementById("usernameDisplay").textContent = username;
 
-            const data = await res.json();
+const msg = document.getElementById("msg");
+const investBtn = document.getElementById("investBtn");
+const selectedDisplay = document.getElementById("selectedCommodity");
 
-            document.getElementById('balanceDisplay').textContent = Number(data.balance || 0).toFixed(2);
-            document.getElementById('earningsDisplay').textContent = Number(data.earnings || 0).toFixed(2);
+function logout(){
+    localStorage.removeItem("username");
+    window.location.href="login.html";
+}
 
-            let invested = 0;
-            if (data.investments && typeof data.investments === 'object') {
-                Object.values(data.investments).forEach(item => {
-                    invested += Number(item.amount || 0);
-                });
-            }
-            document.getElementById('investedDisplay').textContent = invested.toFixed(2);
+window.logout = logout;
 
-            msg.className = 'msg success';
-            msg.textContent = 'Earnings loaded successfully!';
-        } catch (err) {
-            msg.className = 'msg error';
-            msg.textContent = 'Cannot connect to server. Please check your internet connection.';
-            console.error('Earnings fetch error:', err);
+// ----- TAB SWITCH -----
+const tabInvestBtn = document.getElementById("tabInvestBtn");
+const tabEarningsBtn = document.getElementById("tabEarningsBtn");
+const tabInvest = document.getElementById("tabInvest");
+const tabEarnings = document.getElementById("tabEarnings");
+
+tabInvestBtn.addEventListener("click",()=>{
+    tabInvestBtn.classList.add("active");
+    tabEarningsBtn.classList.remove("active");
+    tabInvest.classList.add("active");
+    tabEarnings.classList.remove("active");
+});
+
+tabEarningsBtn.addEventListener("click",()=>{
+    tabEarningsBtn.classList.add("active");
+    tabInvestBtn.classList.remove("active");
+    tabEarnings.classList.add("active");
+    tabInvest.classList.remove("active");
+});
+
+// ----- INVEST FUNCTIONS -----
+async function loadDashboard(){
+    msg.className="msg loading";
+    msg.textContent="Loading account info...";
+
+    try{
+        const res=await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+        if(!res.ok){
+            const data=await res.json().catch(()=>({}));
+            msg.className="msg error";
+            msg.textContent=data.detail||`Error ${res.status}`;
+            return;
         }
+        const data=await res.json();
+
+        document.getElementById("balance").textContent=`KES ${Number(data.balance||0).toFixed(2)}`;
+        document.getElementById("earnings").textContent=`KES ${Number(data.earnings||0).toFixed(2)}`;
+
+        let invested =0;
+        if(data.investments){
+            Object.values(data.investments).forEach(i=>{ invested+=Number(i.amount||0); });
+        }
+        document.getElementById("invested").textContent=`KES ${invested.toFixed(2)}`;
+
+        renderCommodityCards();
+        msg.className="msg success";
+        msg.textContent="Ready to invest!";
+    }catch(err){
+        msg.className="msg error";
+        msg.textContent="Cannot load account info.";
+        console.error(err);
     }
+}
 
-    window.loadDashboard = loadDashboard;
+function renderCommodityCards(){
+    const grid=document.getElementById("commodityGrid");
+    grid.innerHTML="";
+    Object.entries(COMMODITY_INFO).forEach(([key, com])=>{
+        const card=document.createElement("div");
+        card.className="commodity-card";
+        card.onclick=()=> selectCommodity(key,card);
+        card.innerHTML=`
+            <img src="${com.img}" alt="${key}">
+            <p class="font-semibold mt-2">${key.replace("_"," ").toUpperCase()}</p>
+            <p class="text-sm text-gray-600">KES ${com.price}</p>
+            <p class="text-xs text-gray-500">${com.days} days</p>
+        `;
+        grid.appendChild(card);
+    });
+}
 
-    window.logout = function() {
-        localStorage.removeItem('username');
-        window.location.href = 'login.html';
-    };
+window.selectCommodity=function(commodity,element){
+    selectedCommodity = commodity;
+    document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected"));
+    element.classList.add("selected");
+    selectedDisplay.textContent = commodity.replace("_"," ").replace(/\b\w/g,l=>l.toUpperCase());
+    investBtn.disabled=false;
+};
 
-    // Load immediately
-    loadDashboard();
+investBtn.addEventListener("click",async()=>{
+    if(!selectedCommodity){ alert("Select a commodity first."); return;}
+    msg.className="msg loading"; msg.textContent="Sending investment request...";
+    const formData=new URLSearchParams();
+    formData.append("username",username);
+    formData.append("commodity",selectedCommodity);
+    try{
+        const res=await fetch(`${BACKEND_URL}/invest/request`,{
+            method:"POST",
+            headers:{"Content-Type":"application/x-www-form-urlencoded"},
+            body:formData
+        });
+        const data=await res.json();
+        if(res.ok){
+            msg.className="msg success";
+            msg.innerHTML = `${data.message}<br>Pay <strong>KES ${COMMODITY_INFO[selectedCommodity].price}</strong> to M-Pesa: <strong>0752964507</strong>`;
+            loadDashboard();
+        }else{
+            msg.className="msg error";
+            msg.textContent = data.detail||"Request failed";
+        }
+    }catch(err){
+        msg.className="msg error";
+        msg.textContent="Network error";
+        console.error(err);
+    }
+});
+
+// ----- EARNINGS -----
+async function loadEarnings(){
+    const msgEl = document.getElementById("earnMsg");
+    msgEl.className="msg loading"; msgEl.textContent="Loading earnings...";
+    try{
+        const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+        if(!res.ok){ const d = await res.json().catch(()=>({})); msgEl.className="msg error"; msgEl.textContent=d.detail||`Error ${res.status}`; return; }
+        const data = await res.json();
+        document.getElementById("balanceDisplay").textContent = Number(data.balance||0).toFixed(2);
+        document.getElementById("earningsDisplay").textContent = Number(data.earnings||0).toFixed(2);
+        let invested=0; if(data.investments){ Object.values(data.investments).forEach(i=>invested+=Number(i.amount||0)); }
+        document.getElementById("investedDisplay").textContent = invested.toFixed(2);
+        msgEl.className="msg success"; msgEl.textContent="Earnings updated!";
+    }catch(err){ msgEl.className="msg error"; msgEl.textContent="Cannot fetch earnings"; console.error(err);}
+}
+
+window.loadDashboard = loadDashboard;
+window.loadEarnings = loadEarnings;
+
+// INITIAL LOAD
+loadDashboard();
+loadEarnings();
+
 });
 </script>
 
