@@ -1,14 +1,15 @@
+// admin-dashboard.js
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Require login
+  // Require admin login
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     alert("Please login as admin first");
     window.location.href = "admin-login.html";
     return;
   }
 
-  const tableBody = document.getElementById("usersTableBody") || document.querySelector("#usersTable tbody");
+  const tableBody = document.getElementById("usersTableBody");
   const msg = document.getElementById("msg");
 
   function showMessage(type, text) {
@@ -32,19 +33,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      console.log("Fetch status:", res.status);
-
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.detail || `HTTP ${res.status}`);
       }
 
       const users = await res.json();
-      console.log("Users loaded:", users);
-
       tableBody.innerHTML = "";
 
-      if (users.length === 0) {
+      if (!users.length) {
         tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users registered yet</td></tr>';
         showMessage("success", "No users found");
         return;
@@ -60,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
           <td>${user.referral || "-"}</td>
           <td>
-            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
+            ${!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
             <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
             <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
           </td>
@@ -108,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function adminAction(endpoint, username, successMsg) {
     try {
-      const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+      const res = await fetch(`${BACKEND_URL}/admin/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
@@ -121,11 +118,11 @@ document.addEventListener("DOMContentLoaded", () => {
         showMessage("error", data.detail || "Action failed");
       }
     } catch (err) {
+      console.error("Admin action error:", err);
       showMessage("error", "Network error");
     }
   }
 
-  // Load users
+  // Load users on page load
   fetchUsers();
 });
-</script>
