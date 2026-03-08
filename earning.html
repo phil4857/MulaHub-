@@ -119,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
         msg.textContent = 'Loading your earnings...';
 
         try {
-            const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+            // ✅ Correct fetch URL
+            const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
@@ -156,12 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function logout() {
+    window.loadDashboard = loadDashboard;
+
+    window.logout = function() {
         localStorage.removeItem('username');
         window.location.href = 'login.html';
-    }
+    };
 
-    // Load data immediately
+    // Load immediately
     loadDashboard();
 });
 </script>
