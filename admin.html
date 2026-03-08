@@ -85,7 +85,15 @@
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
+// Admin dashboard logic
 document.addEventListener("DOMContentLoaded", () => {
+  // Redirect if not logged in as admin
+  if (localStorage.getItem("adminLoggedIn") !== "true") {
+    alert("Please login as admin first");
+    window.location.href = "admin-login.html";
+    return;
+  }
+
   const tableBody = document.getElementById("usersTableBody");
   const msg = document.getElementById("msg");
 
@@ -102,16 +110,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      console.log("Fetch status:", res.status); // debug
-
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.detail || `Server error ${res.status}`);
       }
 
       const users = await res.json();
-      console.log("Users data:", users); // debug - check this in console!
-
       tableBody.innerHTML = "";
 
       if (users.length === 0) {
@@ -129,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
           <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
           <td>
-            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
+            ${!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
             <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
             <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
           </td>
@@ -145,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Admin actions
   window.approveUser = async (username) => {
     if (!confirm(`Approve user ${username}?`)) return;
     await adminAction("approve-user", username, `User ${username} approved successfully`);
@@ -159,11 +164,10 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
-
       const data = await res.json();
       if (res.ok) {
-        showMessage("success", `New password for \( {username}: <strong> \){data.new_password}</strong>`);
-        fetchUsers(); // refresh
+        showMessage("success", `New password for ${username}: ${data.new_password}`);
+        fetchUsers();
       } else {
         showMessage("error", data.detail || "Failed to reset password");
       }
@@ -179,12 +183,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function adminAction(endpoint, username, successMsg) {
     try {
-      const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+      const res = await fetch(`${BACKEND_URL}/admin/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
-
       const data = await res.json();
       if (res.ok) {
         showMessage("success", successMsg);
@@ -197,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Load users immediately
+  // Load users on page load
   fetchUsers();
 });
 </script>
