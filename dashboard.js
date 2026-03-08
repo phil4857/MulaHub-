@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // DOM elements
-    const balanceEl    = document.getElementById('balanceDisplay');
-    const earningsEl   = document.getElementById('earningsDisplay');
-    const investedEl   = document.getElementById('investedDisplay');
-    const msgEl        = document.getElementById('msg');
+    const balanceEl     = document.getElementById('balanceDisplay');
+    const earningsEl    = document.getElementById('earningsDisplay');
+    const investedEl    = document.getElementById('investedDisplay');
+    const msgEl         = document.getElementById('msg');
     const commodityGrid = document.getElementById('commodityGrid');
     const investmentList = document.getElementById('investmentList');
 
@@ -32,9 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         msgEl.style.color = "blue";
 
         try {
-            // FIXED: correct template literal
-            const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
-            console.log("→ Fetching dashboard:", url); // debug: see exact URL
+            const url = `${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`;
+            console.log("→ Fetching dashboard:", url);
 
             const res = await fetch(url);
 
@@ -43,23 +42,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 try { data = await res.json(); } catch {}
                 
                 msgEl.style.color = "red";
-                if (res.status === 404) {
-                    msgEl.textContent = "User/dashboard not found (404). Try logging in again.";
-                } else if (res.status === 403) {
-                    msgEl.textContent = data.detail || "Account not approved yet.";
-                } else if (res.status === 422) {
-                    msgEl.textContent = "Invalid request (422). Check username.";
-                } else {
-                    msgEl.textContent = data.detail || `Server error (${res.status})`;
-                }
+                if (res.status === 404) msgEl.textContent = "User/dashboard not found (404).";
+                else if (res.status === 403) msgEl.textContent = data.detail || "Account not approved yet.";
+                else if (res.status === 422) msgEl.textContent = "Invalid request (422).";
+                else msgEl.textContent = data.detail || `Server error (${res.status})`;
                 console.error("Dashboard error:", res.status, data);
                 return;
             }
 
             const data = await res.json();
-            console.log("Dashboard data:", data); // debug: see real data
+            console.log("Dashboard data:", data);
 
-            balanceEl.textContent  = Number(data.balance  || 0).toFixed(2);
+            balanceEl.textContent  = Number(data.balance || 0).toFixed(2);
             earningsEl.textContent = Number(data.earnings || 0).toFixed(2);
 
             let invested = 0;
@@ -75,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             msgEl.style.color = "green";
             msgEl.textContent = "Dashboard loaded successfully!";
-            setTimeout(() => { msgEl.textContent = ""; }, 3000); // Clear success msg after 3s
+            setTimeout(() => { msgEl.textContent = ""; }, 3000);
         } catch (err) {
             msgEl.style.color = "red";
             msgEl.textContent = "Cannot connect to server. Check internet / backend.";
@@ -126,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'commodity-card';
             card.innerHTML = `
-                <img src="\( {com.img}" alt=" \){com.name}">
+                <img src="${com.img}" alt="${com.name}">
                 <div class="commodity-info">
                     <h4>${com.name}</h4>
                     <p>KES ${com.price.toLocaleString()}</p>
