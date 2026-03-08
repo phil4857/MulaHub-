@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedDisplay = document.getElementById('selectedCommodity');
 
     let selectedCommodity = null;
+    let selectedPrice = 0;
+    let investAmount = 0;
 
     // Load dashboard data
     async function loadDashboard() {
@@ -25,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
-
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 if (msgEl) {
@@ -64,20 +65,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Select commodity card
-    window.selectCommodity = function(commodity) {
+    // Select commodity card and enable amount input
+    window.selectCommodity = function(commodity, price) {
         selectedCommodity = commodity;
+        selectedPrice = price;
+        investAmount = price;
 
-        document.querySelectorAll('.commodity-card').forEach(card => {
-            card.classList.remove('selected');
-        });
+        document.querySelectorAll('.commodity-card').forEach(card => card.classList.remove('selected'));
         event.currentTarget.classList.add('selected');
 
         if (selectedDisplay) {
-            selectedDisplay.textContent = commodity.charAt(0).toUpperCase() + commodity.slice(1).replace('_', ' ');
+            selectedDisplay.textContent = `${commodity.charAt(0).toUpperCase() + commodity.slice(1).replace('_',' ')} - KES ${price}`;
         }
 
-        if (investBtn) investBtn.disabled = false;
+        if (investBtn) {
+            investBtn.disabled = false;
+            investBtn.textContent = `Invest KES ${price}`;
+        }
     };
 
     // Handle investment request
@@ -90,6 +94,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 return;
             }
+
+            const amountInput = document.getElementById('commodityAmount');
+            const amount = amountInput ? Number(amountInput.value) : selectedPrice;
+            if (!amount || amount < selectedPrice) {
+                if (msgEl) {
+                    msgEl.className = "msg error";
+                    msgEl.textContent = `Amount must be at least KES ${selectedPrice}`;
+                }
+                return;
+            }
+
+            investAmount = amount;
 
             if (msgEl) {
                 msgEl.className = "msg loading";
@@ -112,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     if (msgEl) {
                         msgEl.className = "msg success";
-                        msgEl.textContent = data.message || `Investment request for ${selectedCommodity} created. Awaiting confirmation.`;
+                        msgEl.textContent = `Investment request created. Send KES ${investAmount} to M-Pesa: 0752964507`;
                     }
                     loadDashboard(); // refresh numbers
                 } else {
@@ -131,10 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function logout() {
+    window.logout = function() {
         localStorage.removeItem('username');
         window.location.href = 'login.html';
-    }
+    };
 
     // Load on open
     loadDashboard();
