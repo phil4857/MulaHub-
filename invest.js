@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
+            const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
