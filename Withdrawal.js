@@ -10,8 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const form        = document.getElementById("withdrawalForm");
     const amountInput = document.getElementById("amount");
-    const methodInput = document.getElementById("method");
-    const accountInput = document.getElementById("account");
     const submitBtn   = form.querySelector('button[type="submit"]');
     const balanceDiv  = document.querySelector(".balance");
     const msgDiv      = document.getElementById("msg") || document.createElement("div");
@@ -53,26 +51,21 @@ document.addEventListener("DOMContentLoaded", () => {
         clearMessage();
 
         const amount = parseFloat(amountInput.value.trim());
-        const method = methodInput.value.trim();
-        const account = accountInput.value.trim();
 
         // Validation
         if (!amount || isNaN(amount) || amount <= 0) return showError("Enter a valid amount greater than 0.");
         if (amount < 500) return showError("Minimum withdrawal is KES 500.");
         if (amount > currentBalance) return showError("Amount exceeds current balance.");
-        if (!method) return showError("Please select a withdrawal method.");
-        if (!account) return showError("Enter account or phone number.");
 
         submitBtn.disabled = true;
         submitBtn.textContent = "Processing...";
         showInfo("Submitting withdrawal request...");
 
         try {
+            // Only send the fields backend expects
             const formData = new URLSearchParams();
             formData.append("username", username);
             formData.append("amount", amount);
-            formData.append("method", method);
-            formData.append("account", account);
 
             const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
                 method: "POST",
@@ -85,10 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.ok) {
                 showSuccess(data.message || "Withdrawal request submitted! Awaiting admin approval.");
                 amountInput.value = "";
-                methodInput.value = "";
-                accountInput.value = "";
 
-                // Update balance display immediately (tentative)
+                // Update balance display tentatively
                 currentBalance -= amount;
                 balanceDiv.textContent = `KES ${currentBalance.toLocaleString()}`;
             } else {
