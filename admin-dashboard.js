@@ -1,8 +1,7 @@
-// admin-dashboard.js
+// admin-dashboard.js (extended with withdrawals)
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Require admin login
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     alert("Please login as admin first");
     window.location.href = "admin-login.html";
@@ -10,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const tableBody = document.getElementById("usersTableBody");
+  const withdrawalBody = document.getElementById("withdrawalTableBody"); // new table for withdrawals
   const msg = document.getElementById("msg");
 
   function showMessage(type, text) {
@@ -17,37 +17,29 @@ document.addEventListener("DOMContentLoaded", () => {
       msg.className = `msg ${type}`;
       msg.textContent = text;
       msg.style.display = "block";
-      setTimeout(() => msg.style.display = "none", 8000);
+      setTimeout(() => (msg.style.display = "none"), 8000);
     }
     console.log(`[${type}] ${text}`);
   }
 
   async function fetchUsers() {
-    if (!tableBody) {
-      showMessage("error", "Table body element missing in HTML");
-      return;
-    }
-
+    if (!tableBody) return showMessage("error", "Table body missing");
     tableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
     showMessage("loading", "Loading users...");
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `HTTP ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error((await res.json()).detail || `HTTP ${res.status}`);
       const users = await res.json();
       tableBody.innerHTML = "";
 
       if (!users.length) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users registered yet</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users found</td></tr>';
         showMessage("success", "No users found");
         return;
       }
 
-      users.forEach(user => {
+      users.forEach((user) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${user.username}</td>
@@ -67,41 +59,77 @@ document.addEventListener("DOMContentLoaded", () => {
 
       showMessage("success", `Loaded ${users.length} users`);
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Fetch users error:", err);
       tableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
       showMessage("error", "Failed to load users: " + err.message);
     }
   }
 
-  window.approveUser = async (username) => {
-    if (!confirm(`Approve ${username}?`)) return;
-    await adminAction("approve-user", username, `${username} approved`);
-  };
+  // ------------------ Withdrawals ------------------
+  async function fetchWithdrawals() {
+    if (!withdrawalBody) return;
 
-  window.resetPassword = async (username) => {
-    if (!confirm(`Reset password for ${username}?`)) return;
+    withdrawalBody.innerHTML = '<tr><td colspan="3">Loading withdrawals...</td></tr>';
+
     try {
-      const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
+      const res = await fetch(`${BACKEND_URL}/admin/users`);
+      if (!res.ok) throw new Error((await res.json()).detail || `HTTP ${res.status}`);
+      const users = await res.json();
+
+      // Only users with pending withdrawals
+      const pending = users.filter(u => u.pending_withdrawal); // you'll need to add this field in backend
+
+      withdrawalBody.innerHTML = "";
+      if (!pending.length) {
+        withdrawalBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#777;">No pending withdrawals</td></tr>';
+        return;
+      }
+
+      pending.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${u.username}</td>
+          <td>KES ${u.pending_withdrawal.amount.toFixed(2)}</td>
+          <td>
+            <button class="action-btn approve-btn" onclick="approveWithdrawal('${u.username}')">Approve</button>
+          </td>
+        `;
+        withdrawalBody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error("Fetch withdrawals error:", err);
+      withdrawalBody.innerHTML = '<tr><td colspan="3" style="color:red;">Failed to load withdrawals</td></tr>';
+    }
+  }
+
+  window.approveWithdrawal = async (username) => {
+    if (!confirm(`Approve withdrawal for ${username}?`)) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/approve-withdrawal`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ username })
       });
+
       const data = await res.json();
       if (res.ok) {
-        showMessage("success", `New password for ${username}: ${data.new_password}`);
+        showMessage("success", data.message);
         fetchUsers();
+        fetchWithdrawals();
       } else {
-        showMessage("error", data.detail || "Reset failed");
+        showMessage("error", data.detail || "Failed to approve withdrawal");
       }
     } catch (err) {
+      console.error(err);
       showMessage("error", "Network error");
     }
   };
 
-  window.terminateUser = async (username) => {
-    if (!confirm(`Terminate ${username}? Permanent!`)) return;
-    await adminAction("terminate-user", username, `${username} terminated`);
-  };
+  // ------------------ Other admin actions ------------------
+  window.approveUser = async (username) => adminAction("approve-user", username, `${username} approved`);
+  window.resetPassword = async (username) => adminAction("reset-password", username, `Password reset for ${username}`);
+  window.terminateUser = async (username) => adminAction("terminate-user", username, `${username} terminated`);
 
   async function adminAction(endpoint, username, successMsg) {
     try {
@@ -123,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Load users on page load
+  // Load everything on page load
   fetchUsers();
+  fetchWithdrawals();
 });
