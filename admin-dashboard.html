@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { font-family: Arial, sans-serif; background: #f4f9ff; margin: 0; padding: 20px; }
-  .box { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  .box { max-width: 1200px; margin: 0 auto 40px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
   h2 { color: #0a1d66; text-align: center; margin-bottom: 20px; }
   table { width: 100%; border-collapse: collapse; margin-top: 20px; }
   th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
@@ -14,6 +14,7 @@
   tr:nth-child(even) { background-color: #f2f2f2; }
   .action-btn { padding: 6px 12px; margin: 0 4px; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 14px; }
   .approve-btn { background: #28a745; }
+  .reject-btn { background: #dc3545; }
   .terminate-btn { background: #dc3545; }
   .reset-btn { background: #ffc107; color: black; }
   .msg { margin: 15px 0; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; display: none; }
@@ -27,6 +28,7 @@
   <h2>Admin Dashboard - Mkoba Wallet</h2>
   <div id="msg" class="msg"></div>
 
+  <h3>User Management</h3>
   <table id="usersTable">
     <thead>
       <tr>
@@ -43,6 +45,23 @@
   </table>
 </div>
 
+<div class="box">
+  <h3>Pending Withdrawal Requests</h3>
+  <table id="withdrawalsTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Amount (KES)</th>
+        <th>Method</th>
+        <th>Account/Phone</th>
+        <th>Requested At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="withdrawalsTableBody"></tbody>
+  </table>
+</div>
+
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
@@ -53,7 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const tableBody = document.getElementById("usersTableBody");
+  const usersTableBody = document.getElementById("usersTableBody");
+  const withdrawalsTableBody = document.getElementById("withdrawalsTableBody");
   const msg = document.getElementById("msg");
 
   function showMessage(type, text) {
@@ -63,27 +83,18 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => msg.style.display = "none", 8000);
   }
 
+  // ───── USER MANAGEMENT ─────
   async function fetchUsers() {
-    tableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
-    showMessage("", "Loading users...");
+    usersTableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
-      console.log("Admin users status:", res.status);
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const users = await res.json();
-      console.log("Admin users data:", users);
 
-      tableBody.innerHTML = "";
-
+      usersTableBody.innerHTML = "";
       if (users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#777;">No users registered yet</td></tr>';
-        showMessage("success", "No users found");
+        usersTableBody.innerHTML = '<tr><td colspan="7" style="color:#777;">No users registered yet</td></tr>';
         return;
       }
 
@@ -96,22 +107,58 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
           <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
           <td>
-            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
+            ${!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser('${user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
             <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
             <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
           </td>
         `;
-        tableBody.appendChild(tr);
+        usersTableBody.appendChild(tr);
       });
-
-      showMessage("success", `Loaded ${users.length} users`);
     } catch (err) {
-      console.error("Admin fetch error:", err);
-      tableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
+      usersTableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
+      console.error(err);
       showMessage("error", "Failed to load users: " + err.message);
     }
   }
 
+  // ───── WITHDRAWAL MANAGEMENT ─────
+  async function fetchWithdrawals() {
+    withdrawalsTableBody.innerHTML = '<tr><td colspan="6">Loading withdrawal requests...</td></tr>';
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/withdrawals/pending`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const withdrawals = await res.json();
+
+      withdrawalsTableBody.innerHTML = "";
+      if (withdrawals.length === 0) {
+        withdrawalsTableBody.innerHTML = '<tr><td colspan="6" style="color:#777;">No pending withdrawals</td></tr>';
+        return;
+      }
+
+      withdrawals.forEach(w => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${w.username}</td>
+          <td>KES ${Number(w.amount).toFixed(2)}</td>
+          <td>${w.method}</td>
+          <td>${w.account}</td>
+          <td>${new Date(w.requested_at).toLocaleString()}</td>
+          <td>
+            <button class="action-btn approve-btn" onclick="approveWithdrawal('${w.id}')">Approve</button>
+            <button class="action-btn reject-btn" onclick="rejectWithdrawal('${w.id}')">Reject</button>
+          </td>
+        `;
+        withdrawalsTableBody.appendChild(tr);
+      });
+    } catch (err) {
+      withdrawalsTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load withdrawals</td></tr>';
+      console.error(err);
+      showMessage("error", "Failed to load withdrawals: " + err.message);
+    }
+  }
+
+  // ───── ADMIN ACTIONS ─────
   window.approveUser = async (username) => {
     if (!confirm(`Approve ${username}?`)) return;
     await adminAction("approve-user", username, `${username} approved`);
@@ -142,17 +189,28 @@ document.addEventListener("DOMContentLoaded", () => {
     await adminAction("terminate-user", username, `${username} terminated`);
   };
 
-  async function adminAction(endpoint, username, successMsg) {
+  window.approveWithdrawal = async (id) => {
+    if (!confirm(`Approve this withdrawal?`)) return;
+    await adminAction(`withdrawals/approve`, id, "Withdrawal approved", fetchWithdrawals);
+  };
+
+  window.rejectWithdrawal = async (id) => {
+    if (!confirm(`Reject this withdrawal?`)) return;
+    await adminAction(`withdrawals/reject`, id, "Withdrawal rejected", fetchWithdrawals);
+  };
+
+  async function adminAction(endpoint, identifier, successMsg, callback) {
     try {
-      const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+      const res = await fetch(`${BACKEND_URL}/admin/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username })
+        body: new URLSearchParams({ id: identifier, username: identifier })
       });
       const data = await res.json();
       if (res.ok) {
         showMessage("success", successMsg);
-        fetchUsers();
+        if (callback) callback();
+        else fetchUsers();
       } else {
         showMessage("error", data.detail || "Action failed");
       }
@@ -161,7 +219,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Initial load
   fetchUsers();
+  fetchWithdrawals();
 });
 </script>
 
