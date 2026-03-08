@@ -146,8 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
         msg.style.color = "blue";
 
         try {
-            // Fixed URL syntax
-            const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
+            // ✅ Fixed fetch URL template literal
+            const url = `${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`;
             console.log("Fetching user data from:", url);
 
             const response = await fetch(url);
@@ -241,8 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
         commodities.forEach(com => {
             const card = document.createElement('div');
             card.className = 'commodity-card';
+            // ✅ Fixed template literal for image and alt
             card.innerHTML = `
-                <img src="\( {com.img}" alt=" \){com.name}">
+                <img src="${com.img}" alt="${com.name}">
                 <div class="commodity-info">
                     <h4>${com.name}</h4>
                     <p>KES ${com.price.toLocaleString()}</p>
