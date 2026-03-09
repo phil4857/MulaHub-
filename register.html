@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register - Mkoba Wallet</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Mkoba Wallet</title>
     <link rel="stylesheet" href="style.css">
     <style>
         body {
@@ -14,61 +14,82 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            color: #333;
         }
         .box {
             background: white;
-            padding: 30px;
+            padding: 40px 30px;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            width: 340px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            width: 360px;
+            max-width: 90%;
             text-align: center;
         }
         h2 {
-            margin-bottom: 20px;
+            margin: 0 0 28px 0;
             color: #28a745;
+            font-size: 1.9rem;
+        }
+        label {
+            display: block;
+            text-align: left;
+            margin: 8px 0 4px;
+            font-weight: 600;
+            color: #444;
         }
         input {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 12px;
+            margin-bottom: 12px;
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
-            font-size: 14px;
+            font-size: 1rem;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
         }
         button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: #007bff;
             color: white;
             border: none;
             border-radius: 6px;
             font-weight: bold;
+            font-size: 1.1rem;
             cursor: pointer;
-            margin-top: 10px;
-            font-size: 16px;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+        button:hover:not(:disabled) {
+            background: #0056b3;
         }
         button:disabled {
             background: #6c757d;
             cursor: not-allowed;
         }
         .msg {
-            margin-top: 15px;
-            padding: 10px;
+            margin-top: 16px;
+            padding: 12px;
             border-radius: 6px;
-            font-weight: bold;
-            min-height: 20px;
+            font-weight: 600;
+            min-height: 24px;
+            font-size: 0.95rem;
         }
         .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .loading { background: #e3f2fd; color: #1976d2; }
+        .error   { background: #f8d7da; color: #721c24; }
+        .loading { background: #e3f2fd; color: #0c5460; }
         .login-link {
-            margin-top: 15px;
-            font-size: 14px;
+            margin-top: 20px;
+            font-size: 0.95rem;
         }
         .login-link a {
             color: #007bff;
             text-decoration: none;
+            font-weight: 600;
         }
         .login-link a:hover {
             text-decoration: underline;
@@ -80,13 +101,24 @@
 <div class="box">
     <h2>Register to Mkoba Wallet</h2>
 
-    <input id="username" placeholder="Username (no spaces)" required>
-    <input id="phone" type="tel" placeholder="Phone (e.g. 0712345678)" required>
-    <input id="password" type="password" placeholder="Password" required>
-    <input id="confirmPassword" type="password" placeholder="Confirm Password" required>
-    <input id="referral" placeholder="Referral code (optional)">
+    <form id="registerForm">
+        <label for="username">Username (no spaces, 3+ characters)</label>
+        <input id="username" type="text" placeholder="e.g. john254" required autocomplete="username">
 
-    <button id="registerBtn">Register</button>
+        <label for="phone">Phone Number</label>
+        <input id="phone" type="tel" placeholder="e.g. 0712345678" required autocomplete="tel">
+
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="At least 6 characters" required autocomplete="new-password">
+
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword" type="password" placeholder="Re-enter password" required autocomplete="new-password">
+
+        <label for="referral">Referral Code (optional)</label>
+        <input id="referral" type="text" placeholder="e.g. friend123" autocomplete="off">
+
+        <button type="button" id="registerBtn">Register</button>
+    </form>
 
     <div class="msg" id="msg"></div>
 
@@ -99,72 +131,87 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("registerForm");
     const registerBtn = document.getElementById("registerBtn");
     const msg = document.getElementById("msg");
+    const usernameInput = document.getElementById("username");
+    const phoneInput = document.getElementById("phone");
     const passwordInput = document.getElementById("password");
     const confirmPasswordInput = document.getElementById("confirmPassword");
+    const referralInput = document.getElementById("referral");
 
-    // Real-time password match feedback
-    confirmPasswordInput.addEventListener("input", () => {
-        const password = passwordInput.value;
-        const confirm = confirmPasswordInput.value;
+    // Real-time password match + button state
+    const checkPasswordMatch = () => {
+        const p = passwordInput.value;
+        const c = confirmPasswordInput.value;
 
-        if (confirm && password !== confirm) {
-            msg.style.color = "red";
-            msg.innerText = "Passwords do not match";
-        } else if (confirm) {
-            msg.style.color = "green";
-            msg.innerText = "Passwords match!";
-        } else {
-            msg.innerText = "";
+        if (c.length === 0) {
+            msg.textContent = "";
+            registerBtn.disabled = false;
+            return;
         }
-    });
+
+        if (p !== c) {
+            msg.style.color = "red";
+            msg.textContent = "Passwords do not match";
+            registerBtn.disabled = true;
+        } else {
+            msg.style.color = "green";
+            msg.textContent = "Passwords match ✓";
+            registerBtn.disabled = false;
+        }
+    };
+
+    passwordInput.addEventListener("input", checkPasswordMatch);
+    confirmPasswordInput.addEventListener("input", checkPasswordMatch);
 
     registerBtn.addEventListener("click", async () => {
-        msg.innerText = "";
-        msg.style.color = "black";
+        msg.textContent = "";
+        msg.className = "msg";
 
-        const username   = document.getElementById("username")?.value.trim();
-        const phone      = document.getElementById("phone")?.value.trim();
-        const pwd        = passwordInput?.value;
-        const confirmPwd = confirmPasswordInput?.value;
-        const referral   = document.getElementById("referral")?.value.trim() || "";
+        // Normalize inputs
+        const username = usernameInput.value.trim().toLowerCase();
+        const phone = phoneInput.value.trim();
+        const pwd = passwordInput.value;
+        const confirmPwd = confirmPasswordInput.value;
+        const referral = referralInput.value.trim().toLowerCase() || "";
 
-        // Client-side validation
+        // Validation
         if (!username || !phone || !pwd || !confirmPwd) {
-            msg.style.color = "red";
-            msg.innerText = "Please fill in all required fields.";
+            msg.className = "msg error";
+            msg.textContent = "Please fill in all required fields.";
             return;
         }
 
         if (username.includes(" ") || username.length < 3) {
-            msg.style.color = "red";
-            msg.innerText = "Username: ≥3 chars, no spaces.";
+            msg.className = "msg error";
+            msg.textContent = "Username: 3+ characters, no spaces.";
             return;
         }
 
         if (!/^(07|01)\d{8}$/.test(phone)) {
-            msg.style.color = "red";
-            msg.innerText = "Phone: 07XXXXXXXX or 01XXXXXXXX";
+            msg.className = "msg error";
+            msg.textContent = "Phone must be 07XXXXXXXX or 01XXXXXXXX";
             return;
         }
 
         if (pwd.length < 6) {
-            msg.style.color = "red";
-            msg.innerText = "Password: ≥6 characters.";
+            msg.className = "msg error";
+            msg.textContent = "Password must be at least 6 characters.";
             return;
         }
 
         if (pwd !== confirmPwd) {
-            msg.style.color = "red";
-            msg.innerText = "Passwords do not match.";
+            msg.className = "msg error";
+            msg.textContent = "Passwords do not match.";
             return;
         }
 
+        // Disable UI
         registerBtn.disabled = true;
-        registerBtn.innerText = "Registering...";
-        msg.style.color = "blue";
-        msg.innerText = "Creating your account...";
+        registerBtn.textContent = "Registering...";
+        msg.className = "msg loading";
+        msg.textContent = "Creating your account...";
 
         const formData = new URLSearchParams();
         formData.append("username", username);
@@ -179,27 +226,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch {
+                throw new Error("Invalid response from server");
+            }
 
             if (res.ok) {
-                msg.style.color = "green";
-                msg.innerText = data.message || "Registration successful! Redirecting...";
-                setTimeout(() => window.location.href = "login.html", 2200);
+                msg.className = "msg success";
+                msg.textContent = data.message || "Registration successful! Redirecting...";
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 2200);
             } else {
-                msg.style.color = "red";
-                let errorText = data.detail || `Error ${res.status}`;
-                if (errorText.toLowerCase().includes("already exists")) {
-                    errorText += " – choose another username.";
+                msg.className = "msg error";
+                let errText = data.detail || `Error ${res.status}`;
+                if (errText.toLowerCase().includes("already exists")) {
+                    errText += " – please choose another username.";
                 }
-                msg.innerText = errorText;
+                msg.textContent = errText;
             }
         } catch (err) {
-            msg.style.color = "red";
-            msg.innerText = "Cannot connect to server. Check internet.";
             console.error("Registration error:", err);
+            msg.className = "msg error";
+            msg.textContent = "Cannot connect to server. Please check your internet connection or try again later.";
         } finally {
             registerBtn.disabled = false;
-            registerBtn.innerText = "Register";
+            registerBtn.textContent = "Register";
         }
     });
 });
