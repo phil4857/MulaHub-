@@ -9,9 +9,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const msg = document.getElementById('msg');
-    document.getElementById('usernameDisplay').textContent = `Welcome, ${username}!`;
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const commodityGrid = document.getElementById('commodityGrid');
 
-    // Commodity prices for reference
+    if (!msg || !usernameDisplay || !commodityGrid) {
+        console.error("Required dashboard elements missing in HTML.");
+        return;
+    }
+
+    usernameDisplay.textContent = `Welcome, ${username}!`;
+
     const COMMODITY_PRICES = {
         marble: 650, crude_oil: 800, silver: 1000, lead: 1200,
         platinum: 1350, diamonds: 1750, gold: 2200, uranium: 3000
@@ -22,27 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
         msg.style.color = "blue";
 
         try {
-            // Correct template literal
             const url = `${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`;
-            console.log("Fetching:", url);
-
             const res = await fetch(url);
 
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 msg.style.color = "red";
-                if (res.status === 403) {
-                    msg.textContent = data.detail || "Account not approved yet. Contact admin.";
-                } else if (res.status === 404) {
-                    msg.textContent = "Dashboard not found. Try logging in again.";
-                } else {
-                    msg.textContent = data.detail || `Error ${res.status}`;
-                }
+                msg.textContent = data.detail || `Error ${res.status}`;
+                if (res.status === 403) msg.textContent = data.detail || "Account not approved yet. Contact admin.";
+                if (res.status === 404) msg.textContent = "Dashboard not found. Try logging in again.";
                 return;
             }
 
             const data = await res.json();
-            console.log("Dashboard data:", data);
 
             document.getElementById('balance').textContent = Number(data.balance || 0).toFixed(2);
             document.getElementById('earnings').textContent = Number(data.earnings || 0).toFixed(2);
@@ -54,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('invested').textContent = invested.toFixed(2);
 
             renderCommodityCards();
-
             msg.style.color = "green";
             msg.textContent = "Dashboard loaded successfully!";
         } catch (err) {
@@ -65,8 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderCommodityCards() {
-        const grid = document.getElementById('commodityGrid');
-        grid.innerHTML = "";
+        commodityGrid.innerHTML = "";
 
         const commodities = [
             { key: "marble",     name: "Marble",     days: 15,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=800&q=80" },
@@ -91,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             card.onclick = () => investRequest(com.key);
-            grid.appendChild(card);
+            commodityGrid.appendChild(card);
         });
     }
 
@@ -116,7 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 msg.style.color = "green";
-                msg.innerHTML = `${data.message}<br><strong>Pay via M-Pesa: ${data.mpesa_payment || '0752964507'}</strong>`;
+                // Fix: use mpesa_number returned by backend
+                msg.innerHTML = `${data.message}<br><strong>Pay via M-Pesa: ${data.mpesa_number || '0752964507'}</strong>`;
                 loadDashboard(); // refresh numbers
             } else {
                 msg.style.color = "red";
