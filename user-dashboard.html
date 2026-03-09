@@ -1,5 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mkoba Wallet Dashboard 💸</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }
+        .navbar h1 { font-weight: bold; }
+        .navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+        .tab-buttons button { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .tab-buttons button.active { background: #4f46e5; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; text-align: center; transition: all .3s; cursor: pointer; border: 2px solid transparent; font-size: 1.1rem; }
+        .commodity-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: #6366f1; }
+        .commodity-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
+        .emoji-big { font-size: 4rem; line-height: 1; margin-bottom: 12px; }
+        .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .loading { color: #007bff; }
+        .banner { background: #fef3c7; border: 1px solid #fbbf24; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #92400e; }
+        .copy-btn { background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1.125rem; font-weight: bold; cursor: pointer; margin: 16px 0; width: 100%; }
+        .copy-btn:hover { background: #059669; }
+    </style>
+</head>
+<body class="p-4">
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <h1>Mkoba Wallet Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<!-- PAYMENT BANNER -->
+<div class="banner">
+    Send investment money to M-Pesa: <span class="text-red-600">0752964507</span><br>
+    <small>Include your username in the message for verification</small>
+</div>
+
+<!-- TAB SWITCH -->
+<div class="tab-buttons">
+    <button id="tabInvestBtn" class="active">Invest</button>
+    <button id="tabEarningsBtn">Earnings</button>
+    <button id="tabWithdrawBtn">Withdraw</button>
+</div>
+
+<!-- INVEST TAB -->
+<div id="tabInvest" class="tab-content active">
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
+            <h2 class="text-gray-500 text-sm">Balance</h2>
+            <p id="balance" class="text-3xl font-bold text-indigo-600">KES 0.00</p>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
+            <h2 class="text-gray-500 text-sm">Earnings</h2>
+            <p id="earnings" class="text-3xl font-bold text-green-600">KES 0.00</p>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
+            <h2 class="text-gray-500 text-sm">Total Invested</h2>
+            <p id="invested" class="text-3xl font-bold text-purple-600">KES 0.00</p>
+        </div>
+    </div>
+
+    <p id="msg" class="msg loading">Loading dashboard...</p>
+
+    <h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">Choose Your Investment</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="commodityGrid"></div>
+
+    <div class="mt-10 text-center">
+        <p class="text-xl font-medium mb-4">Selected: <span id="selectedCommodity" class="text-indigo-700 font-bold">-- None --</span></p>
+        <button id="investBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-lg font-bold text-lg w-full max-w-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Request Investment
+        </button>
+    </div>
+
+    <div id="investmentList" class="mt-8"></div>
+</div>
+
+<!-- EARNINGS TAB -->
+<div id="tabEarnings" class="tab-content">
+    <div class="container mx-auto p-4 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-center mb-4">Earnings Overview</h2>
+        <div class="card p-4 bg-green-50 rounded-lg space-y-2">
+            <p><strong>Username:</strong> <span id="usernameDisplay">—</span></p>
+            <p><strong>Current Balance:</strong> KES <span id="balanceDisplay">0.00</span></p>
+            <p><strong>Total Earnings:</strong> KES <span id="earningsDisplay">0.00</span></p>
+            <p><strong>Total Invested Amount:</strong> KES <span id="investedDisplay">0.00</span></p>
+            <p class="font-bold text-indigo-700"><strong>Next Daily Bonus:</strong> <span id="nextDailyEarning">Calculating...</span></p>
+            <p><strong>Daily Bonus Rate:</strong> <span id="dailyRate">10% pro-rated over investment days</span></p>
+        </div>
+        <p id="earnMsg" class="msg loading mt-4"></p>
+        <div class="text-center mt-6">
+            <button class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold" onclick="fetchUserData()">
+                Refresh Earnings
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- WITHDRAW TAB -->
+<div id="tabWithdraw" class="tab-content">
+    <div class="container mx-auto p-4 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-center mb-6">Withdraw Funds</h2>
+        
+        <div class="text-center mb-8">
+            <p class="text-xl font-medium mb-4">Available Balance</p>
+            <p class="text-4xl font-bold text-indigo-700">KES <span id="withdrawBalance">0.00</span></p>
+        </div>
+
+        <div class="bg-yellow-50 border border-yellow-300 p-6 rounded-lg text-center">
+            <p class="text-lg font-semibold mb-4">Send money to this M-Pesa number:</p>
+            <p class="text-3xl font-bold text-red-600 mb-4">0752964507</p>
+            <p class="text-sm text-gray-700 mb-6">Include your username in the transaction message.</p>
+            <button id="copyNumberBtn" class="copy-btn">
+                Copy Number & Withdraw
+            </button>
+            <p class="text-sm text-gray-600 mt-4">Withdrawal processed manually within 24 hours after payment.</p>
+        </div>
+
+        <p id="withdrawMsg" class="msg mt-8"></p>
+    </div>
+</div>
+
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const MPESA_NUMBER = "0752964507";
+
+const COMMODITY_INFO = {
+    marble:     { price: 650,  days: 15, emoji: "🪨🪨🪨" },
+    crude_oil:  { price: 800,  days: 20, emoji: "🛢️🛢️🛢️" },
+    silver:     { price: 1000, days: 23, emoji: "🪙🪙🪙" },
+    lead:       { price: 1200, days: 25, emoji: "⚙️⚙️⚙️" },
+    platinum:   { price: 1350, days: 28, emoji: "💎💎💎" },
+    diamonds:   { price: 1750, days: 32, emoji: "💎💎💎" },
+    gold:       { price: 2200, days: 35, emoji: "🪙🪙🪙" },
+    uranium:    { price: 3000, days: 45, emoji: "☢️☢️☢️" }
+};
+
+let selectedCommodity = null;
+let countdownIntervals = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('username');
@@ -8,36 +151,46 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    document.getElementById('usernameDisplay').textContent = username;
+
+    // Tab switching
+    document.querySelectorAll('.tab-buttons button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(btn.id.replace('Btn', '')).classList.add('active');
+        });
+    });
+
+    // Copy button
+    document.getElementById("copyNumberBtn").addEventListener("click", () => {
+        navigator.clipboard.writeText(MPESA_NUMBER).then(() => {
+            document.getElementById("withdrawMsg").className = "msg success";
+            document.getElementById("withdrawMsg").innerHTML = `Copied! Open M-Pesa and send.<br>Include your username.`;
+        }).catch(() => {
+            alert("Copy failed. Use: " + MPESA_NUMBER);
+        });
+    });
+
+    startDailyCountdown();
+    fetchUserData();
+});
+
+async function fetchUserData(retries = 3) {
     const msg = document.getElementById('msg');
-    const usernameDisplay = document.getElementById('usernameDisplay');
-    const commodityGrid = document.getElementById('commodityGrid');
+    msg.textContent = "Loading dashboard...";
+    msg.style.color = "blue";
 
-    if (!msg || !usernameDisplay || !commodityGrid) {
-        console.error("Required dashboard elements missing in HTML.");
-        return;
-    }
+    const username = localStorage.getItem('username');
 
-    usernameDisplay.textContent = `Welcome, ${username}!`;
-
-    const COMMODITY_PRICES = {
-        marble: 650, crude_oil: 800, silver: 1000, lead: 1200,
-        platinum: 1350, diamonds: 1750, gold: 2200, uranium: 3000
-    };
-
-    async function loadDashboard() {
-        msg.textContent = "Loading dashboard...";
-        msg.style.color = "blue";
-
+    for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-            const url = `${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`;
-            const res = await fetch(url);
-
+            const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 msg.style.color = "red";
                 msg.textContent = data.detail || `Error ${res.status}`;
-                if (res.status === 403) msg.textContent = data.detail || "Account not approved yet. Contact admin.";
-                if (res.status === 404) msg.textContent = "Dashboard not found. Try logging in again.";
                 return;
             }
 
@@ -47,91 +200,134 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('earnings').textContent = Number(data.earnings || 0).toFixed(2);
 
             let invested = 0;
-            if (data.investments && typeof data.investments === 'object') {
-                Object.values(data.investments).forEach(item => invested += Number(item.amount || 0));
-            }
+            if (data.investments) Object.values(data.investments).forEach(i => invested += Number(i.amount || 0));
             document.getElementById('invested').textContent = invested.toFixed(2);
 
+            document.getElementById('balanceDisplay').textContent = Number(data.balance || 0).toFixed(2);
+            document.getElementById('earningsDisplay').textContent = Number(data.earnings || 0).toFixed(2);
+            document.getElementById('investedDisplay').textContent = invested.toFixed(2);
+            document.getElementById('withdrawBalance').textContent = Number(data.balance || 0).toFixed(2);
+
+            renderInvestments(data.investments || {});
             renderCommodityCards();
+
             msg.style.color = "green";
-            msg.textContent = "Dashboard loaded successfully!";
+            msg.textContent = "Loaded!";
+            setTimeout(() => msg.textContent = "", 3000);
+            return;
         } catch (err) {
-            msg.style.color = "red";
-            msg.textContent = "Failed to load dashboard. Check connection.";
-            console.error(err);
-        }
-    }
-
-    function renderCommodityCards() {
-        commodityGrid.innerHTML = "";
-
-        const commodities = [
-            { key: "marble",     name: "Marble",     days: 15,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=800&q=80" },
-            { key: "crude_oil",  name: "Crude Oil",  days: 20,  img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=800&q=80" },
-            { key: "silver",     name: "Silver",     days: 23,  img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" },
-            { key: "lead",       name: "Lead",       days: 25,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=800&q=80" },
-            { key: "platinum",   name: "Platinum",   days: 28,  img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=800&q=80" },
-            { key: "diamonds",   name: "Diamonds",   days: 32,  img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80" },
-            { key: "gold",       name: "Gold",       days: 35,  img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?auto=format&fit=crop&w=800&q=80" },
-            { key: "uranium",    name: "Uranium",    days: 45,  img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=800&q=80" }
-        ];
-
-        commodities.forEach(com => {
-            const card = document.createElement('div');
-            card.className = 'commodity-card';
-            card.innerHTML = `
-                <img src="${com.img}" alt="${com.name}" onerror="this.src='https://via.placeholder.com/800x160?text=${com.name}'">
-                <div class="commodity-info">
-                    <h4>${com.name}</h4>
-                    <p>KES ${COMMODITY_PRICES[com.key].toLocaleString()}</p>
-                    <p>${com.days} days</p>
-                </div>
-            `;
-            card.onclick = () => investRequest(com.key);
-            commodityGrid.appendChild(card);
-        });
-    }
-
-    async function investRequest(commodity) {
-        if (!confirm(`Invest in ${commodity} for KES ${COMMODITY_PRICES[commodity]}?`)) return;
-
-        msg.textContent = `Requesting ${commodity} investment...`;
-        msg.style.color = "blue";
-
-        const formData = new URLSearchParams();
-        formData.append('username', username);
-        formData.append('commodity', commodity);
-
-        try {
-            const res = await fetch(`${BACKEND_URL}/invest/request`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                msg.style.color = "green";
-                // Fix: use mpesa_number returned by backend
-                msg.innerHTML = `${data.message}<br><strong>Pay via M-Pesa: ${data.mpesa_number || '0752964507'}</strong>`;
-                loadDashboard(); // refresh numbers
-            } else {
+            if (attempt === retries) {
                 msg.style.color = "red";
-                msg.textContent = data.detail || 'Investment request failed.';
+                msg.textContent = "Cannot connect to server.";
+            } else {
+                msg.textContent = `Retrying (\( {attempt}/ \){retries})...`;
+                await new Promise(r => setTimeout(r, 8000));
             }
-        } catch (err) {
-            msg.style.color = "red";
-            msg.textContent = "Network error during investment request.";
-            console.error(err);
         }
     }
+}
 
-    window.logout = function() {
-        localStorage.removeItem('username');
-        window.location.href = 'login.html';
+function renderInvestments(investments) {
+    const container = document.getElementById('investmentList');
+    container.innerHTML = '';
+    if (!investments || Object.keys(investments).length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
+        return;
+    }
+    for (const [commodity, inv] of Object.entries(investments)) {
+        const expiry = new Date(inv.expiry_date);
+        const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#f0f8f0; padding:15px; border-radius:10px; border:1px solid #28a745; margin-bottom:10px;';
+        card.innerHTML = `
+            <strong>${commodity.toUpperCase()}</strong><br>
+            Amount: KES ${Number(inv.amount || 0).toFixed(2)}<br>
+            Expires in: ${remainingDays} day(s)
+        `;
+        container.appendChild(card);
+    }
+}
+
+function renderCommodityCards() {
+    const grid = document.getElementById('commodityGrid');
+    grid.innerHTML = "";
+
+    Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
+        const card = document.createElement('div');
+        card.className = 'commodity-card';
+        card.onclick = () => investRequest(key);
+        card.innerHTML = `
+            <div class="emoji-big">${com.emoji}</div>
+            <p class="font-semibold mt-2">${key.replace("_", " ").toUpperCase()}</p>
+            <p class="text-sm text-gray-600">KES ${com.price.toLocaleString()}</p>
+            <p class="text-xs text-gray-500">${com.days} days</p>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+async function investRequest(commodity) {
+    if (!commodity || !COMMODITY_INFO[commodity]) return alert("Invalid selection");
+
+    if (!confirm(`Invest in ${commodity} for KES ${COMMODITY_INFO[commodity].price}?`)) return;
+
+    const msg = document.getElementById('msg');
+    msg.textContent = `Requesting ${commodity}...`;
+    msg.style.color = "blue";
+
+    const formData = new URLSearchParams();
+    formData.append('username', localStorage.getItem('username'));
+    formData.append('commodity', commodity);
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/invest/request`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            msg.style.color = "green";
+            msg.innerHTML = `${data.message || "Success"}<br><strong>Pay via M-Pesa: ${data.mpesa_number || MPESA_NUMBER}</strong>`;
+            fetchUserData();
+        } else {
+            msg.style.color = "red";
+            msg.textContent = data.detail || 'Request failed.';
+        }
+    } catch (err) {
+        msg.style.color = "red";
+        msg.textContent = "Network error.";
+    }
+}
+
+function startDailyCountdown() {
+    const el = document.getElementById("nextDailyEarning");
+    let last = parseInt(localStorage.getItem('lastDailyBonusTime') || Date.now());
+    const next = last + 86400000;
+
+    const tick = () => {
+        const diff = next - Date.now();
+        if (diff <= 0) {
+            el.textContent = "Available now!";
+            return;
+        }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        el.textContent = `${h}h ${m}m ${s}s`;
     };
 
-    loadDashboard();
-});
+    tick();
+    setInterval(tick, 1000);
+}
+
+window.logout = function() {
+    localStorage.removeItem('username');
+    window.location.href = 'login.html';
+};
 </script>
+
+</body>
+</html>
