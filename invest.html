@@ -1,390 +1,248 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mkoba Wallet - Invest</title><script src="https://cdn.tailwindcss.com"></script><style>
-
-body{
-background:linear-gradient(to right,#f0f9f7,#ffffff);
-font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+<title>Invest - Mkoba Wallet 💸</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+    background: linear-gradient(to right,#f0f9f7,#fff);
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
 }
-
 .commodity-card{
-border-radius:12px;
-background:#ffffff;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
-padding:16px;
-text-align:center;
-transition:all .3s;
-cursor:pointer;
-border:2px solid transparent;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    padding:16px;
+    text-align:center;
+    transition:all .3s;
+    cursor:pointer;
+    border:2px solid transparent;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
 }
-
 .commodity-card:hover{
-transform:translateY(-8px);
-box-shadow:0 12px 24px rgba(0,0,0,0.15);
-border-color:#6366f1;
+    transform:translateY(-6px);
+    box-shadow:0 12px 24px rgba(0,0,0,0.15);
+    border-color:#6366f1;
 }
-
 .commodity-card.selected{
-border-color:#6366f1;
-background:#eef2ff;
-box-shadow:0 0 0 4px rgba(99,102,241,0.2);
+    border-color:#6366f1;
+    background:#eef2ff;
+    box-shadow:0 0 0 4px rgba(99,102,241,0.2);
 }
-
 .commodity-card img{
-width:100%;
-height:140px;
-object-fit:cover;
-border-radius:8px;
-margin-bottom:10px;
+    width:100%;
+    height:140px;
+    object-fit:cover;
+    border-radius:8px;
+    margin-bottom:12px;
 }
-
+.commodity-info p{
+    margin:2px 0;
+}
 .msg{
-margin-top:20px;
-font-weight:bold;
-text-align:center;
-min-height:24px;
-font-size:1.1rem;
+    margin-top:20px;
+    font-weight:bold;
+    text-align:center;
+    min-height:24px;
+    font-size:1.1rem;
 }
-
 .success{color:#28a745;}
 .error{color:#dc3545;}
 .loading{color:#007bff;}
+</style>
+</head>
+<body class="min-h-screen p-4">
 
-</style></head><body class="min-h-screen p-4"><nav class="bg-indigo-600 text-white p-4 flex justify-between items-center rounded-lg mb-6"><h1 class="text-lg font-bold">💰 Mkoba Wallet - Invest</h1><button onclick="logout()"
-class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm">
-Logout
-</button>
+<!-- NAVBAR -->
+<nav class="bg-indigo-600 text-white p-4 flex justify-between items-center rounded-lg mb-6">
+<h1 class="text-lg font-bold">💰 Mkoba Wallet - Invest</h1>
+<button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm">Logout</button>
+</nav>
 
-</nav><div class="max-w-6xl mx-auto space-y-8"><p id="msg" class="msg loading text-lg">
-Loading account info...
-</p><h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">
-Choose Your Investment
-</h2><div id="commodityGrid"
-class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-</div><div class="mt-10 text-center"><p class="text-xl font-medium mb-4">
-Selected:
-<span id="selectedCommodity" class="text-indigo-700 font-bold">
--- None --
-</span>
-</p><button id="investBtn"
+<div class="max-w-6xl mx-auto space-y-8">
+
+<!-- ACCOUNT OVERVIEW -->
+<div class="grid md:grid-cols-3 gap-4">
+<div class="bg-white shadow-lg rounded-lg p-5 text-center">
+<h2 class="text-gray-500 text-sm">Balance</h2>
+<p id="balance" class="text-3xl font-bold text-indigo-600">KES 0.00</p>
+</div>
+<div class="bg-white shadow-lg rounded-lg p-5 text-center">
+<h2 class="text-gray-500 text-sm">Earnings</h2>
+<p id="earnings" class="text-3xl font-bold text-green-600">KES 0.00</p>
+</div>
+<div class="bg-white shadow-lg rounded-lg p-5 text-center">
+<h2 class="text-gray-500 text-sm">Total Invested</h2>
+<p id="invested" class="text-3xl font-bold text-purple-600">KES 0.00</p>
+</div>
+</div>
+
+<p id="msg" class="msg loading text-center text-lg">Loading account info...</p>
+
+<!-- COMMODITIES -->
+<div>
+<h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">Choose Your Investment</h2>
+<div id="commodityGrid" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
+
+<!-- INVEST BUTTON -->
+<div class="mt-10 text-center">
+<p class="text-xl font-medium mb-4">
+Selected: <span id="selectedCommodity" class="text-indigo-700 font-bold">-- None --</span>
+</p>
+<button id="investBtn"
 class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-lg font-bold text-lg w-full max-w-md disabled:opacity-50 disabled:cursor-not-allowed"
 disabled>
 Request Investment
 </button>
+</div>
 
-</div><div id="investmentList" class="mt-10"></div></div><script>
+<p id="investmentList" class="msg"></p>
+</div>
 
-const BACKEND_URL="https://repo-1red-jipate-bonus-1.onrender.com";
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-const COMMODITY_INFO={
-
-marble:{price:650,days:15,img:"https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=400&q=80"},
-
-crude_oil:{price:800,days:20,img:"https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=400&q=80"},
-
-silver:{price:1000,days:23,img:"https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=400&q=80"},
-
-lead:{price:1200,days:25,img:"https://images.unsplash.com/photo-1581093588401-22d0f1b3c9f0?auto=format&fit=crop&w=400&q=80"},
-
-platinum:{price:1350,days:28,img:"https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?auto=format&fit=crop&w=400&q=80"},
-
-diamonds:{price:1750,days:32,img:"https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80"},
-
-gold:{price:2200,days:35,img:"https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?auto=format&fit=crop&w=400&q=80"},
-
-uranium:{price:3000,days:45,img:"https://images.unsplash.com/photo-1581091870627-3c6b6f0b8e4c?auto=format&fit=crop&w=400&q=80"}
-
+const COMMODITY_INFO = {
+    marble:     { price: 650,  days: 15, img:"https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=400&q=80" },
+    crude_oil:  { price: 800,  days: 20, img:"https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=400&q=80" },
+    silver:     { price: 1000, days: 23, img:"https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=400&q=80" },
+    lead:       { price: 1200, days: 25, img:"https://images.unsplash.com/photo-1581093588401-22d0f1b3c9f0?auto=format&fit=crop&w=400&q=80" },
+    platinum:   { price: 1350, days: 28, img:"https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?auto=format&fit=crop&w=400&q=80" },
+    diamonds:   { price: 1750, days: 32, img:"https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80" },
+    gold:       { price: 2200, days: 35, img:"https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?auto=format&fit=crop&w=400&q=80" },
+    uranium:    { price: 3000, days: 45, img:"https://images.unsplash.com/photo-1581091870627-3c6b6f0b8e4c?auto=format&fit=crop&w=400&q=80" }
 };
 
-let selectedCommodity=null;
+let selectedCommodity = null;
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener('DOMContentLoaded', ()=>{
+    const username = localStorage.getItem('username');
+    if(!username){ window.location.href='login.html'; return; }
 
-const username=localStorage.getItem("username");
+    const balanceEl = document.getElementById('balance');
+    const earningsEl = document.getElementById('earnings');
+    const investedEl = document.getElementById('invested');
+    const msgEl = document.getElementById('msg');
+    const commodityGrid = document.getElementById('commodityGrid');
+    const investBtn = document.getElementById('investBtn');
+    const selectedDisplay = document.getElementById('selectedCommodity');
+    const investmentList = document.getElementById('investmentList');
 
-if(!username){
-window.location.href="login.html";
-return;
-}
+    function renderCommodityCards(){
+        commodityGrid.innerHTML = "";
+        Object.entries(COMMODITY_INFO).forEach(([key, com])=>{
+            const card = document.createElement('div');
+            card.className="commodity-card";
+            card.onclick = () => selectCommodity(key, card);
+            card.innerHTML=`
+                <img src="${com.img}" alt="${key}">
+                <div class="commodity-info">
+                    <p class="font-semibold mt-2">${key.replace("_"," ").toUpperCase()}</p>
+                    <p class="text-sm text-gray-600">KES ${com.price.toLocaleString()}</p>
+                    <p class="text-xs text-gray-500">${com.days} days</p>
+                    <p class="text-sm text-green-600">Daily: KES ${(com.price/com.days).toFixed(2)}</p>
+                    <p class="text-sm text-purple-600">Profit: KES ${(com.price*0.1).toFixed(2)}*</p>
+                    <button class="mt-2 bg-indigo-500 text-white px-3 py-1 rounded text-sm">Select Investment</button>
+                </div>
+            `;
+            commodityGrid.appendChild(card);
+        });
+    }
 
-const msgEl=document.getElementById("msg");
-const commodityGrid=document.getElementById("commodityGrid");
-const investBtn=document.getElementById("investBtn");
-const selectedDisplay=document.getElementById("selectedCommodity");
-const investmentList=document.getElementById("investmentList");
+    window.selectCommodity = function(commodity, element){
+        selectedCommodity = commodity;
+        document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected"));
+        element.classList.add("selected");
+        selectedDisplay.textContent = commodity.replace("_"," ").replace(/\b\w/g,l=>l.toUpperCase());
+        investBtn.disabled = false;
+    };
 
-function renderCommodityCards(){
+    async function loadDashboard(){
+        msgEl.className="msg loading"; msgEl.textContent="Loading account info...";
+        try{
+            const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+            if(!res.ok){
+                const data = await res.json().catch(()=>({}));
+                msgEl.className="msg error"; msgEl.textContent = data.detail||`Error ${res.status}`;
+                return;
+            }
+            const data = await res.json();
+            balanceEl.textContent = `KES ${Number(data.balance||0).toFixed(2)}`;
+            earningsEl.textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;
+            let invested = 0;
+            if(data.investments){ Object.values(data.investments).forEach(i=>invested+=Number(i.amount||0)); }
+            investedEl.textContent = `KES ${invested.toFixed(2)}`;
+            renderInvestments(data.investments || {});
+            renderCommodityCards();
+            msgEl.className="msg success"; msgEl.textContent="Ready to invest!";
+        } catch(err){
+            msgEl.className="msg error"; msgEl.textContent="Cannot connect to server.";
+            console.error(err);
+        }
+    }
 
-commodityGrid.innerHTML="";
+    function renderInvestments(investments){
+        investmentList.innerHTML="";
+        if(Object.keys(investments).length===0){
+            investmentList.innerHTML='<p style="text-align:center; color:#777;">No active investments</p>';
+            return;
+        }
+        Object.entries(investments).forEach(([commodity, inv])=>{
+            const item = document.createElement("div");
+            item.style.cssText="background:#f0f8f0; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #28a745;";
+            const expiry = new Date(inv.expiry_date);
+            const countdown = document.createElement("div");
+            countdown.style.marginTop="6px"; countdown.style.fontSize="0.9rem"; countdown.style.color="#555";
+            function updateCountdown(){
+                const now = new Date();
+                let diff = expiry-now;
+                if(diff<=0){ countdown.textContent="Expired"; clearInterval(interval); loadDashboard(); return; }
+                const days = Math.floor(diff/86400000); diff%=86400000;
+                const hours = Math.floor(diff/3600000); diff%=3600000;
+                const mins = Math.floor(diff/60000);
+                const secs = Math.floor((diff%60000)/1000);
+                countdown.textContent=`Expires in ${days}d ${hours}h ${mins}m ${secs}s`;
+            }
+            updateCountdown();
+            const interval = setInterval(updateCountdown,1000);
+            item.innerHTML=`<strong>${commodity.replace("_"," ").toUpperCase()}</strong><br>
+                              KES ${Number(inv.amount).toLocaleString(undefined,{minimumFractionDigits:2})}`;
+            item.appendChild(countdown);
+            investmentList.appendChild(item);
+        });
+    }
 
-Object.entries(COMMODITY_INFO).forEach(([key,com])=>{
+    investBtn.addEventListener('click',async()=>{
+        if(!selectedCommodity){ msgEl.className="msg error"; msgEl.textContent="Select a commodity first."; return; }
+        msgEl.className="msg loading"; msgEl.textContent="Sending investment request...";
+        const formData = new URLSearchParams(); 
+        formData.append("username",username); 
+        formData.append("commodity",selectedCommodity);
+        try{
+            const res = await fetch(`${BACKEND_URL}/invest/request`,{
+                method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:formData
+            });
+            const data = await res.json();
+            if(res.ok){
+                msgEl.className="msg success";
+                msgEl.innerHTML = `${data.message}<br>Pay <strong>KES ${data.price}</strong> to M-Pesa: <strong>${data.mpesa_number}</strong>`;
+            } else{
+                msgEl.className="msg error"; msgEl.textContent=data.detail||"Request failed";
+            }
+        } catch(err){
+            msgEl.className="msg error"; msgEl.textContent="Connection error"; console.error(err);
+        }
+    });
 
-const card=document.createElement("div");
+    window.logout = ()=>{ localStorage.removeItem("username"); window.location.href='login.html'; }
 
-card.className="commodity-card";
-
-card.onclick=()=>selectCommodity(key,card);
-
-card.innerHTML=`
-
-<img src="${com.img}">
-
-<p class="font-semibold mt-2">${key.replace("_"," ").toUpperCase()}</p>
-
-<p class="text-sm text-gray-600">KES ${com.price}</p>
-
-<p class="text-xs text-gray-500">${com.days} days</p>
-
-<button class="mt-2 bg-indigo-500 text-white px-3 py-1 rounded text-sm">
-Select Investment
-</button>
-
-`;
-
-commodityGrid.appendChild(card);
-
+    loadDashboard();
 });
+</script>
 
-}
-
-window.selectCommodity=function(commodity,element){
-
-selectedCommodity=commodity;
-
-document.querySelectorAll(".commodity-card")
-.forEach(c=>c.classList.remove("selected"));
-
-element.classList.add("selected");
-
-selectedDisplay.textContent=
-commodity.replace("_"," ")
-.replace(/\b\w/g,l=>l.toUpperCase());
-
-investBtn.disabled=false;
-
-};
-
-async function loadDashboard(){
-
-msgEl.className="msg loading";
-
-msgEl.textContent="Loading account info...";
-
-try{
-
-const res=await fetch(`${BACKEND_URL}/dashboard?username=${username}`);
-
-if(!res.ok){
-
-const data=await res.json();
-
-msgEl.className="msg error";
-
-msgEl.textContent=data.detail;
-
-return;
-
-}
-
-const data=await res.json();
-
-renderInvestments(data.investments||{});
-
-renderCommodityCards();
-
-msgEl.className="msg success";
-
-msgEl.textContent="Ready to invest";
-
-}
-
-catch(err){
-
-msgEl.className="msg error";
-
-msgEl.textContent="Cannot connect to server";
-
-}
-
-}
-
-function renderInvestments(investments){
-
-investmentList.innerHTML="";
-
-if(Object.keys(investments).length===0){
-
-investmentList.innerHTML='<p class="text-center text-gray-500">No active investments</p>';
-
-return;
-
-}
-
-Object.entries(investments).forEach(([commodity,inv])=>{
-
-const item=document.createElement("div");
-
-item.className="bg-green-50 border border-green-400 p-4 rounded mb-3";
-
-const expiry=new Date(inv.expiry_date);
-
-const countdown=document.createElement("div");
-
-function updateCountdown(){
-
-const now=new Date();
-
-let diff=expiry-now;
-
-if(diff<=0){
-
-countdown.textContent="Expired";
-
-clearInterval(timer);
-
-return;
-
-}
-
-const d=Math.floor(diff/86400000);
-
-diff%=86400000;
-
-const h=Math.floor(diff/3600000);
-
-diff%=3600000;
-
-const m=Math.floor(diff/60000);
-
-const s=Math.floor((diff%60000)/1000);
-
-countdown.textContent=`Expires in ${d}d ${h}h ${m}m ${s}s`;
-
-}
-
-updateCountdown();
-
-const timer=setInterval(updateCountdown,1000);
-
-item.innerHTML=`<strong>${commodity.replace("_"," ").toUpperCase()}</strong><br>KES ${inv.amount}`;
-
-item.appendChild(countdown);
-
-investmentList.appendChild(item);
-
-});
-
-}
-
-investBtn.addEventListener("click",async()=>{
-
-if(!selectedCommodity){
-
-msgEl.className="msg error";
-
-msgEl.textContent="Select a commodity first";
-
-return;
-
-}
-
-msgEl.className="msg loading";
-
-msgEl.textContent="Sending investment request...";
-
-const form=new URLSearchParams();
-
-form.append("username",username);
-
-form.append("commodity",selectedCommodity);
-
-const res=await fetch(`${BACKEND_URL}/invest/request`,{
-
-method:"POST",
-
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-
-body:form
-
-});
-
-const data=await res.json();
-
-if(res.ok){
-
-msgEl.className="msg success";
-
-msgEl.innerHTML=`
-
-${data.message}<br><br>
-
-Pay <strong>KES ${data.price}</strong>
-
-to MPESA number
-
-<strong>${data.mpesa_number}</strong>
-
-<br><br>
-
-<button onclick="confirmInvestment()"
-
-class="bg-green-600 text-white px-6 py-2 rounded">
-
-I Have Paid
-
-</button>
-
-`;
-
-}else{
-
-msgEl.className="msg error";
-
-msgEl.textContent=data.detail;
-
-}
-
-});
-
-window.confirmInvestment=async function(){
-
-const username=localStorage.getItem("username");
-
-const form=new URLSearchParams();
-
-form.append("username",username);
-
-const res=await fetch(`${BACKEND_URL}/invest/confirm`,{
-
-method:"POST",
-
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-
-body:form
-
-});
-
-const data=await res.json();
-
-alert(data.message);
-
-location.reload();
-
-};
-
-window.logout=function(){
-
-localStorage.removeItem("username");
-
-window.location.href="login.html";
-
-};
-
-loadDashboard();
-
-});
-
-</script></body>
+</body>
 </html>
