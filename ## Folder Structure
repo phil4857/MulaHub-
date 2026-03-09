@@ -3,7 +3,6 @@ jipate-bonus-v1-mkobawallet/
 ├── register.html
 ├── login.html
 ├── dashboard.html
-├── invest.html
 ├── withdrawal.html
 │   └── withdrawal.js
 ├── admin/
@@ -15,7 +14,3 @@ jipate-bonus-v1-mkobawallet/
 │   ├── dashboard.js
 │   ├── withdrawal.js
 │   └── admin-dashboard.js
-├── css/
-│   └── main.css
-└── assets/
-    └── img/
