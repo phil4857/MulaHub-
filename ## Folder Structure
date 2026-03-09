@@ -4,7 +4,6 @@ jipate-bonus-v1-mkobawallet/
 ├── login.html
 ├── dashboard.html
 ├── invest.html
-│   └── invest.js
 ├── withdrawal.html
 │   └── withdrawal.js
 ├── admin/
@@ -14,11 +13,9 @@ jipate-bonus-v1-mkobawallet/
 │   ├── register.js
 │   ├── login.js
 │   ├── dashboard.js
-│   ├── invest.js
 │   ├── withdrawal.js
 │   └── admin-dashboard.js
 ├── css/
-│   └── main.css              # rename style.css → main.css or styles.css
-├── assets/                   # future-proof
-│   └── img/                  # add images later
-└── vercel.json
+│   └── main.css
+└── assets/
+    └── img/
