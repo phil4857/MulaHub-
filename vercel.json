@@ -2,15 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "**/*.html",
+      "src": "*.html",
       "use": "@vercel/static"
     },
     {
-      "src": "css/**/*.css",
+      "src": "js/*.js",
       "use": "@vercel/static"
     },
     {
-      "src": "js/**/*.js",
+      "src": "css/*.css",
       "use": "@vercel/static"
     },
     {
@@ -19,29 +19,17 @@
     }
   ],
   "routes": [
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/register",
-      "dest": "/register.html"
-    },
-    {
-      "src": "/login",
-      "dest": "/login.html"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/dashboard.html"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/.*",
-      "dest": "/$0"
-    }
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/register", "dest": "/register.html" },
+    { "src": "/login", "dest": "/login.html" },
+    { "src": "/dashboard", "dest": "/dashboard.html" },
+    { "src": "/investment-dashboard", "dest": "/investment-dashboard.html" },
+    { "src": "/user-dashboard", "dest": "/user-dashboard.html" },
+    { "src": "/withdrawal", "dest": "/withdrawal.html" },
+    { "src": "/admin-dashboard", "dest": "/admin-dashboard.html" },
+    { "src": "/admin-login", "dest": "/admin-login.html" },
+    { "src": "/admin", "dest": "/admin.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ],
   "cleanUrls": true,
   "trailingSlash": false
