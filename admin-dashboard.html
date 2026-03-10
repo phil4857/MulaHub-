@@ -7,7 +7,7 @@
 <style>
   body { font-family: Arial, sans-serif; background: #f4f9ff; margin: 0; padding: 20px; }
   .box { max-width: 1200px; margin: 0 auto 40px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-  h2 { color: #0a1d66; text-align: center; margin-bottom: 20px; }
+  h2, h3 { color: #0a1d66; text-align: center; margin-bottom: 20px; }
   table { width: 100%; border-collapse: collapse; margin-top: 20px; }
   th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
   th { background-color: #0a1d66; color: white; }
@@ -37,7 +37,6 @@
         <th>Approved</th>
         <th>Balance</th>
         <th>Earnings</th>
-        <th>Referral</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -85,16 +84,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ───── USER MANAGEMENT ─────
   async function fetchUsers() {
-    usersTableBody.innerHTML = '<tr><td colspan="7">Loading users...</td></tr>';
-
+    usersTableBody.innerHTML = '<tr><td colspan="6">Loading users...</td></tr>';
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const users = await res.json();
 
       usersTableBody.innerHTML = "";
-      if (users.length === 0) {
-        usersTableBody.innerHTML = '<tr><td colspan="7" style="color:#777;">No users registered yet</td></tr>';
+      if (!users.length) {
+        usersTableBody.innerHTML = '<tr><td colspan="6" style="color:#777;">No users registered yet</td></tr>';
         return;
       }
 
@@ -115,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         usersTableBody.appendChild(tr);
       });
     } catch (err) {
-      usersTableBody.innerHTML = '<tr><td colspan="7" style="color:red;">Failed to load users</td></tr>';
+      usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
       console.error(err);
       showMessage("error", "Failed to load users: " + err.message);
     }
@@ -124,14 +122,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // ───── WITHDRAWAL MANAGEMENT ─────
   async function fetchWithdrawals() {
     withdrawalsTableBody.innerHTML = '<tr><td colspan="6">Loading withdrawal requests...</td></tr>';
-
     try {
       const res = await fetch(`${BACKEND_URL}/admin/withdrawals/pending`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const withdrawals = await res.json();
 
       withdrawalsTableBody.innerHTML = "";
-      if (withdrawals.length === 0) {
+      if (!withdrawals.length) {
         withdrawalsTableBody.innerHTML = '<tr><td colspan="6" style="color:#777;">No pending withdrawals</td></tr>';
         return;
       }
@@ -159,65 +156,48 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ───── ADMIN ACTIONS ─────
-  window.approveUser = async (username) => {
-    if (!confirm(`Approve ${username}?`)) return;
-    await adminAction("approve-user", username, `${username} approved`);
-  };
-
-  window.resetPassword = async (username) => {
-    if (!confirm(`Reset password for ${username}?`)) return;
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showMessage("success", `New password for ${username}: ${data.new_password}`);
-        fetchUsers();
-      } else {
-        showMessage("error", data.detail || "Reset failed");
-      }
-    } catch (err) {
-      showMessage("error", "Network error");
-    }
-  };
-
-  window.terminateUser = async (username) => {
-    if (!confirm(`Terminate ${username}? Permanent!`)) return;
-    await adminAction("terminate-user", username, `${username} terminated`);
-  };
-
-  window.approveWithdrawal = async (id) => {
-    if (!confirm(`Approve this withdrawal?`)) return;
-    await adminAction(`withdrawals/approve`, id, "Withdrawal approved", fetchWithdrawals);
-  };
-
-  window.rejectWithdrawal = async (id) => {
-    if (!confirm(`Reject this withdrawal?`)) return;
-    await adminAction(`withdrawals/reject`, id, "Withdrawal rejected", fetchWithdrawals);
-  };
-
-  async function adminAction(endpoint, identifier, successMsg, callback) {
+  async function adminAction(endpoint, data, successMsg, callback) {
     try {
       const res = await fetch(`${BACKEND_URL}/admin/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ id: identifier, username: identifier })
+        body: new URLSearchParams(data)
       });
-      const data = await res.json();
+      const result = await res.json();
       if (res.ok) {
         showMessage("success", successMsg);
         if (callback) callback();
-        else fetchUsers();
-      } else {
-        showMessage("error", data.detail || "Action failed");
-      }
+      } else showMessage("error", result.detail || "Action failed");
     } catch (err) {
       showMessage("error", "Network error");
+      console.error(err);
     }
   }
+
+  window.approveUser = username => {
+    if (!confirm(`Approve ${username}?`)) return;
+    adminAction("approve-user", { username }, `${username} approved`, fetchUsers);
+  };
+
+  window.resetPassword = username => {
+    if (!confirm(`Reset password for ${username}?`)) return;
+    adminAction("reset-password", { username }, `Password reset for ${username}`, fetchUsers);
+  };
+
+  window.terminateUser = username => {
+    if (!confirm(`Terminate ${username}? This is permanent!`)) return;
+    adminAction("terminate-user", { username }, `${username} terminated`, fetchUsers);
+  };
+
+  window.approveWithdrawal = id => {
+    if (!confirm("Approve this withdrawal?")) return;
+    adminAction("withdrawals/approve", { id }, "Withdrawal approved", fetchWithdrawals);
+  };
+
+  window.rejectWithdrawal = id => {
+    if (!confirm("Reject this withdrawal?")) return;
+    adminAction("withdrawals/reject", { id }, "Withdrawal rejected", fetchWithdrawals);
+  };
 
   // Initial load
   fetchUsers();
