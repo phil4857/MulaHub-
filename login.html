@@ -12,36 +12,40 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
+    color: #333;
   }
 
   .login-box {
     background: white;
-    padding: 30px;
+    padding: 40px 30px;
     border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    width: 340px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    width: 360px;
+    max-width: 90%;
     text-align: center;
   }
 
   h2 {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     color: #28a745;
+    font-size: 1.9rem;
   }
 
   .password-container {
     position: relative;
-    margin: 15px 0;
+    margin: 12px 0;
   }
 
   input {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 1rem;
+    margin-bottom: 12px;
   }
 
   .toggle-password {
@@ -51,19 +55,25 @@
     transform: translateY(-50%);
     cursor: pointer;
     font-size: 18px;
+    user-select: none;
   }
 
   button {
     width: 100%;
-    padding: 10px;
+    padding: 14px;
     background: #007bff;
     color: white;
     border: none;
     border-radius: 6px;
     font-weight: bold;
+    font-size: 1.1rem;
     cursor: pointer;
-    margin-top: 10px;
-    font-size: 15px;
+    margin-top: 12px;
+    transition: background 0.2s;
+  }
+
+  button:hover:not(:disabled) {
+    background: #0056b3;
   }
 
   button:disabled {
@@ -71,34 +81,25 @@
     cursor: not-allowed;
   }
 
-  button:hover:not(:disabled) {
-    background: #0056b3;
+  .msg {
+    margin-top: 16px;
+    font-weight: 600;
+    min-height: 24px;
+    font-size: 0.95rem;
   }
-
-  .error-message {
-    color: #dc3545;
-    font-size: 14px;
-    margin-top: 10px;
-    min-height: 18px;
-  }
-
-  .success-message {
-    color: #28a745;
-    font-size: 14px;
-    margin-top: 10px;
-    min-height: 18px;
-  }
+  .error { color: #721c24; }
+  .success { color: #155724; }
+  .loading { color: #0c5460; }
 
   .register-link {
-    margin-top: 15px;
-    font-size: 14px;
+    margin-top: 20px;
+    font-size: 0.95rem;
   }
-
   .register-link a {
     color: #007bff;
     text-decoration: none;
+    font-weight: 600;
   }
-
   .register-link a:hover {
     text-decoration: underline;
   }
@@ -120,8 +121,8 @@
     <button type="submit" id="loginBtn">Login</button>
   </form>
 
-  <div class="error-message" id="loginError"></div>
-  <div class="success-message" id="loginSuccess"></div>
+  <div class="msg error" id="loginError"></div>
+  <div class="msg success" id="loginSuccess"></div>
 
   <div class="register-link">
     Don't have an account? <a href="register.html">Register here</a>
@@ -129,78 +130,75 @@
 </div>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
 
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
-  const loginBtn = document.getElementById('loginBtn');
-  const loginError = document.getElementById('loginError');
-  const loginSuccess = document.getElementById('loginSuccess');
-  const togglePassword = document.getElementById('togglePassword');
-  const passwordInput = document.getElementById('password');
+document.addEventListener("DOMContentLoaded", () => {
+  const loginForm = document.getElementById("loginForm");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginError = document.getElementById("loginError");
+  const loginSuccess = document.getElementById("loginSuccess");
+  const togglePassword = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("password");
 
   // Password visibility toggle
-  togglePassword.addEventListener('click', () => {
-    const type = passwordInput.type === 'password' ? 'text' : 'password';
+  togglePassword.addEventListener("click", () => {
+    const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
-    togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+    togglePassword.textContent = type === "password" ? "👁️" : "🙈";
   });
 
-  loginForm.addEventListener('submit', async (e) => {
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    loginError.textContent = "";
+    loginSuccess.textContent = "";
 
-    // Clear previous messages
-    loginError.textContent = '';
-    loginSuccess.textContent = '';
-
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+    const username = document.getElementById("username").value.trim().toLowerCase();
+    const password = passwordInput.value;
 
     if (!username || !password) {
-      loginError.textContent = 'Please enter both username and password.';
+      loginError.textContent = "Please enter both username and password.";
       return;
     }
 
-    // Disable button during request
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Logging in...';
+    loginBtn.textContent = "Logging in...";
+    loginError.className = "msg loading";
+    loginError.textContent = "Verifying credentials...";
 
     try {
       const formData = new URLSearchParams();
-      formData.append('username', username);
-      formData.append('password', password);
+      formData.append("username", username);
+      formData.append("password", password);
 
       const response = await fetch(`${BACKEND_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData
       });
 
-      const data = await response.json();
+      let data;
+      try { data = await response.json(); } catch { data = {}; }
 
       if (response.ok) {
-        // Save username for dashboard
-        localStorage.setItem('username', username);
-
-        loginSuccess.textContent = 'Login successful! Redirecting...';
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
+        localStorage.setItem("username", username);
+        loginSuccess.textContent = "Login successful! Redirecting...";
+        loginSuccess.className = "msg success";
+        setTimeout(() => window.location.href = "dashboard.html", 1500);
       } else {
-        // Special handling for unapproved account
+        loginError.className = "msg error";
         if (response.status === 403) {
-          loginError.textContent = data.detail || 'Your account is pending approval. Please wait for admin confirmation.';
+          loginError.textContent = data.detail || "Account pending admin approval.";
         } else {
-          loginError.textContent = data.detail || 'Invalid username or password.';
+          loginError.textContent = data.detail || "Invalid username or password.";
         }
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      loginError.textContent = 'Cannot connect to server. Please check your internet connection.';
+    } catch (err) {
+      console.error("Login error:", err);
+      loginError.className = "msg error";
+      loginError.textContent = "Cannot connect to server. Check your internet or try again later.";
     } finally {
-      // Re-enable button
       loginBtn.disabled = false;
-      loginBtn.textContent = 'Login';
+      loginBtn.textContent = "Login";
     }
   });
 });
