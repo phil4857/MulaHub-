@@ -1,33 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mkoba Wallet Dashboard 💸</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }
-        .navbar h1 { font-weight: bold; }
-        .navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-        .tab-buttons button { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .tab-buttons button.active { background: #4f46e5; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; transition: all .3s; cursor: pointer; border: 2px solid transparent; }
-        .commodity-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: #6366f1; }
-        .commodity-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
-        .commodity-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
-        .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
-        .loading { color: #007bff; }
-        .banner { background: #fef3c7; border: 1px solid #fbbf24; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #92400e; }
-        .withdraw-input { padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; width: 100%; max-width: 300px; margin: 12px 0; text-align: center; font-size: 1.25rem; }
-        .copy-btn { background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1.125rem; font-weight: bold; cursor: pointer; margin: 16px 0; width: 100%; max-width: 400px; }
-        .copy-btn:hover { background: #059669; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mkoba Wallet Dashboard 💸</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  .navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }
+  .navbar h1 { font-weight: bold; }
+  .navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  .tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .tab-buttons button { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+  .tab-buttons button.active { background: #4f46e5; color: white; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; transition: all .3s; cursor: pointer; border: 2px solid transparent; }
+  .commodity-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: #6366f1; }
+  .commodity-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
+  .commodity-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
+  .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
+  .success { color: #28a745; }
+  .error { color: #dc3545; }
+  .loading { color: #007bff; }
+  .banner { background: #fef3c7; border: 1px solid #fbbf24; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #92400e; }
+  .copy-btn { background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1.125rem; font-weight: bold; cursor: pointer; margin: 16px 0; width: 100%; max-width: 400px; }
+  .copy-btn:hover { background: #059669; }
+</style>
 </head>
 <body class="p-4">
 
@@ -96,269 +95,122 @@
         </div>
         <p id="earnMsg" class="msg loading mt-4"></p>
         <div class="text-center mt-6">
-            <button class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold" onclick="loadData(true)">
+            <button class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold" onclick="fetchUserData()">
                 Refresh Earnings
             </button>
         </div>
     </div>
 </div>
 
-<!-- WITHDRAW TAB – Simplified copy & manual send -->
+<!-- WITHDRAW TAB -->
 <div id="tabWithdraw" class="tab-content">
     <div class="container mx-auto p-4 bg-white rounded-lg shadow-lg">
         <h2 class="text-2xl font-bold text-center mb-6">Withdraw Funds</h2>
-        
         <div class="text-center mb-8">
             <p class="text-xl font-medium mb-4">Available Balance</p>
             <p class="text-4xl font-bold text-indigo-700">KES <span id="withdrawBalance">0.00</span></p>
         </div>
-
         <div class="bg-yellow-50 border border-yellow-300 p-6 rounded-lg text-center">
             <p class="text-lg font-semibold mb-4">Send money to this M-Pesa number:</p>
             <p class="text-3xl font-bold text-red-600 mb-4">0752964507</p>
-            <p class="text-sm text-gray-700 mb-6">
-                Include your username in the transaction message so we can identify you quickly.
-            </p>
-            <button id="copyNumberBtn" class="copy-btn">
-                Copy Number & Withdraw
-            </button>
-            <p class="text-sm text-gray-600 mt-4">
-                After sending, your withdrawal will be processed manually within 24 hours.
-            </p>
+            <p class="text-sm text-gray-700 mb-6">Include your username in the transaction message so we can identify you quickly.</p>
+            <button id="copyNumberBtn" class="copy-btn">Copy Number & Withdraw</button>
+            <p class="text-sm text-gray-600 mt-4">After sending, your withdrawal will be processed manually within 24 hours.</p>
         </div>
-
         <p id="withdrawMsg" class="msg mt-8"></p>
     </div>
 </div>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
 const MPESA_NUMBER = "0752964507";
-
 const COMMODITY_INFO = {
-    marble: { price: 650, days: 15, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=400&q=80" },
-    crude_oil: { price: 800, days: 20, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=400&q=80" },
-    silver: { price: 1000, days: 23, img: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=400&q=80" },
-    lead: { price: 1200, days: 25, img: "https://images.unsplash.com/photo-1581093588401-22d0f1b3c9f0?auto=format&fit=crop&w=400&q=80" },
-    platinum: { price: 1350, days: 28, img: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?auto=format&fit=crop&w=400&q=80" },
-    diamonds: { price: 1750, days: 32, img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80" },
-    gold: { price: 2200, days: 35, img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?auto=format&fit=crop&w=400&q=80" },
-    uranium: { price: 3000, days: 45, img: "https://images.unsplash.com/photo-1581091870627-3c6b6f0b8e4c?auto=format&fit=crop&w=400&q=80" }
+    marble: { price: 650, days: 15 },
+    crude_oil: { price: 800, days: 20 },
+    silver: { price: 1000, days: 23 },
+    lead: { price: 1200, days: 25 },
+    platinum: { price: 1350, days: 28 },
+    diamonds: { price: 1750, days: 32 },
+    gold: { price: 2200, days: 35 },
+    uranium: { price: 3000, days: 45 }
 };
 
 let selectedCommodity = null;
 let currentData = null;
-let isRequesting = false;
-let countdownIntervals = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('username');
-    if (!username) {
-        window.location.href = 'login.html';
-        return;
-    }
-
+    if (!username) window.location.href = 'login.html';
     document.getElementById('usernameDisplay').textContent = username;
 
     // Tab switching
-    document.querySelectorAll('.tab-buttons button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(btn.id.replace('Btn', '')).classList.add('active');
-        });
-    });
+    document.querySelectorAll('.tab-buttons button').forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(btn.id.replace('Btn', '')).classList.add('active');
+    }));
 
-    // Copy number button
     document.getElementById("copyNumberBtn").addEventListener("click", () => {
         navigator.clipboard.writeText(MPESA_NUMBER).then(() => {
             const msg = document.getElementById("withdrawMsg");
             msg.className = "msg success";
-            msg.innerHTML = `Number <strong>${MPESA_NUMBER}</strong> copied!<br><br>Open M-Pesa app and send the amount.<br>Include your username in the message.`;
-        }).catch(() => {
-            alert("Copy failed. Manually copy: " + MPESA_NUMBER);
-        });
+            msg.innerHTML = `Number <strong>${MPESA_NUMBER}</strong> copied! Open M-Pesa and send the amount with your username.`;
+        }).catch(() => alert("Copy failed. Manually copy: " + MPESA_NUMBER));
     });
 
-    startDailyCountdown();
+    renderCommodityCards();
     fetchUserData();
 });
-
-async function fetchUserData(retries = 3) {
-    const msg = document.getElementById('msg');
-    msg.textContent = "Loading dashboard...";
-    msg.style.color = "blue";
-
-    const username = localStorage.getItem('username');
-
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            const url = `\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`;
-            const res = await fetch(url);
-
-            if (!res.ok) {
-                let data = {};
-                try { data = await res.json(); } catch {}
-                msg.style.color = "red";
-                if (res.status === 404) msg.textContent = "User/dashboard not found (404).";
-                else if (res.status === 403) msg.textContent = data.detail || "Account not approved.";
-                else msg.textContent = data.detail || `Error (${res.status})`;
-                console.error("Dashboard error:", res.status, data);
-                return;
-            }
-
-            const data = await res.json();
-            currentData = data;
-
-            document.getElementById('balance').textContent = Number(data.balance || 0).toFixed(2);
-            document.getElementById('earnings').textContent = Number(data.earnings || 0).toFixed(2);
-
-            let invested = 0;
-            if (data.investments && typeof data.investments === 'object') {
-                Object.values(data.investments).forEach(item => invested += Number(item.amount || 0));
-            }
-            document.getElementById('invested').textContent = invested.toFixed(2);
-
-            // Update Earnings tab
-            document.getElementById('balanceDisplay').textContent = Number(data.balance || 0).toFixed(2);
-            document.getElementById('earningsDisplay').textContent = Number(data.earnings || 0).toFixed(2);
-            document.getElementById('investedDisplay').textContent = invested.toFixed(2);
-
-            // Update Withdraw balance
-            document.getElementById('withdrawBalance').textContent = Number(data.balance || 0).toFixed(2);
-
-            renderInvestments(data.investments || {});
-            renderCommodityCards();
-
-            msg.style.color = "green";
-            msg.textContent = "Dashboard loaded successfully!";
-            setTimeout(() => { msg.textContent = ""; }, 3000);
-            return;
-        } catch (err) {
-            if (attempt === retries) {
-                msg.style.color = "red";
-                msg.textContent = "Cannot connect to server. Check internet or backend.";
-                console.error("Fetch error:", err);
-            } else {
-                msg.textContent = `Retrying (\( {attempt}/ \){retries})...`;
-                await new Promise(r => setTimeout(r, 8000));
-            }
-        }
-    }
-}
-
-function renderInvestments(investments) {
-    const container = document.getElementById('investmentList');
-    container.innerHTML = '';
-
-    if (!investments || Object.keys(investments).length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#777;'>No active investments yet.</p>";
-        return;
-    }
-
-    for (const [commodity, inv] of Object.entries(investments)) {
-        const expiry = new Date(inv.expiry_date);
-        const remainingDays = Math.max(Math.floor((expiry - new Date()) / (1000 * 60 * 60 * 24)), 0);
-        const card = document.createElement('div');
-        card.style.background = '#f0f8f0';
-        card.style.padding = '15px';
-        card.style.borderRadius = '10px';
-        card.style.border = '1px solid #28a745';
-        card.innerHTML = `
-            <strong>${commodity.toUpperCase()}</strong><br>
-            Amount: KES ${Number(inv.amount || 0).toFixed(2)}<br>
-            Expires in: ${remainingDays} day(s)
-        `;
-        container.appendChild(card);
-    }
-}
 
 function renderCommodityCards() {
     const grid = document.getElementById('commodityGrid');
     grid.innerHTML = "";
-
     Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
         const card = document.createElement('div');
         card.className = 'commodity-card';
-        card.onclick = () => investRequest(key);
-        card.innerHTML = `
-            <img src="\( {com.img}" alt=" \){key}">
-            <div class="commodity-info">
-                <h4>${key.replace("_", " ").toUpperCase()}</h4>
-                <p>KES ${com.price.toLocaleString()}</p>
-                <p>${com.days} days</p>
-            </div>
-        `;
+        card.innerHTML = `<h4>${key.replace('_',' ').toUpperCase()}</h4><p>KES ${com.price}</p><p>${com.days} days</p>`;
+        card.onclick = () => {
+            selectedCommodity = key;
+            document.getElementById('selectedCommodity').textContent = key.toUpperCase();
+            document.getElementById('investBtn').disabled = false;
+        };
         grid.appendChild(card);
     });
 }
 
-window.investRequest = async function (commodity) {
-    if (!commodity || !COMMODITY_INFO[commodity]) {
-        const msg = document.getElementById('msg');
-        msg.textContent = "Invalid commodity selected.";
-        msg.style.color = "red";
-        return;
-    }
-
-    const msg = document.getElementById('msg');
-    msg.textContent = "Sending investment request...";
-    msg.style.color = "blue";
-
-    const formData = new URLSearchParams();
-    formData.append('username', localStorage.getItem('username'));
-    formData.append('commodity', commodity);
-
-    try {
-        const res = await fetch(`${BACKEND_URL}/invest/request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            msg.style.color = "green";
-            const price = COMMODITY_INFO[commodity].price;
-            msg.innerHTML = data.message || 
-                `Request created for ${commodity}. Send KES ${price.toLocaleString()} to M-Pesa: ${MPESA_NUMBER}`;
-            fetchUserData(); // refresh
-        } else {
-            msg.style.color = "red";
-            msg.textContent = data.detail || 'Investment request failed.';
-        }
-    } catch (err) {
-        msg.style.color = "red";
-        msg.textContent = "Network error during request.";
-        console.error(err);
-    }
-};
-
-function startDailyCountdown() {
-    const el = document.getElementById("nextDailyEarning");
-    let last = parseInt(localStorage.getItem('lastDailyBonusTime') || Date.now());
-    const next = last + 24 * 60 * 60 * 1000;
-
-    const tick = () => {
-        const diff = next - Date.now();
-        if (diff <= 0) {
-            el.textContent = "Available now!";
-            return;
-        }
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        el.textContent = `${h}h ${m}m ${s}s`;
-    };
-
-    tick();
-    setInterval(tick, 1000);
-}
-
-window.logout = function () {
+window.logout = () => {
     localStorage.removeItem('username');
     window.location.href = 'login.html';
 };
+
+async function fetchUserData() {
+    const username = localStorage.getItem('username');
+    const msg = document.getElementById('msg');
+    msg.className = 'msg loading';
+    msg.textContent = 'Loading dashboard...';
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+        const data = await res.json();
+        if (!res.ok) throw data;
+        currentData = data;
+        document.getElementById('balance').textContent = Number(data.balance || 0).toFixed(2);
+        document.getElementById('earnings').textContent = Number(data.earnings || 0).toFixed(2);
+        document.getElementById('invested').textContent = Number(data.total_invested || 0).toFixed(2);
+        document.getElementById('balanceDisplay').textContent = Number(data.balance || 0).toFixed(2);
+        document.getElementById('earningsDisplay').textContent = Number(data.earnings || 0).toFixed(2);
+        document.getElementById('investedDisplay').textContent = Number(data.total_invested || 0).toFixed(2);
+        document.getElementById('withdrawBalance').textContent = Number(data.balance || 0).toFixed(2);
+        msg.className = 'msg success';
+        msg.textContent = 'Dashboard loaded!';
+    } catch (err) {
+        msg.className = 'msg error';
+        msg.textContent = 'Failed to load dashboard. Check your connection.';
+        console.error(err);
+    }
+}
 </script>
+
+</body>
+</html>
