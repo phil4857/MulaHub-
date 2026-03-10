@@ -1,8 +1,7 @@
-// js/register.js
-
 const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("registerForm");
     const registerBtn = document.getElementById("registerBtn");
     const msg = document.getElementById("msg");
     const usernameInput = document.getElementById("username");
@@ -11,77 +10,77 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPasswordInput = document.getElementById("confirmPassword");
     const referralInput = document.getElementById("referral");
 
-    // Real-time password match feedback + disable button if mismatch
-    const updatePasswordMatch = () => {
-        const password = passwordInput.value;
+    // Autofill referral if present in URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("ref")) referralInput.value = params.get("ref");
+
+    // Password match check
+    const checkPasswordMatch = () => {
+        const pwd = passwordInput.value;
         const confirm = confirmPasswordInput.value;
 
-        if (confirm) {
-            if (password !== confirm) {
-                msg.style.color = "red";
-                msg.innerText = "Passwords do not match";
-                registerBtn.disabled = true;
-            } else {
-                msg.style.color = "green";
-                msg.innerText = "Passwords match!";
-                registerBtn.disabled = false;
-            }
+        if (!confirm) {
+            msg.textContent = "";
+            registerBtn.disabled = false;
+            return;
+        }
+
+        if (pwd !== confirm) {
+            msg.className = "msg error";
+            msg.textContent = "Passwords do not match";
+            registerBtn.disabled = true;
         } else {
-            msg.innerText = "";
+            msg.className = "msg success";
+            msg.textContent = "Passwords match ✓";
             registerBtn.disabled = false;
         }
     };
 
-    confirmPasswordInput.addEventListener("input", updatePasswordMatch);
-    passwordInput.addEventListener("input", updatePasswordMatch);
+    passwordInput.addEventListener("input", checkPasswordMatch);
+    confirmPasswordInput.addEventListener("input", checkPasswordMatch);
 
-    registerBtn.addEventListener("click", async () => {
-        msg.innerText = "";
-        msg.style.color = "black";
+    // Form submission (handles Enter key too)
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-        // Get and normalize values
-        let username = usernameInput?.value.trim()?.toLowerCase() || "";
-        const phone = phoneInput?.value.trim() || "";
-        const pwd = passwordInput?.value;
-        const confirmPwd = confirmPasswordInput?.value;
-        let referral = referralInput?.value.trim()?.toLowerCase() || "";
+        const username = usernameInput.value.trim().toLowerCase();
+        const phone = phoneInput.value.trim();
+        const pwd = passwordInput.value;
+        const confirmPwd = confirmPasswordInput.value;
+        const referral = referralInput.value.trim().toLowerCase() || "";
 
-        // Client-side validation
+        // Validation
         if (!username || !phone || !pwd || !confirmPwd) {
-            msg.style.color = "red";
-            msg.innerText = "Please fill in all required fields.";
+            msg.className = "msg error";
+            msg.textContent = "Please fill in all required fields.";
             return;
         }
-
         if (username.includes(" ") || username.length < 3) {
-            msg.style.color = "red";
-            msg.innerText = "Username: at least 3 characters, no spaces.";
+            msg.className = "msg error";
+            msg.textContent = "Username: 3+ characters, no spaces.";
             return;
         }
-
         if (!/^(07|01)\d{8}$/.test(phone)) {
-            msg.style.color = "red";
-            msg.innerText = "Phone must start with 07 or 01 followed by 8 digits.";
+            msg.className = "msg error";
+            msg.textContent = "Phone must start with 07 or 01 and have 10 digits.";
             return;
         }
-
         if (pwd.length < 6) {
-            msg.style.color = "red";
-            msg.innerText = "Password must be at least 6 characters.";
+            msg.className = "msg error";
+            msg.textContent = "Password must be at least 6 characters.";
             return;
         }
-
         if (pwd !== confirmPwd) {
-            msg.style.color = "red";
-            msg.innerText = "Passwords do not match.";
+            msg.className = "msg error";
+            msg.textContent = "Passwords do not match.";
             return;
         }
 
-        // Disable button and show loading state
+        // Disable button and show loading
         registerBtn.disabled = true;
-        registerBtn.innerText = "Registering...";
-        msg.style.color = "blue";
-        msg.innerText = "Creating your account... Please wait.";
+        registerBtn.textContent = "Registering...";
+        msg.className = "msg loading";
+        msg.textContent = "Creating your account...";
 
         const formData = new URLSearchParams();
         formData.append("username", username);
@@ -92,54 +91,31 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch(`${BACKEND_URL}/register`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: formData,
             });
 
-            let data;
-            try {
-                data = await res.json();
-            } catch {
-                // If response is not JSON (rare network/server issue)
-                throw new Error("Invalid response from server");
-            }
+            const data = await res.json();
 
             if (res.ok) {
-                msg.style.color = "green";
-                msg.innerText = data.message || "Registration successful! Redirecting to login...";
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 2200);
+                msg.className = "msg success";
+                msg.textContent = data.message || "Registration successful! Redirecting...";
+                setTimeout(() => window.location.href = "login.html", 2200);
             } else {
-                msg.style.color = "red";
-                let errorText = data.detail || `Server error (${res.status})`;
-                if (errorText.toLowerCase().includes("already exists")) {
-                    errorText += " – please choose a different username.";
+                msg.className = "msg error";
+                let errText = data.detail || `Error ${res.status}`;
+                if (errText.toLowerCase().includes("already exists")) {
+                    errText += " – choose a different username.";
                 }
-                msg.innerText = errorText;
+                msg.textContent = errText;
             }
         } catch (err) {
-            console.error("Registration fetch error:", err.name, err.message, err.stack);
-
-            msg.style.color = "red";
-            let displayMsg = "Cannot connect to server.";
-
-            if (err.name === "TypeError" && err.message.includes("fetch")) {
-                displayMsg += " (Failed to reach server – check your internet, try Wi-Fi, or disable ad-blockers/extensions)";
-            } else if (err.message?.includes("CORS")) {
-                displayMsg += " (Network or browser security restriction – try incognito mode)";
-            } else if (err.message?.includes("timeout")) {
-                displayMsg += " (Request timed out – server may be slow or your connection is unstable)";
-            } else {
-                displayMsg += ` (${err.message || "Unknown error"})`;
-            }
-
-            msg.innerText = displayMsg + " Open F12 → Console for more details.";
+            console.error("Registration error:", err);
+            msg.className = "msg error";
+            msg.textContent = "Cannot connect to server. Check your connection.";
         } finally {
             registerBtn.disabled = false;
-            registerBtn.innerText = "Register";
+            registerBtn.textContent = "Register";
         }
     });
 });
