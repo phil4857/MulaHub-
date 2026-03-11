@@ -1,6 +1,5 @@
 // admin-dashboard.js (extended with withdrawals)
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
-
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     alert("Please login as admin first");
