@@ -35,7 +35,7 @@
 
   .password-container {
     position: relative;
-    margin: 12px 0;
+    margin-bottom: 12px;
   }
 
   input {
@@ -45,12 +45,17 @@
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
-    margin-bottom: 12px;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
   }
 
   .toggle-password {
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
@@ -83,13 +88,16 @@
 
   .msg {
     margin-top: 16px;
+    padding: 12px;
+    border-radius: 6px;
     font-weight: 600;
     min-height: 24px;
     font-size: 0.95rem;
   }
-  .error { color: #721c24; }
-  .success { color: #155724; }
-  .loading { color: #0c5460; }
+
+  .success { background: #d4edda; color: #155724; }
+  .error { background: #f8d7da; color: #721c24; }
+  .loading { background: #e3f2fd; color: #0c5460; }
 
   .register-link {
     margin-top: 20px;
@@ -121,8 +129,7 @@
     <button type="submit" id="loginBtn">Login</button>
   </form>
 
-  <div class="msg error" id="loginError"></div>
-  <div class="msg success" id="loginSuccess"></div>
+  <div class="msg" id="msg"></div>
 
   <div class="register-link">
     Don't have an account? <a href="register.html">Register here</a>
@@ -130,13 +137,12 @@
 </div>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";  // ← SAME URL as your corrected register.html
 
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const loginBtn = document.getElementById("loginBtn");
-  const loginError = document.getElementById("loginError");
-  const loginSuccess = document.getElementById("loginSuccess");
+  const msg = document.getElementById("msg");
   const togglePassword = document.getElementById("togglePassword");
   const passwordInput = document.getElementById("password");
 
@@ -149,21 +155,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    loginError.textContent = "";
-    loginSuccess.textContent = "";
+
+    msg.textContent = "";
+    msg.className = "msg";
 
     const username = document.getElementById("username").value.trim().toLowerCase();
     const password = passwordInput.value;
 
     if (!username || !password) {
-      loginError.textContent = "Please enter both username and password.";
+      msg.className = "msg error";
+      msg.textContent = "Please enter both username and password.";
       return;
     }
 
     loginBtn.disabled = true;
     loginBtn.textContent = "Logging in...";
-    loginError.className = "msg loading";
-    loginError.textContent = "Verifying credentials...";
+
+    msg.className = "msg loading";
+    msg.textContent = "Verifying credentials...";
 
     try {
       const formData = new URLSearchParams();
@@ -177,25 +186,32 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       let data;
-      try { data = await response.json(); } catch { data = {}; }
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = {};
+      }
 
       if (response.ok) {
         localStorage.setItem("username", username);
-        loginSuccess.textContent = "Login successful! Redirecting...";
-        loginSuccess.className = "msg success";
-        setTimeout(() => window.location.href = "dashboard.html", 1500);
+        msg.className = "msg success";
+        msg.textContent = "Login successful! Redirecting to dashboard...";
+
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1800);
       } else {
-        loginError.className = "msg error";
+        msg.className = "msg error";
         if (response.status === 403) {
-          loginError.textContent = data.detail || "Account pending admin approval.";
+          msg.textContent = data.detail || "Your account is pending admin approval.";
         } else {
-          loginError.textContent = data.detail || "Invalid username or password.";
+          msg.textContent = data.detail || "Invalid username or password.";
         }
       }
     } catch (err) {
       console.error("Login error:", err);
-      loginError.className = "msg error";
-      loginError.textContent = "Cannot connect to server. Check your internet or try again later.";
+      msg.className = "msg error";
+      msg.textContent = "Cannot connect to server. Please check your internet connection.";
     } finally {
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
