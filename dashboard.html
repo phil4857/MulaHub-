@@ -18,7 +18,7 @@
   .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; transition: all .3s; cursor: pointer; border: 2px solid transparent; }
   .commodity-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: #6366f1; }
   .commodity-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
-  .commodity-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
+  .commodity-card h4 { font-size: 1.1rem; font-weight: bold; margin-bottom: 4px; }
   .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
   .success { color: #28a745; }
   .error { color: #dc3545; }
@@ -26,13 +26,14 @@
   .banner { background: #fef3c7; border: 1px solid #fbbf24; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #92400e; }
   .copy-btn { background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1.125rem; font-weight: bold; cursor: pointer; margin: 16px 0; width: 100%; max-width: 400px; }
   .copy-btn:hover { background: #059669; }
+  .investment-item { background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
 </style>
 </head>
 <body class="p-4">
 
 <!-- NAVBAR -->
 <div class="navbar">
-    <h1>Mkoba Wallet Dashboard</h1>
+    <h1>Mkoba Wallet Dashboard 💸</h1>
     <button onclick="logout()">Logout</button>
 </div>
 
@@ -73,7 +74,8 @@
 
     <div class="mt-10 text-center">
         <p class="text-xl font-medium mb-4">Selected: <span id="selectedCommodity" class="text-indigo-700 font-bold">-- None --</span></p>
-        <button id="investBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-lg font-bold text-lg w-full max-w-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+        <button id="investBtn" onclick="requestInvestment()" 
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-lg font-bold text-lg w-full max-w-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
             Request Investment
         </button>
     </div>
@@ -122,7 +124,7 @@
 </div>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-6.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 const MPESA_NUMBER = "0752964507";
 const COMMODITY_INFO = {
     marble: { price: 650, days: 15 },
@@ -140,22 +142,28 @@ let currentData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('username');
-    if (!username) window.location.href = 'login.html';
+    if (!username) {
+        window.location.href = 'login.html';
+        return;
+    }
     document.getElementById('usernameDisplay').textContent = username;
 
     // Tab switching
-    document.querySelectorAll('.tab-buttons button').forEach(btn => btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.getElementById(btn.id.replace('Btn', '')).classList.add('active');
-    }));
+    document.querySelectorAll('.tab-buttons button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(btn.id.replace('Btn', '')).classList.add('active');
+        });
+    });
 
+    // Copy button
     document.getElementById("copyNumberBtn").addEventListener("click", () => {
         navigator.clipboard.writeText(MPESA_NUMBER).then(() => {
             const msg = document.getElementById("withdrawMsg");
             msg.className = "msg success";
-            msg.innerHTML = `Number <strong>${MPESA_NUMBER}</strong> copied! Open M-Pesa and send the amount with your username.`;
+            msg.innerHTML = `✅ Number <strong>${MPESA_NUMBER}</strong> copied! Open M-Pesa and send with your username.`;
         }).catch(() => alert("Copy failed. Manually copy: " + MPESA_NUMBER));
     });
 
@@ -169,11 +177,17 @@ function renderCommodityCards() {
     Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
         const card = document.createElement('div');
         card.className = 'commodity-card';
-        card.innerHTML = `<h4>${key.replace('_',' ').toUpperCase()}</h4><p>KES ${com.price}</p><p>${com.days} days</p>`;
+        card.innerHTML = `
+            <h4>${key.replace('_',' ').toUpperCase()}</h4>
+            <p class="text-2xl font-bold text-indigo-600">KES ${com.price}</p>
+            <p class="text-sm text-gray-500">${com.days} days • Daily returns</p>
+        `;
         card.onclick = () => {
             selectedCommodity = key;
-            document.getElementById('selectedCommodity').textContent = key.toUpperCase();
+            document.getElementById('selectedCommodity').textContent = key.replace('_',' ').toUpperCase();
             document.getElementById('investBtn').disabled = false;
+            document.querySelectorAll('.commodity-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
         };
         grid.appendChild(card);
     });
@@ -191,23 +205,105 @@ async function fetchUserData() {
     msg.textContent = 'Loading dashboard...';
 
     try {
-        const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+        const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
         const data = await res.json();
-        if (!res.ok) throw data;
+
+        if (!res.ok) throw new Error(data.detail || "Failed to load");
+
         currentData = data;
-        document.getElementById('balance').textContent = Number(data.balance || 0).toFixed(2);
-        document.getElementById('earnings').textContent = Number(data.earnings || 0).toFixed(2);
-        document.getElementById('invested').textContent = Number(data.total_invested || 0).toFixed(2);
-        document.getElementById('balanceDisplay').textContent = Number(data.balance || 0).toFixed(2);
-        document.getElementById('earningsDisplay').textContent = Number(data.earnings || 0).toFixed(2);
-        document.getElementById('investedDisplay').textContent = Number(data.total_invested || 0).toFixed(2);
-        document.getElementById('withdrawBalance').textContent = Number(data.balance || 0).toFixed(2);
+
+        // Update all balances
+        const balance = Number(data.balance || 0).toFixed(2);
+        const earnings = Number(data.earnings || 0).toFixed(2);
+        
+        // Calculate total invested (backend doesn't send it directly)
+        let totalInvested = 0;
+        if (data.investments) {
+            Object.values(data.investments).forEach(inv => {
+                totalInvested += Number(inv.amount || 0);
+            });
+        }
+        totalInvested = totalInvested.toFixed(2);
+
+        document.getElementById('balance').textContent = `KES ${balance}`;
+        document.getElementById('earnings').textContent = `KES ${earnings}`;
+        document.getElementById('invested').textContent = `KES ${totalInvested}`;
+
+        document.getElementById('balanceDisplay').textContent = balance;
+        document.getElementById('earningsDisplay').textContent = earnings;
+        document.getElementById('investedDisplay').textContent = totalInvested;
+        document.getElementById('withdrawBalance').textContent = balance;
+
+        // Next daily bonus
+        document.getElementById('nextDailyEarning').textContent = `KES ${Number(data.daily_earnings || 0).toFixed(2)}`;
+
+        // Show current investments
+        renderInvestmentList(data.investments || {});
+
         msg.className = 'msg success';
-        msg.textContent = 'Dashboard loaded!';
+        msg.textContent = '✅ Dashboard loaded successfully!';
     } catch (err) {
-        msg.className = 'msg error';
-        msg.textContent = 'Failed to load dashboard. Check your connection.';
         console.error(err);
+        const msgEl = document.getElementById('msg');
+        msgEl.className = 'msg error';
+        msgEl.textContent = '❌ Failed to load dashboard. Check connection or login again.';
+    }
+}
+
+function renderInvestmentList(investments) {
+    const container = document.getElementById('investmentList');
+    container.innerHTML = `<h3 class="font-bold mb-3">Your Active Investments</h3>`;
+    
+    if (Object.keys(investments).length === 0) {
+        container.innerHTML += `<p class="text-gray-500">No active investments yet.</p>`;
+        return;
+    }
+
+    Object.entries(investments).forEach(([commodity, inv]) => {
+        const div = document.createElement('div');
+        div.className = 'investment-item';
+        div.innerHTML = `
+            <strong>${commodity.replace('_',' ').toUpperCase()}</strong><br>
+            Amount: KES ${inv.amount}<br>
+            Days remaining: ${inv.days_remaining || '—'}<br>
+            Daily earning: KES ${Number(inv.daily_earning || 0).toFixed(2)}
+        `;
+        container.appendChild(div);
+    });
+}
+
+async function requestInvestment() {
+    if (!selectedCommodity) return;
+
+    const username = localStorage.getItem('username');
+    const btn = document.getElementById('investBtn');
+    btn.disabled = true;
+    btn.textContent = "Requesting...";
+
+    try {
+        const formData = new URLSearchParams();
+        formData.append("username", username);
+        formData.append("commodity", selectedCommodity);
+
+        const res = await fetch(`${BACKEND_URL}/invest/request`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert(`✅ Investment request received!\n\nSend KES ${data.price} to M-Pesa ${data.mpesa_number}\nInclude your username in the message.\n\nAfter payment, come back and click "Confirm Investment" in the next step (we will add this soon).`);
+            fetchUserData(); // refresh
+        } else {
+            alert("❌ " + (data.detail || "Request failed"));
+        }
+    } catch (err) {
+        alert("Cannot connect to server. Try again.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Request Investment";
     }
 }
 </script>
