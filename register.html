@@ -111,7 +111,6 @@ font-weight:600;
 text-decoration:underline;
 }
 </style>
-
 </head>
 <body>
 
@@ -121,20 +120,20 @@ text-decoration:underline;
 
 <form id="registerForm">
 
-<label for="username">Username (no spaces, 3+ characters)</label>
-<input id="username" type="text" required autocomplete="username">
+<label>Username</label>
+<input id="username" type="text" required>
 
-<label for="phone">Phone Number</label>
-<input id="phone" type="tel" required autocomplete="tel">
+<label>Phone Number</label>
+<input id="phone" type="tel" required>
 
-<label for="password">Password</label>
-<input id="password" type="password" required autocomplete="new-password">
+<label>Password</label>
+<input id="password" type="password" required>
 
-<label for="confirmPassword">Confirm Password</label>
-<input id="confirmPassword" type="password" required autocomplete="new-password">
+<label>Confirm Password</label>
+<input id="confirmPassword" type="password" required>
 
-<label for="referral">Referral Code (optional)</label>
-<input id="referral" type="text" autocomplete="off">
+<label>Referral Code (optional)</label>
+<input id="referral" type="text">
 
 <button type="submit" id="registerBtn">Register</button>
 
@@ -154,6 +153,9 @@ const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    // Wake Render server
+    fetch(`${BACKEND_URL}/health`).catch(()=>{});
+
     const form = document.getElementById("registerForm");
     const registerBtn = document.getElementById("registerBtn");
     const msg = document.getElementById("msg");
@@ -164,41 +166,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPasswordInput = document.getElementById("confirmPassword");
     const referralInput = document.getElementById("referral");
 
-    /* autofill referral from ?ref= */
+    // Autofill referral
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
     if (ref) referralInput.value = ref;
 
-    /* password match check */
-    function checkPasswordMatch() {
-        const p = passwordInput.value;
-        const c = confirmPasswordInput.value;
-
-        if (!c) {
-            msg.textContent = "";
-            return;
-        }
-
-        if (p !== c) {
-            msg.className = "msg error";
-            msg.textContent = "Passwords do not match";
-            registerBtn.disabled = true;
-        } else {
-            msg.className = "msg success";
-            msg.textContent = "Passwords match ✓";
-            registerBtn.disabled = false;
-        }
-    }
-
-    passwordInput.addEventListener("input", checkPasswordMatch);
-    confirmPasswordInput.addEventListener("input", checkPasswordMatch);
-
-    /* register submit */
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        msg.textContent = "";
         msg.className = "msg";
+        msg.textContent = "";
 
         const username = usernameInput.value.trim().toLowerCase();
         const phone = phoneInput.value.trim();
@@ -208,25 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!username || !phone || !pwd || !confirmPwd) {
             msg.className = "msg error";
-            msg.textContent = "Fill all required fields.";
-            return;
-        }
-
-        if (username.includes(" ") || username.length < 3) {
-            msg.className = "msg error";
-            msg.textContent = "Username must be 3+ characters with no spaces.";
-            return;
-        }
-
-        if (!/^(07|01)\d{8}$/.test(phone)) {
-            msg.className = "msg error";
-            msg.textContent = "Phone must be 07XXXXXXXX or 01XXXXXXXX";
-            return;
-        }
-
-        if (pwd.length < 6) {
-            msg.className = "msg error";
-            msg.textContent = "Password must be at least 6 characters.";
+            msg.textContent = "Fill all fields.";
             return;
         }
 
@@ -251,44 +210,37 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch(`${BACKEND_URL}/register`, {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: formData
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString()
             });
 
-            let data;
-            try {
-                data = await res.json();
-            } catch (e) {
-                data = { detail: "Server returned invalid response" };
-            }
+            const data = await res.json();
 
             if (res.ok) {
                 msg.className = "msg success";
-                msg.textContent = data.message || "Registration successful! Redirecting to login...";
+                msg.textContent = data.message || "Registration successful! Redirecting...";
 
-                // Auto redirect after success
                 setTimeout(() => {
                     window.location.href = "login.html";
-                }, 2200);
+                }, 2000);
 
             } else {
                 msg.className = "msg error";
-                msg.textContent = data.detail || data.message || `Error ${res.status}: Registration failed`;
-                console.error("Backend error:", res.status, data);
+                msg.textContent = data.detail || "Registration failed.";
             }
+
         } catch (err) {
-            console.error("Network/fetch error:", err);
             msg.className = "msg error";
-            msg.textContent = "Cannot connect to server. Check internet or try later.";
-        } finally {
-            // Always restore button
-            registerBtn.disabled = false;
-            registerBtn.textContent = "Register";
+            msg.textContent = "Cannot connect to server.";
         }
+
+        registerBtn.disabled = false;
+        registerBtn.textContent = "Register";
     });
 
 });
-
 </script>
 
 </body>
