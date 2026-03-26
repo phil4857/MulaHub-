@@ -1,228 +1,188 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Mkoba Wallet Dashboard 💸</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-  .navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }
-  .navbar h1 { font-weight: bold; }
-  .navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-  .tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-  .tab-buttons button { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-  .tab-buttons button.active { background: #4f46e5; color: white; }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-  .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; transition: all .3s; cursor: pointer; border: 2px solid transparent; }
-  .commodity-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: #6366f1; }
-  .commodity-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
-  .commodity-card h4 { font-size: 1.1rem; font-weight: bold; margin-bottom: 4px; }
-  .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
-  .success { color: #28a745; }
-  .error { color: #dc3545; }
-  .loading { color: #007bff; }
-  .banner { background: #fef3c7; border: 1px solid #fbbf24; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #92400e; }
-  .copy-btn { background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1.125rem; font-weight: bold; cursor: pointer; margin: 16px 0; width: 100%; max-width: 400px; }
-  .copy-btn:hover { background: #059669; }
-  .investment-item { background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
-</style>
-</head>
-<body class="p-4">
+<!DOCTYPE html>    
+<html lang="en">    
+<head>    
+<meta charset="UTF-8" />    
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />    
+<title>Mkoba Wallet Dashboard 💸</title>    
+<script src="https://cdn.tailwindcss.com"></script>    
 
-<div class="navbar">
-    <h1>Mkoba Wallet Dashboard 💸</h1>
-    <button onclick="logout()">Logout</button>
-</div>
+<style>    
+body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }    
+.navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }    
+.navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }    
+.tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }    
+.tab-buttons button.active { background: #4f46e5; color: white; }    
+.tab-content { display: none; }    
+.tab-content.active { display: block; }    
+.commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; cursor: pointer; }    
+.commodity-card.selected { border: 2px solid #6366f1; background: #eef2ff; }    
+.msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }    
+.success { color: #28a745; }    
+.error { color: #dc3545; }    
+.loading { color: #007bff; }    
+.banner { background: #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }    
+</style>    
+</head>    
 
-<div class="banner">
-    Send investment money to M-Pesa: <span class="text-red-600">0752964507</span><br>
-    <small>Include your username in the message for verification</small>
-</div>
+<body class="p-4">    
 
-<div class="tab-buttons">
-    <button id="tabInvestBtn" class="active">Invest</button>
-    <button id="tabEarningsBtn">Earnings</button>
-    <button id="tabWithdrawBtn">Withdraw</button>
-</div>
+<div class="navbar">    
+    <h1>Mkoba Wallet Dashboard 💸</h1>    
+    <button onclick="logout()">Logout</button>    
+</div>    
 
-<div id="tabInvest" class="tab-content active">
-    <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
-            <h2 class="text-gray-500 text-sm">Balance</h2>
-            <p id="balance" class="text-3xl font-bold text-indigo-600">KES 0.00</p>
-        </div>
-        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
-            <h2 class="text-gray-500 text-sm">Earnings</h2>
-            <p id="earnings" class="text-3xl font-bold text-green-600">KES 0.00</p>
-        </div>
-        <div class="bg-white shadow-lg rounded-lg p-5 text-center">
-            <h2 class="text-gray-500 text-sm">Total Invested</h2>
-            <p id="invested" class="text-3xl font-bold text-purple-600">KES 0.00</p>
-        </div>
-    </div>
+<div class="banner">    
+    Send investment money to M-Pesa: <b>0752964507</b>    
+</div>    
 
-    <p id="msg" class="msg loading">Loading dashboard...</p>
+<div class="tab-buttons">    
+    <button class="active">Invest</button>    
+</div>    
 
-    <h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">Choose Your Investment</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="commodityGrid"></div>
+<div class="tab-content active">    
 
-    <div class="mt-10 text-center">
-        <p class="text-xl font-medium mb-4">Selected: <span id="selectedCommodity" class="text-indigo-700 font-bold">-- None --</span></p>
-        <button id="investBtn" onclick="requestInvestment()" 
-                class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-lg font-bold text-lg w-full max-w-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-            Request Investment
-        </button>
-    </div>
+<div class="grid md:grid-cols-3 gap-4 mb-6">    
+    <div class="bg-white p-5 text-center rounded">    
+        <h2>Balance</h2>    
+        <p id="balance">KES 0.00</p>    
+    </div>    
+    <div class="bg-white p-5 text-center rounded">    
+        <h2>Earnings</h2>    
+        <p id="earnings">KES 0.00</p>    
+    </div>    
+    <div class="bg-white p-5 text-center rounded">    
+        <h2>Total Invested</h2>    
+        <p id="invested">KES 0.00</p>    
+    </div>    
+</div>    
 
-    <div id="investmentList" class="mt-8"></div>
-</div>
+<p id="msg" class="msg loading">Loading...</p>    
 
-<div id="tabEarnings" class="tab-content"></div>
-<div id="tabWithdraw" class="tab-content"></div>
+<div id="commodityGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>    
 
-<script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
-const MPESA_NUMBER = "0752964507";
+<div class="text-center mt-6">    
+    <p>Selected: <b id="selectedCommodity">None</b></p>    
+    <button id="investBtn" disabled onclick="requestInvestment()">Request Investment</button>    
+</div>    
 
-let selectedCommodity = null;
-let currentData = null;
+</div>    
 
-document.addEventListener('DOMContentLoaded', () => {
-    const username = localStorage.getItem('username');
-    if (!username) {
-        window.location.href = 'login.html';
-        return;
-    }
+<script>    
 
-    renderCommodityCards();
-    fetchUserData();
-});
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";    
+const MPESA_NUMBER = "0752964507";    
 
-window.logout = () => {
-    localStorage.removeItem('username');
-    window.location.href = 'login.html';
-};
+let selectedCommodity = null;    
 
-async function fetchUserData() {
-    const username = localStorage.getItem('username');
-    const msg = document.getElementById('msg');
+document.addEventListener('DOMContentLoaded', () => {    
 
-    msg.className = 'msg loading';
-    msg.textContent = 'Loading dashboard...';
+    const username = localStorage.getItem('username');    
+    if (!username) {    
+        window.location.href = 'login.html';    
+        return;    
+    }    
 
-    try {
+    // Wake backend (Render fix)
+    fetch(`${BACKEND_URL}/health`).catch(()=>{});    
 
-        const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+    renderCommodityCards();    
+    fetchUserData();    
+});    
 
-        const data = await res.json();
+function logout(){    
+    localStorage.removeItem('username');    
+    window.location.href='login.html';    
+}    
 
-        if (!res.ok) throw new Error(data.detail || "Failed to load");
+async function fetchUserData(){    
+    const username = localStorage.getItem('username');    
+    const msg = document.getElementById('msg');    
 
-        currentData = data;
+    msg.className="msg loading";    
+    msg.textContent="Loading dashboard...";    
 
-        const balance = Number(data.balance || 0).toFixed(2);
-        const earnings = Number(data.earnings || 0).toFixed(2);
+    try{    
+        const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}&_=${Date.now()}`);    
+        const data = await res.json();    
 
-        document.getElementById('balance').textContent = `KES ${balance}`;
-        document.getElementById('earnings').textContent = `KES ${earnings}`;
+        if(!res.ok) throw new Error(data.detail);    
 
-        msg.className = 'msg success';
-        msg.textContent = '✅ Dashboard loaded successfully!';
+        document.getElementById('balance').textContent = `KES ${Number(data.balance||0).toFixed(2)}`;    
+        document.getElementById('earnings').textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;    
+        document.getElementById('invested').textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;    
 
-    } catch (err) {
-        console.error(err);
+        msg.className="msg success";    
+        msg.textContent="Dashboard loaded";    
 
-        msg.className = 'msg error';
-        msg.textContent = '❌ Failed to load dashboard. Check connection or login again.';
-    }
-}
+    }catch(e){    
+        msg.className="msg error";    
+        msg.textContent="Failed to load dashboard";    
+    }    
+}    
 
-function renderCommodityCards() {
-    const grid = document.getElementById('commodityGrid');
+function renderCommodityCards(){    
+    const grid = document.getElementById("commodityGrid");    
 
-    const commodities = {
-        marble:{price:650},
-        crude_oil:{price:800},
-        silver:{price:1000},
-        lead:{price:1200},
-        platinum:{price:1350},
-        diamonds:{price:1750},
-        gold:{price:2200},
-        uranium:{price:3000}
-    };
+    const commodities = {    
+        marble:650, crude_oil:800, silver:1000, lead:1200,    
+        platinum:1350, diamonds:1750, gold:2200, uranium:3000    
+    };    
 
-    grid.innerHTML="";
+    grid.innerHTML="";    
 
-    Object.entries(commodities).forEach(([key,val])=>{
-        const card=document.createElement("div");
+    Object.entries(commodities).forEach(([key,price])=>{    
+        const card=document.createElement("div");    
+        card.className="commodity-card";    
 
-        card.className="commodity-card";
+        card.innerHTML=`    
+        <h4>${key}</h4>    
+        <p>KES ${price}</p>`;    
 
-        card.innerHTML=`
-        <h4>${key.replace('_',' ').toUpperCase()}</h4>
-        <p class="text-2xl font-bold text-indigo-600">KES ${val.price}</p>
-        `;
+        card.onclick=()=>{    
+            selectedCommodity=key;    
+            document.getElementById("selectedCommodity").textContent=key;    
+            document.getElementById("investBtn").disabled=false;    
 
-        card.onclick=()=>{
-            selectedCommodity=key;
+            document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected"));    
+            card.classList.add("selected");    
+        };    
 
-            document.getElementById("selectedCommodity").textContent=
-            key.replace('_',' ').toUpperCase();
+        grid.appendChild(card);    
+    });    
+}    
 
-            document.getElementById("investBtn").disabled=false;
+async function requestInvestment(){    
 
-            document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected"));
+    if(!selectedCommodity) return;    
 
-            card.classList.add("selected");
-        };
+    const username = localStorage.getItem("username");    
 
-        grid.appendChild(card);
-    });
-}
+    const formData = new URLSearchParams();    
+    formData.append("username", username);    
+    formData.append("commodity", selectedCommodity);    
 
-async function requestInvestment(){
+    try{    
+        const res = await fetch(`${BACKEND_URL}/invest/request`,{    
+            method:"POST",    
+            headers:{ "Content-Type":"application/x-www-form-urlencoded" },    
+            body: formData.toString()   // ✅ FIXED    
+        });    
 
-    if(!selectedCommodity)return;
+        const data = await res.json();    
 
-    const username=localStorage.getItem("username");
+        if(res.ok){    
+            alert(`Send payment to ${MPESA_NUMBER}`);    
+            fetchUserData();    
+        }else{    
+            alert(data.detail || "Failed");    
+        }    
 
-    try{
+    }catch{    
+        alert("Server error");    
+    }    
+}    
 
-        const formData=new URLSearchParams();
+</script>    
 
-        formData.append("username",username);
-        formData.append("commodity",selectedCommodity);
-
-        const res=await fetch(`${BACKEND_URL}/invest/request`,{
-            method:"POST",
-            headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:formData
-        });
-
-        const data=await res.json();
-
-        if(res.ok){
-
-            alert(`Investment request received. Send payment to ${MPESA_NUMBER}`);
-
-            fetchUserData();
-
-        }else{
-
-            alert(data.detail || "Request failed");
-
-        }
-
-    }catch{
-
-        alert("Cannot connect to server");
-
-    }
-
-}
-</script>
-
-</body>
+</body>    
 </html>
