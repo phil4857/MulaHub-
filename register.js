@@ -1,6 +1,10 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // Wake backend (Render fix)
+    fetch(`${BACKEND_URL}/health`).catch(()=>{});
+
     const form = document.getElementById("registerForm");
     const registerBtn = document.getElementById("registerBtn");
     const msg = document.getElementById("msg");
@@ -88,11 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (referral) formData.append("referral", referral);
 
         try {
-
             const res = await fetch(`${BACKEND_URL}/register`, {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: formData,
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: formData.toString() // ✅ FIXED
             });
 
             const data = await res.json();
@@ -116,13 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Registration error:", err);
             msg.className = "msg error";
             msg.textContent = "Cannot connect to server. Check your connection.";
-        }
-
-        finally {
+        } finally {
             registerBtn.disabled = false;
             registerBtn.textContent = "Register";
         }
-
     });
 
 });
