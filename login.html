@@ -2,172 +2,179 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login - Mkoba Wallet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Login</title>
 <style>
-body {
-  font-family: Arial;
-  background: #f4f4f4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* modern gradient */
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.box {
-  background: white;
-  padding: 30px;
-  width: 320px;
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
+  .container {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffffdd; /* semi-transparent white */
+    padding: 30px 25px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    backdrop-filter: blur(5px);
+  }
 
-input, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-}
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
 
-button {
-  background: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
+  input, button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
 
-button:hover {
-  background: #0056b3;
-}
+  input:focus {
+    outline: none;
+    border-color: #6a11cb;
+    box-shadow: 0 0 5px rgba(106,17,203,0.5);
+  }
 
-.msg {
-  margin-top: 10px;
-  font-size: 14px;
-}
+  button {
+    background: #6a11cb;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
 
-.msg.success { color: green; }
-.msg.error { color: red; }
-.msg.loading { color: orange; }
+  button:hover {
+    background: #2575fc;
+  }
 
-.password-box {
-  position: relative;
-}
+  button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
 
-.password-box span {
-  position: absolute;
-  right: 10px;
-  top: 12px;
-  cursor: pointer;
-}
+  .toggle-password {
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 43px;
+    user-select: none;
+    font-size: 18px;
+  }
+
+  .msg {
+    margin-top: 12px;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .msg.error { color: #dc3545; }
+  .msg.success { color: #28a745; }
+  .msg.loading { color: #2575fc; }
+
+  .password-container {
+    position: relative;
+  }
 </style>
 </head>
-
 <body>
 
-<div class="box">
+<div class="container">
   <h2>Login</h2>
-
-  <!-- IMPORTANT: form id must exist -->
   <form id="loginForm">
-    <input id="username" placeholder="Username" required>
-
-    <div class="password-box">
-      <input id="password" type="password" placeholder="Password" required>
-      <span id="togglePassword">👁️</span>
+    <input type="text" id="username" placeholder="Username" required />
+    <div class="password-container">
+      <input type="password" id="password" placeholder="Password" required />
+      <span id="togglePassword" class="toggle-password">👁️</span>
     </div>
-
-    <button id="loginBtn" type="submit">Login</button>
+    <button type="submit" id="loginBtn">Login</button>
   </form>
-
-  <div class="msg" id="msg"></div>
-
-  <p>Don't have an account? <a href="register.html">Register</a></p>
+  <div id="loginError" class="msg"></div>
+  <div id="loginSuccess" class="msg"></div>
 </div>
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.getElementById("loginForm");
-  const loginBtn = document.getElementById("loginBtn");
-  const msg = document.getElementById("msg");
-  const togglePassword = document.getElementById("togglePassword");
-  const passwordInput = document.getElementById("password");
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
+  const errorMsg = document.getElementById('loginError');
+  const successMsg = document.getElementById('loginSuccess');
+  const submitBtn = document.getElementById('loginBtn');
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
 
-  // Toggle password visibility
-  togglePassword.addEventListener("click", () => {
-    const type = passwordInput.type === "password" ? "text" : "password";
+  togglePassword.addEventListener('click', () => {
+    const type = passwordInput.type === 'password' ? 'text' : 'password';
     passwordInput.type = type;
-    togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+    togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
   });
 
-  loginForm.addEventListener("submit", async (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    msg.textContent = "";
-    msg.className = "msg";
+    errorMsg.textContent = '';
+    successMsg.textContent = '';
 
-    const username = document.getElementById("username").value.trim().toLowerCase();
+    const username = document.getElementById('username')?.value.trim().toLowerCase();
     const password = passwordInput.value;
 
     if (!username || !password) {
-      msg.className = "msg error";
-      msg.textContent = "Please enter both username and password.";
+      errorMsg.textContent = 'Please enter both username and password.';
+      errorMsg.style.color = '#dc3545';
       return;
     }
 
-    loginBtn.disabled = true;
-    loginBtn.textContent = "Logging in...";
-    msg.className = "msg loading";
-    msg.textContent = "Verifying credentials...";
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Logging in...';
+    successMsg.className = 'msg loading';
+    successMsg.textContent = 'Verifying credentials...';
 
     try {
-      const response = await fetch(`${BACKEND_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password
-        })
+      const res = await fetch(`${BACKEND_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
-        const token = data.access_token;
+      if (res.ok) {
+        if (data.access_token) localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('username', username);
 
-        if (token) {
-          localStorage.setItem("access_token", token);
-        }
+        successMsg.textContent = 'Login successful! Redirecting...';
+        successMsg.className = 'msg success';
 
-        localStorage.setItem("username", username);
-
-        msg.className = "msg success";
-        msg.textContent = "Login successful! Redirecting...";
-
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1000);
-
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
       } else {
-        msg.className = "msg error";
-
-        if (response.status === 403) {
-          msg.textContent = data.detail || "Account not approved yet.";
-        } else {
-          msg.textContent = data.detail || "Invalid credentials.";
-        }
+        errorMsg.style.color = '#dc3545';
+        if (res.status === 403) errorMsg.textContent = data.detail || 'Account not approved.';
+        else if (res.status === 404) errorMsg.textContent = data.detail || 'User not found.';
+        else errorMsg.textContent = data.detail || 'Invalid credentials.';
+        successMsg.textContent = '';
       }
 
-    } catch (error) {
-      console.error(error);
-      msg.className = "msg error";
-      msg.textContent = "Cannot connect to server.";
+    } catch (err) {
+      console.error('Login error:', err);
+      errorMsg.style.color = '#dc3545';
+      errorMsg.textContent = 'Cannot connect to server.';
+      successMsg.textContent = '';
     } finally {
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Login";
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText || 'Login';
     }
   });
 });
