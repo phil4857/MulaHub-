@@ -1,9 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Register - Mkoba Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.box {
+  background: white;
+  padding: 30px;
+  width: 320px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+button {
+  background: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #218838;
+}
+
+.msg {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.msg.success { color: green; }
+.msg.error { color: red; }
+.msg.loading { color: orange; }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Register</h2>
+
+  <!-- IMPORTANT: IDs must match JS -->
+  <form id="registerForm">
+    <input id="username" placeholder="Username" required>
+    <input id="phone" placeholder="Phone (07XXXXXXXX)" required>
+    <input id="password" type="password" placeholder="Password" required>
+    <input id="confirmPassword" type="password" placeholder="Confirm Password" required>
+    <input id="referral" placeholder="Referral (optional)">
+    
+    <button id="registerBtn" type="submit">Register</button>
+  </form>
+
+  <div id="msg" class="msg"></div>
+
+  <p>Already have an account? <a href="login.html">Login</a></p>
+</div>
+
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Wake Render server (best-effort)
   fetch(`${BACKEND_URL}/health`).catch(()=>{});
 
   const form = document.getElementById("registerForm");
@@ -16,31 +89,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmPasswordInput = document.getElementById("confirmPassword");
   const referralInput = document.getElementById("referral");
 
-  // Autofocus username
   usernameInput.focus();
 
-  // Autofill referral from ?ref=...
   const params = new URLSearchParams(window.location.search);
   const ref = params.get("ref");
   if (ref) referralInput.value = ref;
 
-  // helper: show message
-  function showMessage(kind, text) {
-    msg.className = "msg " + (kind || "");
-    msg.textContent = text || "";
+  function showMessage(type, text) {
+    msg.className = "msg " + type;
+    msg.textContent = text;
   }
 
-  // helper: normalize phone (remove spaces, dashes etc.)
   function normalizePhone(p) {
-    if (!p) return "";
-    // keep + and digits
     return p.replace(/[^\d+]/g, "");
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    showMessage("", "");
 
     const username = usernameInput.value.trim().toLowerCase();
     const phone = normalizePhone(phoneInput.value.trim());
@@ -48,21 +113,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPwd = confirmPasswordInput.value;
     const referral = referralInput.value.trim().toLowerCase();
 
-    // basic validation
     if (!username || !phone || !pwd || !confirmPwd) {
-      showMessage("error", "Fill all required fields.");
+      showMessage("error", "Fill all fields");
       return;
     }
-    if (username.length < 3) {
-      showMessage("error", "Username must be at least 3 characters.");
-      return;
-    }
-    if (pwd.length < 6) {
-      showMessage("error", "Password should be at least 6 characters.");
-      return;
-    }
+
     if (pwd !== confirmPwd) {
-      showMessage("error", "Passwords do not match.");
+      showMessage("error", "Passwords do not match");
       return;
     }
 
@@ -71,58 +128,38 @@ document.addEventListener("DOMContentLoaded", () => {
     showMessage("loading", "Creating account...");
 
     try {
-      // Choose the content type your backend expects.
-      // Option A (recommended if your FastAPI endpoint expects JSON bodies):
-      const payload = {
-        username,
-        phone,
-        password: pwd,
-      };
-      if (referral) payload.referral = referral;
-
       const res = await fetch(`${BACKEND_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          username,
+          phone,
+          password: pwd,
+          referral: referral || null
+        })
       });
 
-      // If backend returns non-JSON, handle it
-      let data;
-      const ct = res.headers.get("content-type") || "";
-      if (ct.includes("application/json")) {
-        data = await res.json();
-      } else {
-        const text = await res.text();
-        data = { message: text };
-      }
+      const data = await res.json();
 
       if (res.ok) {
-        showMessage("success", data.message || "Registration successful. Redirecting to login...");
-        // Optionally prefill login by saving username (not password)
-        localStorage.setItem("just_registered_username", username);
-
+        showMessage("success", data.message || "Registration successful");
         setTimeout(() => {
           window.location.href = "login.html";
-        }, 1400);
+        }, 1200);
       } else {
-        // Try to show useful error details if present
-        let errMsg = data.detail || data.message || "Registration failed.";
-        // If detail is an object/array of errors, flatten it:
-        if (!errMsg && (typeof data === "object")) {
-          if (Array.isArray(data)) {
-            errMsg = data.map(i => (i.msg || JSON.stringify(i))).join(" • ");
-          } else {
-            errMsg = JSON.stringify(data);
-          }
+        // FIXED: no more [object Object]
+        if (typeof data.detail === "object") {
+          showMessage("error", JSON.stringify(data.detail));
+        } else {
+          showMessage("error", data.detail || "Registration failed");
         }
-        showMessage("error", errMsg);
       }
 
     } catch (err) {
-      console.error("Register error:", err);
-      showMessage("error", "Cannot connect to server. Please try again.");
+      console.error(err);
+      showMessage("error", "Server not reachable");
     } finally {
       registerBtn.disabled = false;
       registerBtn.textContent = "Register";
@@ -130,3 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+</body>
+</html>
