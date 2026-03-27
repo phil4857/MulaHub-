@@ -1,130 +1,106 @@
+<script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("registerForm");
+  const registerBtn = document.getElementById("registerBtn");
+  const msg = document.getElementById("msg");
 
-    // Wake backend (Render fix)
-    fetch(`${BACKEND_URL}/health`).catch(()=>{});
+  const usernameInput = document.getElementById("username");
+  const phoneInput = document.getElementById("phone");
+  const passwordInput = document.getElementById("password");
+  const confirmPasswordInput = document.getElementById("confirmPassword");
+  const referralInput = document.getElementById("referral");
 
-    const form = document.getElementById("registerForm");
-    const registerBtn = document.getElementById("registerBtn");
-    const msg = document.getElementById("msg");
-    const usernameInput = document.getElementById("username");
-    const phoneInput = document.getElementById("phone");
-    const passwordInput = document.getElementById("password");
-    const confirmPasswordInput = document.getElementById("confirmPassword");
-    const referralInput = document.getElementById("referral");
+  usernameInput.focus();
 
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("ref")) referralInput.value = params.get("ref");
+  // Autofill referral from ?ref=
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get("ref");
+  if (ref) referralInput.value = ref;
 
-    const checkPasswordMatch = () => {
-        const pwd = passwordInput.value;
-        const confirm = confirmPasswordInput.value;
+  function showMessage(kind, text) {
+    msg.className = "msg " + (kind || "");
+    msg.textContent = text || "";
+  }
 
-        if (!confirm) {
-            msg.textContent = "";
-            registerBtn.disabled = false;
-            return;
+  function validatePhone(phone) {
+    // Accepts 07xxxxxxxx or 01xxxxxxxx
+    return /^(07|01)\d{8}$/.test(phone);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showMessage("", "");
+
+    const username = usernameInput.value.trim().toLowerCase();
+    const phone = phoneInput.value.trim();
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+    const referral = referralInput.value.trim().toLowerCase();
+
+    if (!username || !phone || !password || !confirmPassword) {
+      showMessage("error", "Fill all required fields.");
+      return;
+    }
+
+    if (username.length < 3) {
+      showMessage("error", "Username must be at least 3 characters.");
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      showMessage("error", "Phone must be 07xxxxxxxx or 01xxxxxxxx.");
+      return;
+    }
+
+    if (password.length < 6) {
+      showMessage("error", "Password should be at least 6 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showMessage("error", "Passwords do not match.");
+      return;
+    }
+
+    registerBtn.disabled = true;
+    registerBtn.textContent = "Registering...";
+    showMessage("loading", "Creating account...");
+
+    try {
+      const payload = { username, phone, password };
+      if (referral) payload.referral = referral;
+
+      const res = await fetch(`${BACKEND_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      let data;
+      try { data = await res.json(); } 
+      catch { data = { message: await res.text() }; }
+
+      if (res.ok) {
+        showMessage("success", data.message || "Registration successful. Redirecting to login...");
+        localStorage.setItem("just_registered_username", username);
+        setTimeout(() => { window.location.href = "login.html"; }, 1400);
+      } else {
+        // Flatten errors if returned as array
+        let errMsg = data.detail || data.message || "Registration failed.";
+        if (Array.isArray(data)) {
+          errMsg = data.map(e => e.msg || JSON.stringify(e)).join(" • ");
         }
-
-        if (pwd !== confirm) {
-            msg.className = "msg error";
-            msg.textContent = "Passwords do not match";
-            registerBtn.disabled = true;
-        } else {
-            msg.className = "msg success";
-            msg.textContent = "Passwords match ✓";
-            registerBtn.disabled = false;
-        }
-    };
-
-    passwordInput.addEventListener("input", checkPasswordMatch);
-    confirmPasswordInput.addEventListener("input", checkPasswordMatch);
-
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const username = usernameInput.value.trim().toLowerCase();
-        const phone = phoneInput.value.trim();
-        const pwd = passwordInput.value;
-        const confirmPwd = confirmPasswordInput.value;
-        const referral = referralInput.value.trim().toLowerCase() || "";
-
-        if (!username || !phone || !pwd || !confirmPwd) {
-            msg.className = "msg error";
-            msg.textContent = "Please fill in all required fields.";
-            return;
-        }
-
-        if (username.includes(" ") || username.length < 3) {
-            msg.className = "msg error";
-            msg.textContent = "Username: 3+ characters, no spaces.";
-            return;
-        }
-
-        if (!/^(07|01)\d{8}$/.test(phone)) {
-            msg.className = "msg error";
-            msg.textContent = "Phone must start with 07 or 01 and have 10 digits.";
-            return;
-        }
-
-        if (pwd.length < 6) {
-            msg.className = "msg error";
-            msg.textContent = "Password must be at least 6 characters.";
-            return;
-        }
-
-        if (pwd !== confirmPwd) {
-            msg.className = "msg error";
-            msg.textContent = "Passwords do not match.";
-            return;
-        }
-
-        registerBtn.disabled = true;
-        registerBtn.textContent = "Registering...";
-        msg.className = "msg loading";
-        msg.textContent = "Creating your account...";
-
-        const formData = new URLSearchParams();
-        formData.append("username", username);
-        formData.append("phone", phone);
-        formData.append("password", pwd);
-        if (referral) formData.append("referral", referral);
-
-        try {
-            const res = await fetch(`${BACKEND_URL}/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: formData.toString() // ✅ FIXED
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                msg.className = "msg success";
-                msg.textContent = data.message || "Registration successful! Redirecting...";
-                setTimeout(() => window.location.href = "login.html", 2200);
-            } else {
-                msg.className = "msg error";
-                let errText = data.detail || `Error ${res.status}`;
-
-                if (errText.toLowerCase().includes("already exists")) {
-                    errText += " – choose a different username.";
-                }
-
-                msg.textContent = errText;
-            }
-
-        } catch (err) {
-            console.error("Registration error:", err);
-            msg.className = "msg error";
-            msg.textContent = "Cannot connect to server. Check your connection.";
-        } finally {
-            registerBtn.disabled = false;
-            registerBtn.textContent = "Register";
-        }
-    });
-
+        showMessage("error", errMsg);
+      }
+    } catch (err) {
+      console.error("Register error:", err);
+      showMessage("error", "Cannot connect to server. Please try again.");
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Register";
+    }
+  });
 });
+</script>
