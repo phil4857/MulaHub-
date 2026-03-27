@@ -1,3 +1,4 @@
+<script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Password toggle
+  // Password visibility toggle
   if (togglePassword && passwordInput) {
     togglePassword.addEventListener('click', () => {
       const type = passwordInput.type === 'password' ? 'text' : 'password';
@@ -24,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     errorMsg.textContent = '';
     if (successMsg) successMsg.textContent = '';
 
@@ -37,63 +37,53 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Loading state
     submitBtn.disabled = true;
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Logging in...';
 
     try {
-      // ✅ FIXED: Send JSON (not form-data)
       const response = await fetch(`${BACKEND_URL}/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
       });
 
-      const data = await response.json();
+      let data = {};
+      try { data = await response.json(); } 
+      catch { data = { message: await response.text() }; }
 
       if (response.ok) {
-        // Save token
-        if (data.access_token) {
-          localStorage.setItem('access_token', data.access_token);
-        }
+        // Save token under common names
+        const token = data.access_token || data.token || data.jwt;
+        if (token) localStorage.setItem('access_token', token);
 
-        // Save username
-        localStorage.setItem('username', username);
+        localStorage.setItem('username', data.username || username);
 
         if (successMsg) {
           successMsg.textContent = 'Login successful! Redirecting...';
           successMsg.style.color = '#28a745';
         }
 
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1000);
+        setTimeout(() => window.location.href = 'dashboard.html', 900);
 
       } else {
-        errorMsg.style.color = '#dc3545';
-
-        if (response.status === 403) {
-          errorMsg.textContent = data.detail || 'Account not approved.';
-        } else if (response.status === 404) {
-          errorMsg.textContent = data.detail || 'User not found.';
-        } else {
-          errorMsg.textContent = data.detail || 'Invalid credentials.';
+        let errMsg = data.detail || data.message || 'Invalid credentials';
+        if (Array.isArray(data)) {
+          errMsg = data.map(e => e.msg || JSON.stringify(e)).join(" • ");
         }
+
+        errorMsg.textContent = errMsg;
+        errorMsg.style.color = '#dc3545';
       }
 
     } catch (error) {
       console.error('Login error:', error);
-      errorMsg.style.color = '#dc3545';
       errorMsg.textContent = 'Cannot connect to server.';
+      errorMsg.style.color = '#dc3545';
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = originalText || 'Login';
     }
   });
 });
+</script>
