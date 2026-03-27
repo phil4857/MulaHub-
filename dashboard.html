@@ -1,188 +1,168 @@
-<!DOCTYPE html>    
-<html lang="en">    
-<head>    
-<meta charset="UTF-8" />    
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />    
-<title>Mkoba Wallet Dashboard 💸</title>    
-<script src="https://cdn.tailwindcss.com"></script>    
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const MPESA_NUMBER = "0752964507";
 
-<style>    
-body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }    
-.navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }    
-.navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }    
-.tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }    
-.tab-buttons button.active { background: #4f46e5; color: white; }    
-.tab-content { display: none; }    
-.tab-content.active { display: block; }    
-.commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; cursor: pointer; }    
-.commodity-card.selected { border: 2px solid #6366f1; background: #eef2ff; }    
-.msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }    
-.success { color: #28a745; }    
-.error { color: #dc3545; }    
-.loading { color: #007bff; }    
-.banner { background: #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }    
-</style>    
-</head>    
+let selectedCommodity = null;
 
-<body class="p-4">    
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
 
-<div class="navbar">    
-    <h1>Mkoba Wallet Dashboard 💸</h1>    
-    <button onclick="logout()">Logout</button>    
-</div>    
+  // Wake backend (Render cold-start)
+  fetch(`${BACKEND_URL}/health`).catch(()=>{});
 
-<div class="banner">    
-    Send investment money to M-Pesa: <b>0752964507</b>    
-</div>    
+  renderCommodityCards();
+  fetchUserData();
+});
 
-<div class="tab-buttons">    
-    <button class="active">Invest</button>    
-</div>    
+function logout(){
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('username');
+  window.location.href='login.html';
+}
 
-<div class="tab-content active">    
+async function fetchUserData(){
+  const msg = document.getElementById('msg');
+  msg.className = "msg loading";
+  msg.textContent = "Loading dashboard...";
 
-<div class="grid md:grid-cols-3 gap-4 mb-6">    
-    <div class="bg-white p-5 text-center rounded">    
-        <h2>Balance</h2>    
-        <p id="balance">KES 0.00</p>    
-    </div>    
-    <div class="bg-white p-5 text-center rounded">    
-        <h2>Earnings</h2>    
-        <p id="earnings">KES 0.00</p>    
-    </div>    
-    <div class="bg-white p-5 text-center rounded">    
-        <h2>Total Invested</h2>    
-        <p id="invested">KES 0.00</p>    
-    </div>    
-</div>    
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
 
-<p id="msg" class="msg loading">Loading...</p>    
+  try {
+    const res = await fetch(`${BACKEND_URL}/dashboard`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
 
-<div id="commodityGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>    
+    if (!res.ok) throw new Error(data.detail || 'Failed to load');
 
-<div class="text-center mt-6">    
-    <p>Selected: <b id="selectedCommodity">None</b></p>    
-    <button id="investBtn" disabled onclick="requestInvestment()">Request Investment</button>    
-</div>    
+    document.getElementById('balance').textContent = `KES ${Number(data.balance||0).toFixed(2)}`;
+    document.getElementById('earnings').textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;
 
-</div>    
+    // compute total invested from investments map returned by backend
+    let investedTotal = 0;
+    if (data.investments && typeof data.investments === 'object') {
+      Object.values(data.investments).forEach(inv => {
+        if (inv && inv.amount) investedTotal += Number(inv.amount) || 0;
+      });
+    }
+    document.getElementById('invested').textContent = `KES ${investedTotal.toFixed(2)}`;
 
-<script>    
+    msg.className = "msg success";
+    msg.textContent = "Dashboard loaded";
+  } catch (err) {
+    console.error(err);
+    msg.className = "msg error";
+    msg.textContent = "Failed to load dashboard";
+    // If unauthorized, redirect to login
+    if (err.message && (err.message.toLowerCase().includes('token') || err.message.toLowerCase().includes('unauthorized'))) {
+      localStorage.removeItem('access_token');
+      setTimeout(()=> window.location.href='login.html', 800);
+    }
+  }
+}
 
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";    
-const MPESA_NUMBER = "0752964507";    
+function renderCommodityCards(){
+  const grid = document.getElementById("commodityGrid");
 
-let selectedCommodity = null;    
+  const commodities = {
+    marble:650, crude_oil:800, silver:1000, lead:1200,
+    platinum:1350, diamonds:1750, gold:2200, uranium:3000
+  };
 
-document.addEventListener('DOMContentLoaded', () => {    
+  grid.innerHTML = "";
 
-    const username = localStorage.getItem('username');    
-    if (!username) {    
-        window.location.href = 'login.html';    
-        return;    
-    }    
+  Object.entries(commodities).forEach(([key,price])=>{
+    const card = document.createElement("div");
+    card.className = "commodity-card";
 
-    // Wake backend (Render fix)
-    fetch(`${BACKEND_URL}/health`).catch(()=>{});    
+    card.innerHTML = `<h4 style="text-transform:capitalize">${key.replace('_',' ')}</h4><p>KES ${price}</p>`;
 
-    renderCommodityCards();    
-    fetchUserData();    
-});    
+    card.onclick = () => {
+      selectedCommodity = key;
+      document.getElementById("selectedCommodity").textContent = key;
+      document.getElementById("investBtn").disabled = false;
 
-function logout(){    
-    localStorage.removeItem('username');    
-    window.location.href='login.html';    
-}    
+      document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected"));
+      card.classList.add("selected");
+    };
 
-async function fetchUserData(){    
-    const username = localStorage.getItem('username');    
-    const msg = document.getElementById('msg');    
+    grid.appendChild(card);
+  });
+}
 
-    msg.className="msg loading";    
-    msg.textContent="Loading dashboard...";    
+async function requestInvestment(){
+  if(!selectedCommodity) return;
 
-    try{    
-        const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}&_=${Date.now()}`);    
-        const data = await res.json();    
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    alert('Please login again');
+    window.location.href='login.html';
+    return;
+  }
 
-        if(!res.ok) throw new Error(data.detail);    
+  const investBtn = document.getElementById('investBtn');
+  investBtn.disabled = true;
 
-        document.getElementById('balance').textContent = `KES ${Number(data.balance||0).toFixed(2)}`;    
-        document.getElementById('earnings').textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;    
-        document.getElementById('invested').textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;    
+  try {
+    // 1) Ask backend for price / instructions
+    const res1 = await fetch(`${BACKEND_URL}/invest/request`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ commodity: selectedCommodity })
+    });
+    const data1 = await res1.json();
 
-        msg.className="msg success";    
-        msg.textContent="Dashboard loaded";    
+    if (!res1.ok) {
+      alert(data1.detail || 'Failed to request investment');
+      investBtn.disabled = false;
+      return;
+    }
 
-    }catch(e){    
-        msg.className="msg error";    
-        msg.textContent="Failed to load dashboard";    
-    }    
-}    
+    alert(`Send payment to ${MPESA_NUMBER}. Amount: KES ${data1.price}`);
 
-function renderCommodityCards(){    
-    const grid = document.getElementById("commodityGrid");    
+    // After user pays, confirm with backend to finalize investment.
+    // Replace the confirm() with a better UI/modal if desired.
+    const confirmed = confirm('Have you completed the M-Pesa payment? Press OK to confirm and finalize the investment.');
+    if (!confirmed) {
+      investBtn.disabled = false;
+      return;
+    }
 
-    const commodities = {    
-        marble:650, crude_oil:800, silver:1000, lead:1200,    
-        platinum:1350, diamonds:1750, gold:2200, uranium:3000    
-    };    
+    // 2) Confirm investment with backend
+    const res2 = await fetch(`${BACKEND_URL}/invest/confirm`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ commodity: selectedCommodity })
+    });
+    const data2 = await res2.json();
 
-    grid.innerHTML="";    
+    if (!res2.ok) {
+      alert(data2.detail || 'Failed to confirm investment');
+      investBtn.disabled = false;
+      return;
+    }
 
-    Object.entries(commodities).forEach(([key,price])=>{    
-        const card=document.createElement("div");    
-        card.className="commodity-card";    
-
-        card.innerHTML=`    
-        <h4>${key}</h4>    
-        <p>KES ${price}</p>`;    
-
-        card.onclick=()=>{    
-            selectedCommodity=key;    
-            document.getElementById("selectedCommodity").textContent=key;    
-            document.getElementById("investBtn").disabled=false;    
-
-            document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected"));    
-            card.classList.add("selected");    
-        };    
-
-        grid.appendChild(card);    
-    });    
-}    
-
-async function requestInvestment(){    
-
-    if(!selectedCommodity) return;    
-
-    const username = localStorage.getItem("username");    
-
-    const formData = new URLSearchParams();    
-    formData.append("username", username);    
-    formData.append("commodity", selectedCommodity);    
-
-    try{    
-        const res = await fetch(`${BACKEND_URL}/invest/request`,{    
-            method:"POST",    
-            headers:{ "Content-Type":"application/x-www-form-urlencoded" },    
-            body: formData.toString()   // ✅ FIXED    
-        });    
-
-        const data = await res.json();    
-
-        if(res.ok){    
-            alert(`Send payment to ${MPESA_NUMBER}`);    
-            fetchUserData();    
-        }else{    
-            alert(data.detail || "Failed");    
-        }    
-
-    }catch{    
-        alert("Server error");    
-    }    
-}    
-
-</script>    
-
-</body>    
-</html>
+    alert(data2.message || 'Investment confirmed');
+    await fetchUserData();
+  } catch (err) {
+    console.error(err);
+    alert('Server error');
+  } finally {
+    investBtn.disabled = false;
+  }
+}
+</script>
