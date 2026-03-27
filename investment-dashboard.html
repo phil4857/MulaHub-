@@ -1,33 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mkoba Wallet Dashboard 💸</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }
-        .navbar h1 { font-weight: bold; }
-        .navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-        .tab-buttons button { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .tab-buttons button.active { background: #4f46e5; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; transition: all .3s; cursor: pointer; border: 2px solid transparent; }
-        .commodity-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: #6366f1; }
-        .commodity-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
-        .commodity-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
-        .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
-        .loading { color: #007bff; }
-        .banner { background: #fef3c7; border: 1px solid #fbbf24; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #92400e; }
-        .withdraw-input { padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; width: 100%; max-width: 300px; margin: 12px 0; text-align: center; font-size: 1.25rem; }
-        .copy-btn { background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1.125rem; font-weight: bold; cursor: pointer; margin: 16px 0; width: 100%; max-width: 400px; }
-        .copy-btn:hover { background: #059669; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mkoba Wallet Dashboard 💸</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body { background: linear-gradient(to right, #f0f9f7, #fff); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background: #4f46e5; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; }
+    .navbar h1 { font-weight: bold; }
+    .navbar button { background: #ef4444; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .tab-buttons { display: flex; justify-content: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+    .tab-buttons button { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .tab-buttons button.active { background: #4f46e5; color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .commodity-card { border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 16px; text-align: center; transition: all .3s; cursor: pointer; border: 2px solid transparent; }
+    .commodity-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: #6366f1; }
+    .commodity-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 4px rgba(99,102,241,0.2); }
+    .commodity-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
+    .msg { margin-top: 20px; font-weight: bold; text-align: center; min-height: 24px; font-size: 1.1rem; }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+    .loading { color: #007bff; }
+    .banner { background: #fef3c7; border: 1px solid #fbbf24; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #92400e; }
+    .withdraw-input { padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; width: 100%; max-width: 300px; margin: 12px 0; text-align: center; font-size: 1.25rem; }
+    .copy-btn { background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; font-size: 1.125rem; font-weight: bold; cursor: pointer; margin: 16px 0; width: 100%; max-width: 400px; }
+    .copy-btn:hover { background: #059669; }
+</style>
 </head>
 <body class="p-4">
 
@@ -84,7 +84,7 @@
 
 <!-- EARNINGS TAB -->
 <div id="tabEarnings" class="tab-content">
-    <div class="container mx-auto p-4 bg-white rounded-lg shadow-lg">
+    <div class="container mx-auto p-4 bg-white rounded-lg shadow-lg space-y-6">
         <h2 class="text-2xl font-bold text-center mb-4">Earnings Overview</h2>
         <div class="card p-4 bg-green-50 rounded-lg space-y-2">
             <p><strong>Username:</strong> <span id="usernameDisplay">—</span></p>
@@ -94,6 +94,21 @@
             <p class="font-bold text-indigo-700"><strong>Next Daily Bonus:</strong> <span id="nextDailyEarning">Calculating...</span></p>
             <p><strong>Daily Bonus Rate:</strong> <span id="dailyRate">10% pro-rated over investment days</span></p>
         </div>
+
+        <!-- NEW: DAILY BONUS CLAIM -->
+        <div class="text-center mt-4">
+            <button id="claimDailyBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 rounded-lg font-bold" disabled>
+                Claim Daily Bonus
+            </button>
+        </div>
+
+        <!-- NEW: REFERRAL LINK -->
+        <div class="p-4 bg-blue-50 border border-blue-300 rounded-lg text-center mt-6">
+            <p class="font-semibold mb-2">Your Referral Link:</p>
+            <input type="text" id="referralLink" readonly class="border border-gray-300 rounded px-3 py-2 w-full max-w-lg text-center mb-2" />
+            <button id="copyReferralBtn" class="copy-btn bg-blue-500 hover:bg-blue-600">Copy Referral Link</button>
+        </div>
+
         <p id="earnMsg" class="msg loading mt-4"></p>
         <div class="text-center mt-6">
             <button class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold" onclick="loadData(true)">
@@ -103,16 +118,14 @@
     </div>
 </div>
 
-<!-- WITHDRAW TAB – Simplified (copy number + manual send) -->
+<!-- WITHDRAW TAB -->
 <div id="tabWithdraw" class="tab-content">
     <div class="container mx-auto p-4 bg-white rounded-lg shadow-lg">
         <h2 class="text-2xl font-bold text-center mb-6">Withdraw Funds</h2>
-        
         <div class="text-center mb-8">
             <p class="text-xl font-medium mb-4">Available Balance</p>
             <p class="text-4xl font-bold text-indigo-700">KES <span id="withdrawBalance">0.00</span></p>
         </div>
-
         <div class="bg-yellow-50 border border-yellow-300 p-6 rounded-lg text-center">
             <p class="text-lg font-semibold mb-4">Send money to this M-Pesa number:</p>
             <p class="text-3xl font-bold text-red-600 mb-4">0752964507</p>
@@ -126,304 +139,168 @@
                 After sending, your withdrawal will be processed manually within 24 hours.
             </p>
         </div>
-
         <p id="withdrawMsg" class="msg mt-8"></p>
     </div>
 </div>
 
 <script>
-// ────────────────────────────────────────────────
-// CONFIG & CONSTANTS
-// ────────────────────────────────────────────────
+// ──────────────────────────────────────────────
+// CONFIG & VARIABLES
+// ──────────────────────────────────────────────
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 const MPESA_NUMBER = "0752964507";
-
-const COMMODITY_INFO = {
-    marble: { price: 650, days: 15, img: "https://images.unsplash.com/photo-1618220048045-1a5a6a3b5b5e?auto=format&fit=crop&w=400&q=80" },
-    crude_oil: { price: 800, days: 20, img: "https://images.unsplash.com/photo-1581092160560-1c1e428e9d65?auto=format&fit=crop&w=400&q=80" },
-    silver: { price: 1000, days: 23, img: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=400&q=80" },
-    lead: { price: 1200, days: 25, img: "https://images.unsplash.com/photo-1581093588401-22d0f1b3c9f0?auto=format&fit=crop&w=400&q=80" },
-    platinum: { price: 1350, days: 28, img: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?auto=format&fit=crop&w=400&q=80" },
-    diamonds: { price: 1750, days: 32, img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80" },
-    gold: { price: 2200, days: 35, img: "https://images.unsplash.com/photo-1610375461248-9d2b9a3f6e1c?auto=format&fit=crop&w=400&q=80" },
-    uranium: { price: 3000, days: 45, img: "https://images.unsplash.com/photo-1581091870627-3c6b6f0b8e4c?auto=format&fit=crop&w=400&q=80" }
-};
-
+const COMMODITY_INFO = { marble:650, crude_oil:800, silver:1000, lead:1200, platinum:1350, diamonds:1750, gold:2200, uranium:3000 };
 let selectedCommodity = null;
 let currentData = null;
 let isRequesting = false;
 let countdownIntervals = [];
 
-// ────────────────────────────────────────────────
+// ──────────────────────────────────────────────
 // INIT
-// ────────────────────────────────────────────────
+// ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem("username");
-    if (!username) { window.location.href = "login.html"; return; }
-
+    if(!username) { window.location.href = "login.html"; return; }
     document.getElementById("usernameDisplay").textContent = username;
 
-    // Tab switching
-    document.querySelectorAll('.tab-buttons button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+    // Referral link
+    const referralInput = document.getElementById("referralLink");
+    referralInput.value = `${window.location.origin}/signup?ref=${encodeURIComponent(username)}`;
+
+    document.getElementById("copyReferralBtn").addEventListener("click", ()=>{
+        navigator.clipboard.writeText(referralInput.value).then(()=> alert("Referral link copied!"));
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab-buttons button').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            document.querySelectorAll('.tab-buttons button').forEach(b=>b.classList.remove('active'));
             btn.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
             document.getElementById(btn.id.replace('Btn','')).classList.add('active');
         });
     });
 
-    // Copy number button
-    document.getElementById("copyNumberBtn").addEventListener("click", () => {
-        navigator.clipboard.writeText(MPESA_NUMBER).then(() => {
-            const msg = document.getElementById("withdrawMsg");
-            msg.className = "msg success";
-            msg.innerHTML = `M-Pesa number <strong>${MPESA_NUMBER}</strong> copied!<br><br>Now open your M-Pesa app and send the amount.<br>Don't forget to include your username in the message.`;
-        }).catch(() => {
-            alert("Could not copy. Please copy manually: " + MPESA_NUMBER);
-        });
+    document.getElementById("copyNumberBtn").addEventListener("click", ()=>{
+        navigator.clipboard.writeText(MPESA_NUMBER).then(()=> alert("M-Pesa number copied!"));
     });
 
     startDailyCountdown();
     loadData();
 });
 
-// ────────────────────────────────────────────────
-// LOAD DATA (Invest + Earnings)
-// ────────────────────────────────────────────────
-async function loadData(forceRefresh = false) {
-    const msg = document.getElementById("msg");
-    const earnMsg = document.getElementById("earnMsg");
-
-    msg.className = "msg loading";
-    msg.textContent = "Connecting to server... (may take 30–60s)";
-    earnMsg.textContent = "Connecting...";
-
-    const username = localStorage.getItem("username");
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-            const res = await fetch(`\( {BACKEND_URL}/dashboard?username= \){encodeURIComponent(username)}`);
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                if (data.detail === "User not found") {
-                    localStorage.removeItem("username");
-                    alert("Session expired. Please log in again.");
-                    window.location.href = "login.html";
-                    return;
-                }
-                throw new Error(data.detail || `Error ${res.status}`);
-            }
-
-            const data = await res.json();
-            currentData = data;
-            updateUIFromData(data);
-
-            msg.className = "msg success";
-            msg.textContent = "Ready!";
-            earnMsg.className = "msg success";
-            earnMsg.textContent = "Updated!";
-
-            renderCommodityCards();
-            return;
-        } catch (err) {
-            if (attempt === 3) {
-                msg.className = "msg error";
-                msg.textContent = "Could not connect.";
-                earnMsg.className = "msg error";
-                earnMsg.textContent = "Failed to load.";
-                console.error(err);
-            } else {
-                msg.textContent = `Retrying (${attempt}/3)...`;
-                await new Promise(r => setTimeout(r, 8000));
-            }
-        }
-    }
-}
-
-function updateUIFromData(data) {
-    const balance = Number(data.balance || 0).toFixed(2);
-    const earnings = Number(data.earnings || 0).toFixed(2);
-    let invested = 0;
-    if (data.investments) {
-        Object.values(data.investments).forEach(i => invested += Number(i.amount || 0));
-    }
-    invested = invested.toFixed(2);
-
-    // Invest tab
-    document.getElementById("balance").textContent = `KES ${balance}`;
-    document.getElementById("earnings").textContent = `KES ${earnings}`;
-    document.getElementById("invested").textContent = `KES ${invested}`;
-
-    // Earnings tab
-    document.getElementById("balanceDisplay").textContent = balance;
-    document.getElementById("earningsDisplay").textContent = earnings;
-    document.getElementById("investedDisplay").textContent = invested;
-
-    // Withdraw tab
-    document.getElementById("withdrawBalance").textContent = balance;
-
-    // Daily rate (example)
-    let totalDaily = 0;
-    if (data.investments) {
-        Object.values(data.investments).forEach(inv => {
-            totalDaily += (Number(inv.amount) * 0.1) / (inv.days || 30);
-        });
-    }
-    document.getElementById("dailyRate").textContent = `Approx KES ${totalDaily.toFixed(2)} per day`;
-
-    renderInvestments(data.investments || {});
-}
-
-// ────────────────────────────────────────────────
-// DAILY BONUS COUNTDOWN (24h from last view/earn)
-// ────────────────────────────────────────────────
+// ──────────────────────────────────────────────
+// DAILY BONUS COUNTDOWN & CLAIM
+// ──────────────────────────────────────────────
 function startDailyCountdown() {
     const el = document.getElementById("nextDailyEarning");
-    let last = parseInt(localStorage.getItem('lastDailyBonusTime') || Date.now());
-    const next = last + 24 * 60 * 60 * 1000;
+    const claimBtn = document.getElementById("claimDailyBtn");
+    let last = parseInt(localStorage.getItem('lastDailyBonusTime') || 0);
+    const next = last + 24*60*60*1000;
 
-    const tick = () => {
+    const tick = ()=>{
         const diff = next - Date.now();
-        if (diff <= 0) {
-            el.textContent = "Available now! Refresh.";
-            el.className = "text-green-600 font-bold";
+        if(diff <= 0){
+            el.textContent = "Available now!";
+            claimBtn.disabled = false;
             return;
         }
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
+        const h = Math.floor(diff/3600000);
+        const m = Math.floor((diff%3600000)/60000);
+        const s = Math.floor((diff%60000)/1000);
         el.textContent = `${h}h ${m}m ${s}s`;
+        claimBtn.disabled = true;
     };
-
     tick();
-    countdownIntervals.push(setInterval(tick, 1000));
+    countdownIntervals.push(setInterval(tick,1000));
+
+    // Claim button
+    claimBtn.addEventListener('click', async ()=>{
+        try {
+            const res = await fetch(`${BACKEND_URL}/daily-bonus`, { method:'POST', headers:{ 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }});
+            const data = await res.json();
+            if(res.ok){
+                alert(data.message || "Daily bonus claimed!");
+                localStorage.setItem('lastDailyBonusTime', Date.now());
+                startDailyCountdown();
+                loadData(true);
+            } else alert(data.detail || "Failed");
+        } catch(e){ alert("Error claiming bonus"); console.error(e); }
+    });
 }
 
-// ────────────────────────────────────────────────
+// ──────────────────────────────────────────────
+// LOAD DATA (Invest + Earnings)
+// ──────────────────────────────────────────────
+async function loadData(forceRefresh=false){
+    const msg = document.getElementById("msg");
+    msg.className = "msg loading"; msg.textContent="Loading...";
+    try{
+        const username = localStorage.getItem("username");
+        const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`);
+        const data = await res.json();
+        currentData = data;
+
+        // Update balances
+        const balance = Number(data.balance||0).toFixed(2);
+        const earnings = Number(data.earnings||0).toFixed(2);
+        let invested = 0;
+        if(data.investments){ Object.values(data.investments).forEach(i=>invested+=Number(i.amount||0)); }
+        invested = invested.toFixed(2);
+
+        document.getElementById("balance").textContent = `KES ${balance}`;
+        document.getElementById("earnings").textContent = `KES ${earnings}`;
+        document.getElementById("invested").textContent = `KES ${invested}`;
+        document.getElementById("balanceDisplay").textContent = balance;
+        document.getElementById("earningsDisplay").textContent = earnings;
+        document.getElementById("investedDisplay").textContent = invested;
+        document.getElementById("withdrawBalance").textContent = balance;
+
+        msg.className="msg success"; msg.textContent="Updated!";
+        renderCommodityCards();
+    } catch(e){ msg.className="msg error"; msg.textContent="Failed"; console.error(e); }
+}
+
+// ──────────────────────────────────────────────
 // COMMODITY CARDS
-// ────────────────────────────────────────────────
-function renderCommodityCards() {
-    const grid = document.getElementById("commodityGrid");
-    grid.innerHTML = "";
-    Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
-        const card = document.createElement("div");
-        card.className = "commodity-card";
-        card.onclick = () => selectCommodity(key, card);
-        card.innerHTML = `
-            <img src="\( {com.img}" alt=" \){key.replace('_', ' ')}" loading="lazy">
-            <p class="font-semibold mt-2">${key.replace("_", " ").toUpperCase()}</p>
-            <p class="text-sm text-gray-600">KES ${com.price}</p>
-            <p class="text-xs text-gray-500">${com.days} days</p>
-            <p class="text-sm text-green-600">Daily: KES ${(com.price / com.days).toFixed(2)}</p>
-            <p class="text-sm text-purple-600">Profit: KES ${(com.price * 0.1).toFixed(2)}</p>
-            <button class="mt-2 bg-indigo-500 text-white px-3 py-1 rounded text-sm">Select</button>
-        `;
+// ──────────────────────────────────────────────
+function renderCommodityCards(){
+    const grid=document.getElementById("commodityGrid");
+    grid.innerHTML="";
+    Object.entries(COMMODITY_INFO).forEach(([key,price])=>{
+        const card=document.createElement("div");
+        card.className="commodity-card";
+        card.innerHTML=`<p class="font-semibold mt-2">${key.replace("_"," ").toUpperCase()}</p><p class="text-sm text-gray-600">KES ${price}</p>`;
+        card.onclick=()=>{ selectedCommodity=key; document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected")); card.classList.add("selected"); document.getElementById("selectedCommodity").textContent=key.replace("_"," ").replace(/\b\w/g,l=>l.toUpperCase()); document.getElementById("investBtn").disabled=false; };
         grid.appendChild(card);
     });
 }
 
-function selectCommodity(commodity, element) {
-    selectedCommodity = commodity;
-    document.querySelectorAll(".commodity-card").forEach(c => c.classList.remove("selected"));
-    element.classList.add("selected");
-    document.getElementById("selectedCommodity").textContent = 
-        commodity.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
-    document.getElementById("investBtn").disabled = false;
-}
-
-// ────────────────────────────────────────────────
-// INVEST REQUEST (kept as-is)
-// ────────────────────────────────────────────────
-document.getElementById("investBtn").addEventListener("click", async () => {
-    if (!selectedCommodity) return alert("Select a commodity first");
-    if (isRequesting) return;
-    isRequesting = true;
-    const btn = document.getElementById("investBtn");
-    btn.disabled = true;
-    btn.textContent = "Processing...";
-
-    const msg = document.getElementById("msg");
-    msg.className = "msg loading";
-    msg.textContent = "Sending request...";
-
-    const formData = new URLSearchParams();
-    formData.append("username", localStorage.getItem("username"));
-    formData.append("commodity", selectedCommodity);
-
-    try {
-        const res = await fetch(`${BACKEND_URL}/invest/request`, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData
-        });
-        const data = await res.json();
-        if (res.ok) {
-            msg.className = "msg success";
-            msg.innerHTML = `${data.message || "Success"}<br>Pay KES \( {data.price} to <strong> \){data.mpesa_number || MPESA_NUMBER}</strong>`;
-            loadData(true);
-        } else {
-            msg.className = "msg error";
-            msg.textContent = data.detail || "Failed";
-        }
-    } catch (err) {
-        msg.className = "msg error";
-        msg.textContent = "Network error";
-    } finally {
-        isRequesting = false;
-        btn.disabled = !selectedCommodity;
-        btn.textContent = "Request Investment";
-    }
+// ──────────────────────────────────────────────
+// INVEST BUTTON
+// ──────────────────────────────────────────────
+document.getElementById("investBtn").addEventListener("click", async ()=>{
+    if(!selectedCommodity) return alert("Select a commodity first");
+    if(isRequesting) return;
+    isRequesting=true;
+    const btn=document.getElementById("investBtn"); btn.disabled=true; btn.textContent="Processing...";
+    try{
+        const formData=new URLSearchParams();
+        formData.append("username", localStorage.getItem("username"));
+        formData.append("commodity", selectedCommodity);
+        const res=await fetch(`${BACKEND_URL}/invest/request`, { method:'POST', headers:{ "Content-Type":"application/x-www-form-urlencoded" }, body:formData });
+        const data=await res.json();
+        alert(data.message || "Request sent. Complete M-Pesa payment!");
+        loadData(true);
+    }catch(e){ alert("Error requesting investment"); console.error(e); }
+    finally{ isRequesting=false; btn.disabled=!selectedCommodity; btn.textContent="Request Investment"; }
 });
 
-// ────────────────────────────────────────────────
-// INVESTMENTS LIST + COUNTDOWN
-// ────────────────────────────────────────────────
-function renderInvestments(investments) {
-    const list = document.getElementById("investmentList");
-    list.innerHTML = "";
-    if (Object.keys(investments).length === 0) {
-        list.innerHTML = '<p class="text-center text-gray-500">No active investments</p>';
-        return;
-    }
-    Object.entries(investments).forEach(([key, inv]) => {
-        const div = document.createElement("div");
-        div.className = "bg-green-50 border border-green-400 p-4 rounded mb-3";
-        div.innerHTML = `<strong>${key.replace("_"," ").toUpperCase()}</strong><br>KES ${Number(inv.amount).toLocaleString()}`;
-        if (inv.expiry_date) {
-            const cd = document.createElement("p");
-            cd.className = "text-sm text-gray-600 mt-2";
-            const expiry = new Date(inv.expiry_date);
-            const update = () => {
-                const diff = expiry - new Date();
-                if (diff <= 0) { cd.textContent = "Expired"; clearInterval(int); loadData(true); return; }
-                const d = Math.floor(diff / 86400000);
-                const h = Math.floor((diff % 86400000) / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                cd.textContent = `Expires in ${d}d ${h}h ${m}m ${s}s`;
-            };
-            update();
-            const int = setInterval(update, 1000);
-            countdownIntervals.push(int);
-            div.appendChild(cd);
-        }
-        list.appendChild(div);
-    });
-}
-
-// ────────────────────────────────────────────────
-// LOGOUT & CLEANUP
-// ────────────────────────────────────────────────
-function logout() {
-    localStorage.removeItem("username");
-    window.location.href = "login.html";
-}
-
-window.addEventListener('beforeunload', () => {
-    countdownIntervals.forEach(clearInterval);
-});
+// ──────────────────────────────────────────────
+// LOGOUT
+// ──────────────────────────────────────────────
+function logout(){ localStorage.removeItem("username"); window.location.href="login.html"; }
+window.addEventListener('beforeunload',()=>countdownIntervals.forEach(clearInterval));
 </script>
-
 </body>
 </html>
