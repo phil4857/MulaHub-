@@ -1,247 +1,132 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Register - Mkoba Wallet</title>
-
-<link rel="stylesheet" href="style.css">
-
-<style>
-body{
-background:linear-gradient(135deg,#28a745,#007bff);
-font-family:Arial,sans-serif;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-margin:0;
-color:#333;
-}
-
-.box{
-background:white;
-padding:40px 30px;
-border-radius:12px;
-box-shadow:0 8px 30px rgba(0,0,0,0.25);
-width:360px;
-max-width:90%;
-text-align:center;
-}
-
-h2{
-margin:0 0 28px 0;
-color:#28a745;
-font-size:1.9rem;
-}
-
-label{
-display:block;
-text-align:left;
-margin:8px 0 4px;
-font-weight:600;
-color:#444;
-}
-
-input{
-width:100%;
-padding:12px;
-margin-bottom:12px;
-border:1px solid #ccc;
-border-radius:6px;
-box-sizing:border-box;
-font-size:1rem;
-}
-
-input:focus{
-outline:none;
-border-color:#007bff;
-box-shadow:0 0 0 3px rgba(0,123,255,0.15);
-}
-
-button{
-width:100%;
-padding:14px;
-background:#007bff;
-color:white;
-border:none;
-border-radius:6px;
-font-weight:bold;
-font-size:1.1rem;
-cursor:pointer;
-margin-top:12px;
-transition:background 0.2s;
-}
-
-button:hover:not(:disabled){
-background:#0056b3;
-}
-
-button:disabled{
-background:#6c757d;
-cursor:not-allowed;
-}
-
-.msg{
-margin-top:16px;
-padding:12px;
-border-radius:6px;
-font-weight:600;
-min-height:24px;
-font-size:0.95rem;
-}
-
-.success{background:#d4edda;color:#155724;}
-.error{background:#f8d7da;color:#721c24;}
-.loading{background:#e3f2fd;color:#0c5460;}
-
-.login-link{
-margin-top:20px;
-font-size:0.95rem;
-}
-
-.login-link a{
-color:#007bff;
-text-decoration:none;
-font-weight:600;
-}
-
-.login-link a:hover{
-text-decoration:underline;
-}
-</style>
-</head>
-<body>
-
-<div class="box">
-
-<h2>Register to Mkoba Wallet</h2>
-
-<form id="registerForm">
-
-<label>Username</label>
-<input id="username" type="text" required>
-
-<label>Phone Number</label>
-<input id="phone" type="tel" required>
-
-<label>Password</label>
-<input id="password" type="password" required>
-
-<label>Confirm Password</label>
-<input id="confirmPassword" type="password" required>
-
-<label>Referral Code (optional)</label>
-<input id="referral" type="text">
-
-<button type="submit" id="registerBtn">Register</button>
-
-</form>
-
-<div class="msg" id="msg"></div>
-
-<div class="login-link">
-Already have an account? <a href="login.html">Login here</a>
-</div>
-
-</div>
-
 <script>
-
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Wake Render server
-    fetch(`${BACKEND_URL}/health`).catch(()=>{});
+  // Wake Render server (best-effort)
+  fetch(`${BACKEND_URL}/health`).catch(()=>{});
 
-    const form = document.getElementById("registerForm");
-    const registerBtn = document.getElementById("registerBtn");
-    const msg = document.getElementById("msg");
+  const form = document.getElementById("registerForm");
+  const registerBtn = document.getElementById("registerBtn");
+  const msg = document.getElementById("msg");
 
-    const usernameInput = document.getElementById("username");
-    const phoneInput = document.getElementById("phone");
-    const passwordInput = document.getElementById("password");
-    const confirmPasswordInput = document.getElementById("confirmPassword");
-    const referralInput = document.getElementById("referral");
+  const usernameInput = document.getElementById("username");
+  const phoneInput = document.getElementById("phone");
+  const passwordInput = document.getElementById("password");
+  const confirmPasswordInput = document.getElementById("confirmPassword");
+  const referralInput = document.getElementById("referral");
 
-    // Autofill referral
-    const params = new URLSearchParams(window.location.search);
-    const ref = params.get("ref");
-    if (ref) referralInput.value = ref;
+  // Autofocus username
+  usernameInput.focus();
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+  // Autofill referral from ?ref=...
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get("ref");
+  if (ref) referralInput.value = ref;
 
-        msg.className = "msg";
-        msg.textContent = "";
+  // helper: show message
+  function showMessage(kind, text) {
+    msg.className = "msg " + (kind || "");
+    msg.textContent = text || "";
+  }
 
-        const username = usernameInput.value.trim().toLowerCase();
-        const phone = phoneInput.value.trim();
-        const pwd = passwordInput.value;
-        const confirmPwd = confirmPasswordInput.value;
-        const referral = referralInput.value.trim().toLowerCase();
+  // helper: normalize phone (remove spaces, dashes etc.)
+  function normalizePhone(p) {
+    if (!p) return "";
+    // keep + and digits
+    return p.replace(/[^\d+]/g, "");
+  }
 
-        if (!username || !phone || !pwd || !confirmPwd) {
-            msg.className = "msg error";
-            msg.textContent = "Fill all fields.";
-            return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    showMessage("", "");
+
+    const username = usernameInput.value.trim().toLowerCase();
+    const phone = normalizePhone(phoneInput.value.trim());
+    const pwd = passwordInput.value;
+    const confirmPwd = confirmPasswordInput.value;
+    const referral = referralInput.value.trim().toLowerCase();
+
+    // basic validation
+    if (!username || !phone || !pwd || !confirmPwd) {
+      showMessage("error", "Fill all required fields.");
+      return;
+    }
+    if (username.length < 3) {
+      showMessage("error", "Username must be at least 3 characters.");
+      return;
+    }
+    if (pwd.length < 6) {
+      showMessage("error", "Password should be at least 6 characters.");
+      return;
+    }
+    if (pwd !== confirmPwd) {
+      showMessage("error", "Passwords do not match.");
+      return;
+    }
+
+    registerBtn.disabled = true;
+    registerBtn.textContent = "Registering...";
+    showMessage("loading", "Creating account...");
+
+    try {
+      // Choose the content type your backend expects.
+      // Option A (recommended if your FastAPI endpoint expects JSON bodies):
+      const payload = {
+        username,
+        phone,
+        password: pwd,
+      };
+      if (referral) payload.referral = referral;
+
+      const res = await fetch(`${BACKEND_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      // If backend returns non-JSON, handle it
+      let data;
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        data = { message: text };
+      }
+
+      if (res.ok) {
+        showMessage("success", data.message || "Registration successful. Redirecting to login...");
+        // Optionally prefill login by saving username (not password)
+        localStorage.setItem("just_registered_username", username);
+
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1400);
+      } else {
+        // Try to show useful error details if present
+        let errMsg = data.detail || data.message || "Registration failed.";
+        // If detail is an object/array of errors, flatten it:
+        if (!errMsg && (typeof data === "object")) {
+          if (Array.isArray(data)) {
+            errMsg = data.map(i => (i.msg || JSON.stringify(i))).join(" • ");
+          } else {
+            errMsg = JSON.stringify(data);
+          }
         }
+        showMessage("error", errMsg);
+      }
 
-        if (pwd !== confirmPwd) {
-            msg.className = "msg error";
-            msg.textContent = "Passwords do not match.";
-            return;
-        }
-
-        registerBtn.disabled = true;
-        registerBtn.textContent = "Registering...";
-
-        msg.className = "msg loading";
-        msg.textContent = "Creating account...";
-
-        const formData = new URLSearchParams();
-        formData.append("username", username);
-        formData.append("phone", phone);
-        formData.append("password", pwd);
-        if (referral) formData.append("referral", referral);
-
-        try {
-            const res = await fetch(`${BACKEND_URL}/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: formData.toString()
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                msg.className = "msg success";
-                msg.textContent = data.message || "Registration successful! Redirecting...";
-
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 2000);
-
-            } else {
-                msg.className = "msg error";
-                msg.textContent = data.detail || "Registration failed.";
-            }
-
-        } catch (err) {
-            msg.className = "msg error";
-            msg.textContent = "Cannot connect to server.";
-        }
-
-        registerBtn.disabled = false;
-        registerBtn.textContent = "Register";
-    });
-
+    } catch (err) {
+      console.error("Register error:", err);
+      showMessage("error", "Cannot connect to server. Please try again.");
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Register";
+    }
+  });
 });
 </script>
-
-</body>
-</html>
