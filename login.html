@@ -1,143 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Mkoba Wallet - Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-  body {
-    background: linear-gradient(135deg, #28a745, #007bff);
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    color: #333;
-  }
-
-  .login-box {
-    background: white;
-    padding: 40px 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-    width: 360px;
-    max-width: 90%;
-    text-align: center;
-  }
-
-  h2 {
-    margin-bottom: 25px;
-    color: #28a745;
-    font-size: 1.9rem;
-  }
-
-  .password-container {
-    position: relative;
-    margin-bottom: 12px;
-  }
-
-  input {
-    width: 100%;
-    padding: 12px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-  }
-
-  input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
-  }
-
-  .toggle-password {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 18px;
-    user-select: none;
-  }
-
-  button {
-    width: 100%;
-    padding: 14px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: background 0.2s;
-  }
-
-  button:hover:not(:disabled) {
-    background: #0056b3;
-  }
-
-  button:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-  }
-
-  .msg {
-    margin-top: 16px;
-    padding: 12px;
-    border-radius: 6px;
-    font-weight: 600;
-    min-height: 24px;
-    font-size: 0.95rem;
-  }
-
-  .success { background: #d4edda; color: #155724; }
-  .error { background: #f8d7da; color: #721c24; }
-  .loading { background: #e3f2fd; color: #0c5460; }
-
-  .register-link {
-    margin-top: 20px;
-    font-size: 0.95rem;
-  }
-  .register-link a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .register-link a:hover {
-    text-decoration: underline;
-  }
-</style>
-</head>
-<body>
-
-<div class="login-box">
-  <h2>Mkoba Wallet Login</h2>
-
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="Username" required autocomplete="username">
-
-    <div class="password-container">
-      <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
-      <span class="toggle-password" id="togglePassword">👁️</span>
-    </div>
-
-    <button type="submit" id="loginBtn">Login</button>
-  </form>
-
-  <div class="msg" id="msg"></div>
-
-  <div class="register-link">
-    Don't have an account? <a href="register.html">Register here</a>
-  </div>
-</div>
-
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";  // ← SAME URL as your corrected register.html
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
@@ -146,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const togglePassword = document.getElementById("togglePassword");
   const passwordInput = document.getElementById("password");
 
-  // Password visibility toggle
+  // toggle visibility
   togglePassword.addEventListener("click", () => {
     const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
@@ -155,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     msg.textContent = "";
     msg.className = "msg";
 
@@ -170,48 +31,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loginBtn.disabled = true;
     loginBtn.textContent = "Logging in...";
-
     msg.className = "msg loading";
     msg.textContent = "Verifying credentials...";
 
     try {
-      const formData = new URLSearchParams();
-      formData.append("username", username);
-      formData.append("password", password);
+      // Most backends accept JSON; if your backend expects form-urlencoded, switch back to URLSearchParams
+      const payload = new URLSearchParams();
+      payload.append("username", username);
+      payload.append("password", password);
 
       const response = await fetch(`${BACKEND_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData
+        body: payload.toString()
       });
 
-      let data;
-      try {
+      let data = {};
+      const ct = response.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
         data = await response.json();
-      } catch (e) {
-        data = {};
+      } else {
+        const t = await response.text();
+        try { data = JSON.parse(t); } catch { data = { message: t }; }
       }
 
       if (response.ok) {
+        // Save token if backend provided one. Common names: access_token, token, jwt
+        const token = data.access_token || data.token || data.jwt || null;
+        if (token) {
+          localStorage.setItem("access_token", token);
+        }
         localStorage.setItem("username", username);
+
         msg.className = "msg success";
         msg.textContent = "Login successful! Redirecting to dashboard...";
 
         setTimeout(() => {
           window.location.href = "dashboard.html";
-        }, 1800);
+        }, 900);
       } else {
         msg.className = "msg error";
         if (response.status === 403) {
-          msg.textContent = data.detail || "Your account is pending admin approval.";
+          msg.textContent = data.detail || "Your account is pending approval.";
         } else {
-          msg.textContent = data.detail || "Invalid username or password.";
+          msg.textContent = data.detail || data.message || "Invalid username or password.";
         }
       }
     } catch (err) {
       console.error("Login error:", err);
       msg.className = "msg error";
-      msg.textContent = "Cannot connect to server. Please check your internet connection.";
+      msg.textContent = "Cannot connect to server. Please check your internet.";
     } finally {
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
@@ -219,6 +88,3 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
-</body>
-</html>
