@@ -1,3 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login - Mkoba Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.box {
+  background: white;
+  padding: 30px;
+  width: 320px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+.msg {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.msg.success { color: green; }
+.msg.error { color: red; }
+.msg.loading { color: orange; }
+
+.password-box {
+  position: relative;
+}
+
+.password-box span {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Login</h2>
+
+  <!-- IMPORTANT: form id must exist -->
+  <form id="loginForm">
+    <input id="username" placeholder="Username" required>
+
+    <div class="password-box">
+      <input id="password" type="password" placeholder="Password" required>
+      <span id="togglePassword">👁️</span>
+    </div>
+
+    <button id="loginBtn" type="submit">Login</button>
+  </form>
+
+  <div class="msg" id="msg"></div>
+
+  <p>Don't have an account? <a href="register.html">Register</a></p>
+</div>
+
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
@@ -8,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const togglePassword = document.getElementById("togglePassword");
   const passwordInput = document.getElementById("password");
 
-  // toggle visibility
+  // Toggle password visibility
   togglePassword.addEventListener("click", () => {
     const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
@@ -17,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     msg.textContent = "";
     msg.className = "msg";
 
@@ -35,52 +122,49 @@ document.addEventListener("DOMContentLoaded", () => {
     msg.textContent = "Verifying credentials...";
 
     try {
-      // Most backends accept JSON; if your backend expects form-urlencoded, switch back to URLSearchParams
-      const payload = new URLSearchParams();
-      payload.append("username", username);
-      payload.append("password", password);
-
       const response = await fetch(`${BACKEND_URL}/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: payload.toString()
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password
+        })
       });
 
-      let data = {};
-      const ct = response.headers.get("content-type") || "";
-      if (ct.includes("application/json")) {
-        data = await response.json();
-      } else {
-        const t = await response.text();
-        try { data = JSON.parse(t); } catch { data = { message: t }; }
-      }
+      const data = await response.json();
 
       if (response.ok) {
-        // Save token if backend provided one. Common names: access_token, token, jwt
-        const token = data.access_token || data.token || data.jwt || null;
+        const token = data.access_token;
+
         if (token) {
           localStorage.setItem("access_token", token);
         }
+
         localStorage.setItem("username", username);
 
         msg.className = "msg success";
-        msg.textContent = "Login successful! Redirecting to dashboard...";
+        msg.textContent = "Login successful! Redirecting...";
 
         setTimeout(() => {
           window.location.href = "dashboard.html";
-        }, 900);
+        }, 1000);
+
       } else {
         msg.className = "msg error";
+
         if (response.status === 403) {
-          msg.textContent = data.detail || "Your account is pending approval.";
+          msg.textContent = data.detail || "Account not approved yet.";
         } else {
-          msg.textContent = data.detail || data.message || "Invalid username or password.";
+          msg.textContent = data.detail || "Invalid credentials.";
         }
       }
-    } catch (err) {
-      console.error("Login error:", err);
+
+    } catch (error) {
+      console.error(error);
       msg.className = "msg error";
-      msg.textContent = "Cannot connect to server. Please check your internet.";
+      msg.textContent = "Cannot connect to server.";
     } finally {
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
@@ -88,3 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+</body>
+</html>
