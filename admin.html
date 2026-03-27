@@ -2,322 +2,166 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard - Mkoba Wallet</title>
+<title>Admin Login - Mkoba Wallet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+  /* Body and background */
   body {
     font-family: Arial, sans-serif;
-    background: #f5f5f5;
+    background: linear-gradient(135deg, #4e54c8, #8f94fb);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     margin: 0;
-    padding: 20px;
   }
-  h2, h3 {
-    color: #28a745;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+
+  /* Login box */
+  .box {
     background: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  th, td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    width: 350px;
     text-align: center;
   }
-  th {
-    background-color: #28a745;
-    color: white;
+
+  h2 {
+    color: #4e54c8;
+    margin-bottom: 25px;
   }
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  .action-btn {
-    padding: 6px 12px;
-    margin: 0 4px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: white;
-    font-size: 14px;
-  }
-  .approve-btn   { background: #007bff; }
-  .reset-btn     { background: #ffc107; color: black; }
-  .terminate-btn { background: #dc3545; }
-  .reject-btn    { background: #dc3545; }
-  .msg {
+
+  input {
+    width: 100%;
     padding: 12px;
-    margin: 15px 0;
+    margin: 12px 0;
     border-radius: 6px;
-    text-align: center;
-    font-weight: bold;
-    display: none;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
   }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 6px;
+    background: #4e54c8;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .password-container {
+    position: relative;
+    margin: 15px 0;
+  }
+
+  .password-container input {
+    padding-right: 40px;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  #adminMsg {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+  }
+
   .success { background: #d4edda; color: #155724; }
-  .error   { background: #f8d7da; color: #721c24; }
+  .error { background: #f8d7da; color: #721c24; }
   .loading { background: #e3f2fd; color: #1976d2; }
 </style>
 </head>
 <body>
 
-<h2>Admin Dashboard - Mkoba Wallet</h2>
-
-<div id="msg" class="msg"></div>
-
-<!-- USERS TABLE -->
-<h3>Users Management</h3>
-<table id="usersTable">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Phone</th>
-      <th>Approved</th>
-      <th>Balance</th>
-      <th>Earnings</th>
-      <th>Referral</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="usersTableBody"></tbody>
-</table>
-
-<!-- WITHDRAWALS TABLE -->
-<h3>Pending Withdrawals</h3>
-<table id="withdrawalsTable">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Amount (KES)</th>
-      <th>Method</th>
-      <th>Account/Phone</th>
-      <th>Requested At</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="withdrawalsTableBody"></tbody>
-</table>
+<div class="box">
+  <h2>Admin Login</h2>
+  <div class="password-container">
+    <input type="password" id="adminPassword" placeholder="Admin Password" autocomplete="current-password">
+    <span class="toggle-password" id="togglePassword">👁️</span>
+  </div>
+  <button id="adminLoginBtn">Login</button>
+  <div id="adminMsg"></div>
+</div>
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Redirect if not admin
-  if (localStorage.getItem("adminLoggedIn") !== "true") {
-    alert("Please login as admin first");
-    window.location.href = "admin-login.html";
-    return;
-  }
+  const passwordInput = document.getElementById("adminPassword");
+  const togglePassword = document.getElementById("togglePassword");
+  const loginBtn = document.getElementById("adminLoginBtn");
+  const msg = document.getElementById("adminMsg");
 
-  const usersBody = document.getElementById("usersTableBody");
-  const withdrawalsBody = document.getElementById("withdrawalsTableBody");
-  const msg = document.getElementById("msg");
+  // Toggle password visibility
+  togglePassword.addEventListener("click", () => {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+  });
 
+  // Show message helper
   function showMessage(type, text) {
-    msg.className = `msg ${type}`;
+    msg.className = "";
+    if (type === "success") msg.classList.add("success");
+    else if (type === "error") msg.classList.add("error");
+    else if (type === "loading") msg.classList.add("loading");
     msg.textContent = text;
-    msg.style.display = "block";
-    setTimeout(() => { msg.style.display = "none"; }, 8000);
   }
 
-  // ------------------ FETCH USERS ------------------
-  async function fetchUsers() {
-    const colCount = document.querySelectorAll("#usersTable th").length;
-    usersBody.innerHTML = `<tr><td colspan="${colCount}" class="loading">Loading users...</td></tr>`;
-    showMessage("loading", "Fetching users...");
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/users`);
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.detail || `Server error ${res.status}`);
-
-      usersBody.innerHTML = "";
-      if (!data.length) {
-        usersBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; color:#777;">No users found</td></tr>`;
-        showMessage("success", "No users found");
-        return;
-      }
-
-      data.forEach(user => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${user.username}</td>
-          <td>${user.phone || "N/A"}</td>
-          <td>${user.approved ? '<span style="color:green;">Yes</span>' : '<span style="color:red;">No</span>'}</td>
-          <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
-          <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
-          <td>${user.referral || '-'}</td>
-          <td>
-            ${!user.approved ? `<button class="action-btn approve-btn" data-user="${user.username}">Approve</button>` : '<span style="color:green;">Approved</span>'}
-            <button class="action-btn reset-btn" data-user="${user.username}">Reset Password</button>
-            <button class="action-btn terminate-btn" data-user="${user.username}">Terminate</button>
-          </td>
-        `;
-        usersBody.appendChild(tr);
-      });
-
-      // Attach button events safely
-      document.querySelectorAll(".approve-btn").forEach(btn => {
-        btn.addEventListener("click", () => approveUser(btn.dataset.user));
-      });
-      document.querySelectorAll(".reset-btn").forEach(btn => {
-        btn.addEventListener("click", () => resetPassword(btn.dataset.user));
-      });
-      document.querySelectorAll(".terminate-btn").forEach(btn => {
-        btn.addEventListener("click", () => terminateUser(btn.dataset.user));
-      });
-
-      showMessage("success", `Loaded ${data.length} user(s)`);
-
-    } catch (err) {
-      console.error(err);
-      usersBody.innerHTML = `<tr><td colspan="${colCount}" style="color:red;">Failed to load users</td></tr>`;
-      showMessage("error", "Failed to load users: " + err.message);
+  loginBtn.addEventListener("click", async () => {
+    const password = passwordInput.value.trim();
+    if (!password) {
+      showMessage("error", "Please enter the admin password");
+      return;
     }
-  }
 
-  // ------------------ FETCH WITHDRAWALS ------------------
-  async function fetchWithdrawals() {
-    const colCount = document.querySelectorAll("#withdrawalsTable th").length;
-    withdrawalsBody.innerHTML = `<tr><td colspan="${colCount}" class="loading">Loading withdrawals...</td></tr>`;
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Logging in...";
+    showMessage("loading", "Verifying...");
 
     try {
-      const res = await fetch(`${BACKEND_URL}/admin/withdrawals/pending`);
-      const data = await res.json();
+      const formData = new URLSearchParams();
+      formData.append("password", password);
 
-      if (!res.ok) throw new Error(data.detail || `Server error ${res.status}`);
-
-      withdrawalsBody.innerHTML = "";
-      if (!data.length) {
-        withdrawalsBody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; color:#777;">No pending withdrawals</td></tr>`;
-        return;
-      }
-
-      data.forEach(w => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${w.username}</td>
-          <td>KES ${Number(w.amount).toFixed(2)}</td>
-          <td>${w.method}</td>
-          <td>${w.account}</td>
-          <td>${new Date(w.requested_at).toLocaleString()}</td>
-          <td>
-            <button class="action-btn approve-btn" data-id="${w.id}">Approve</button>
-            <button class="action-btn reject-btn" data-id="${w.id}">Reject</button>
-          </td>
-        `;
-        withdrawalsBody.appendChild(tr);
-      });
-
-      document.querySelectorAll(".approve-btn[data-id]").forEach(btn => {
-        btn.addEventListener("click", () => approveWithdrawal(btn.dataset.id));
-      });
-      document.querySelectorAll(".reject-btn").forEach(btn => {
-        btn.addEventListener("click", () => rejectWithdrawal(btn.dataset.id));
-      });
-
-    } catch (err) {
-      console.error(err);
-      withdrawalsBody.innerHTML = `<tr><td colspan="${colCount}" style="color:red;">Failed to load withdrawals</td></tr>`;
-    }
-  }
-
-  // ------------------ ADMIN ACTIONS ------------------
-  async function adminAction(endpoint, username, successMsg) {
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/${endpoint}`, {
+      const res = await fetch(`${BACKEND_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username })
+        body: formData
       });
+
       const data = await res.json();
+
       if (res.ok) {
-        showMessage("success", successMsg);
-        fetchUsers();
+        showMessage("success", "Admin login successful! Redirecting...");
+        localStorage.setItem("adminLoggedIn", "true");
+        setTimeout(() => window.location.href = "admin-dashboard.html", 1200);
       } else {
-        showMessage("error", data.detail || "Action failed");
+        showMessage("error", data.detail || "Invalid admin password");
       }
     } catch (err) {
-      showMessage("error", "Network error: " + err.message);
+      showMessage("error", "Cannot connect to server. Check internet.");
+      console.error("Admin login error:", err);
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Login";
     }
-  }
-
-  window.approveUser = (username) => {
-    if (!confirm(`Approve user ${username}?`)) return;
-    adminAction("approve-user", username, `User ${username} approved`);
-  };
-
-  window.resetPassword = async (username) => {
-    if (!confirm(`Reset password for ${username}?`)) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ username })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showMessage("success", `New password for ${username}: ${data.new_password}`);
-        fetchUsers();
-      } else {
-        showMessage("error", data.detail || "Failed to reset password");
-      }
-    } catch (err) {
-      showMessage("error", "Network error: " + err.message);
-    }
-  };
-
-  window.terminateUser = (username) => {
-    if (!confirm(`Terminate user ${username}? This is permanent!`)) return;
-    adminAction("terminate-user", username, `User ${username} terminated`);
-  };
-
-  window.approveWithdrawal = async (id) => {
-    if (!confirm("Approve this withdrawal request?")) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/withdrawals/approve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ id })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showMessage("success", data.message || "Withdrawal approved");
-        fetchWithdrawals();
-        fetchUsers();
-      } else showMessage("error", data.detail || "Action failed");
-    } catch (err) {
-      showMessage("error", "Network error");
-    }
-  };
-
-  window.rejectWithdrawal = async (id) => {
-    if (!confirm("Reject this withdrawal request?")) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/withdrawals/reject`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ id })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showMessage("success", data.message || "Withdrawal rejected");
-        fetchWithdrawals();
-      } else showMessage("error", data.detail || "Action failed");
-    } catch (err) {
-      showMessage("error", "Network error");
-    }
-  };
-
-  // Initial load
-  fetchUsers();
-  fetchWithdrawals();
+  });
 });
 </script>
 
