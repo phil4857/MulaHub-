@@ -1,5 +1,3 @@
-
-<script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Password visibility toggle
+  // Password toggle
   if (togglePassword && passwordInput) {
     togglePassword.addEventListener('click', () => {
       const type = passwordInput.type === 'password' ? 'text' : 'password';
@@ -27,15 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Clear previous messages
     errorMsg.textContent = '';
     if (successMsg) successMsg.textContent = '';
 
-    const usernameInput = document.getElementById('username');
-    const passwordInputEl = document.getElementById('password');
-
-    const username = usernameInput?.value.trim();
-    const password = passwordInputEl?.value;
+    const username = document.getElementById('username')?.value.trim().toLowerCase();
+    const password = document.getElementById('password')?.value;
 
     if (!username || !password) {
       errorMsg.textContent = 'Please enter both username and password.';
@@ -43,43 +37,34 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Disable button & show loading
+    // Loading state
     submitBtn.disabled = true;
-    const originalBtnText = submitBtn.textContent;
+    const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Logging in...';
 
     try {
-      const formData = new URLSearchParams();
-      formData.append('username', username);
-      formData.append('password', password);
-
+      // ✅ FIXED: Send JSON (not form-data)
       const response = await fetch(`${BACKEND_URL}/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData.toString()
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password
+        })
       });
 
-      let data = {};
-      const ct = response.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
-        try {
-          data = await response.json();
-        } catch (err) {
-          data = {};
-        }
-      } else {
-        const text = await response.text();
-        try { data = JSON.parse(text); } catch { data = { message: text }; }
-      }
+      const data = await response.json();
 
       if (response.ok) {
-        // Save token if present
-        const token = data.access_token || data.token || data.jwt || null;
-        if (token) {
-          localStorage.setItem('access_token', token);
+        // Save token
+        if (data.access_token) {
+          localStorage.setItem('access_token', data.access_token);
         }
-        // Save username for convenience
-        localStorage.setItem('username', data.username || username);
+
+        // Save username
+        localStorage.setItem('username', username);
 
         if (successMsg) {
           successMsg.textContent = 'Login successful! Redirecting...';
@@ -88,29 +73,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
           window.location.href = 'dashboard.html';
-        }, 900); // short delay for UX
+        }, 1000);
+
       } else {
-        // Handle specific backend errors
         errorMsg.style.color = '#dc3545';
+
         if (response.status === 403) {
-          errorMsg.textContent = data.detail || 'Your account is pending approval.';
+          errorMsg.textContent = data.detail || 'Account not approved.';
         } else if (response.status === 404) {
-          errorMsg.textContent = data.detail || 'User not found. Please register.';
-        } else if (response.status === 400) {
-          errorMsg.textContent = data.detail || data.message || 'Invalid username or password.';
+          errorMsg.textContent = data.detail || 'User not found.';
         } else {
-          errorMsg.textContent = data.detail || data.message || `Login failed (error ${response.status}).`;
+          errorMsg.textContent = data.detail || 'Invalid credentials.';
         }
       }
+
     } catch (error) {
-      console.error('Login request failed:', error);
+      console.error('Login error:', error);
       errorMsg.style.color = '#dc3545';
-      errorMsg.textContent = 'Cannot connect to server. Please check your internet connection.';
+      errorMsg.textContent = 'Cannot connect to server.';
     } finally {
-      // Reset button state
       submitBtn.disabled = false;
-      submitBtn.textContent = originalBtnText || 'Login';
+      submitBtn.textContent = originalText || 'Login';
     }
   });
 });
-</script>
