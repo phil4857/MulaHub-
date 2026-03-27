@@ -37,18 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Copy button
+  // Copy M-Pesa number
   const copyBtn = document.getElementById("copyNumberBtn");
-  copyBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(MPESA_NUMBER).then(() => {
-      const withdrawMsg = document.getElementById("withdrawMsg");
-      withdrawMsg.className = "msg success";
-      withdrawMsg.innerHTML = `Copied! Open M-Pesa and send.<br>Include your username.`;
-    }).catch(() => {
-      // Fallback
-      alert("Copy failed. Use: " + MPESA_NUMBER);
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(MPESA_NUMBER).then(() => {
+        const withdrawMsg = document.getElementById("withdrawMsg");
+        withdrawMsg.className = "msg success";
+        withdrawMsg.innerHTML = `Copied! Open M-Pesa and send.<br>Include your username.`;
+      }).catch(() => {
+        alert("Copy failed. Use: " + MPESA_NUMBER);
+      });
     });
-  });
+  }
 
   startDailyCountdown();
   fetchUserData();
@@ -58,23 +59,19 @@ async function fetchUserData(retries = 3) {
   const msgEl = document.getElementById('msg');
   setMsg(msgEl, 'loading', 'Loading dashboard...');
 
-  const username = localStorage.getItem('username') || '';
-
   const token = localStorage.getItem('access_token') || null;
   const headers = { 'Accept': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const url = `${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`;
+  const url = `${BACKEND_URL}/dashboard`;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(url, { headers, method: 'GET' });
-
       let data = {};
       const ct = res.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
-        data = await res.json().catch(() => ({}));
-      } else {
+      if (ct.includes('application/json')) data = await res.json().catch(() => ({}));
+      else {
         const text = await res.text().catch(() => '');
         try { data = JSON.parse(text); } catch { data = { message: text }; }
       }
@@ -85,9 +82,11 @@ async function fetchUserData(retries = 3) {
         return;
       }
 
-      // Populate HUD
+      // Populate user HUD
       const balance = Number(data.balance || 0);
       const earnings = Number(data.earnings || 0);
+      const referralBonus = Number(data.referral_bonus_earned || 0);
+      const dailyEarnings = Number(data.daily_earnings || 0);
       let invested = 0;
       if (data.investments) {
         Object.values(data.investments).forEach(i => invested += Number(i.amount || 0));
@@ -96,23 +95,22 @@ async function fetchUserData(retries = 3) {
       document.getElementById('balance').textContent = `KES ${balance.toFixed(2)}`;
       document.getElementById('earnings').textContent = `KES ${earnings.toFixed(2)}`;
       document.getElementById('invested').textContent = `KES ${invested.toFixed(2)}`;
-
-      document.getElementById('balanceDisplay').textContent = balance.toFixed(2);
-      document.getElementById('earningsDisplay').textContent = earnings.toFixed(2);
-      document.getElementById('investedDisplay').textContent = invested.toFixed(2);
-      document.getElementById('withdrawBalance').textContent = balance.toFixed(2);
+      document.getElementById('dailyEarnings').textContent = `KES ${dailyEarnings.toFixed(2)}`;
+      document.getElementById('referralBonus').textContent = `KES ${referralBonus.toFixed(2)}`;
+      if (document.getElementById('referralLink') && data.referral_link) {
+        document.getElementById('referralLink').innerHTML = `<a href="${data.referral_link}" target="_blank">${data.referral_link}</a>`;
+      }
 
       renderInvestments(data.investments || {});
       renderCommodityCards();
 
-      setMsg(msgEl, 'success', 'Loaded!');
+      setMsg(msgEl, 'success', 'Dashboard loaded!');
       setTimeout(() => msgEl.textContent = '', 2000);
       return;
     } catch (err) {
       console.error('fetchUserData error:', err);
-      if (attempt === retries) {
-        setMsg(msgEl, 'error', 'Cannot connect to server.');
-      } else {
+      if (attempt === retries) setMsg(msgEl, 'error', 'Cannot connect to server.');
+      else {
         setMsg(msgEl, 'loading', `Retrying (${attempt}/${retries})...`);
         await new Promise(r => setTimeout(r, 1200));
       }
@@ -144,87 +142,65 @@ function renderInvestments(investments) {
 function renderCommodityCards() {
   const grid = document.getElementById('commodityGrid');
   grid.innerHTML = "";
-
   Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
     const card = document.createElement('div');
     card.className = 'commodity-card';
     card.dataset.key = key;
 
-    card.addEventListener('click', () => {
-      // Two possible UX patterns:
-      // 1) Immediately request investment (original behavior) => call investRequest(key)
-      // 2) Select then click Request Investment button => selectCommodity(key)
-      // I'll implement selection + enable request button for safer UX.
-      selectCommodity(key, card);
-    });
+    card.addEventListener('click', () => selectCommodity(key, card));
 
     card.innerHTML = `
       <div class="emoji-big">${com.emoji}</div>
-      <p class="font-semibold mt-2">${key.replace("_", " ").toUpperCase()}</p>
+      <p class="font-semibold mt-2">${key.replace("_"," ").toUpperCase()}</p>
       <p class="text-sm text-gray-600">KES ${com.price.toLocaleString()}</p>
       <p class="text-xs text-gray-500">${com.days} days</p>
     `;
     grid.appendChild(card);
   });
 
-  // Invest button behavior
   const investBtn = document.getElementById('investBtn');
-  investBtn.disabled = !selectedCommodity;
-  investBtn.onclick = () => {
-    if (!selectedCommodity) return alert('Select a commodity first.');
-    investRequest(selectedCommodity);
-  };
+  if (investBtn) {
+    investBtn.disabled = !selectedCommodity;
+    investBtn.onclick = () => {
+      if (!selectedCommodity) return alert('Select a commodity first.');
+      investRequest(selectedCommodity);
+    };
+  }
 }
 
 function selectCommodity(key, cardEl) {
-  // deselect other cards
   document.querySelectorAll('.commodity-card').forEach(c => c.classList.remove('selected'));
   cardEl.classList.add('selected');
   selectedCommodity = key;
   const selectedLabel = document.getElementById('selectedCommodity');
-  selectedLabel.textContent = key.replace("_", " ").toUpperCase();
-
+  if (selectedLabel) selectedLabel.textContent = key.replace("_"," ").toUpperCase();
   const investBtn = document.getElementById('investBtn');
-  investBtn.disabled = false;
+  if (investBtn) investBtn.disabled = false;
 }
 
 async function investRequest(commodity) {
   if (!commodity || !COMMODITY_INFO[commodity]) return alert("Invalid selection");
-
   if (!confirm(`Invest in ${commodity.replace("_"," ").toUpperCase()} for KES ${COMMODITY_INFO[commodity].price}?`)) return;
 
   const msg = document.getElementById('msg');
   setMsg(msg, 'loading', `Requesting ${commodity}...`);
 
-  const formData = new URLSearchParams();
-  formData.append('username', localStorage.getItem('username') || '');
-  formData.append('commodity', commodity);
-
   const token = localStorage.getItem('access_token') || null;
-  const headers = { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' };
+  const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   try {
     const res = await fetch(`${BACKEND_URL}/invest/request`, {
       method: 'POST',
       headers,
-      body: formData.toString()
+      body: JSON.stringify({ commodity })
     });
 
-    let data = {};
-    const ct = res.headers.get('content-type') || '';
-    if (ct.includes('application/json')) data = await res.json().catch(() => ({})); else {
-      const text = await res.text().catch(()=> '');
-      try { data = JSON.parse(text); } catch { data = { message: text }; }
-    }
-
+    const data = await res.json().catch(() => ({ message: "Error" }));
     if (res.ok) {
       setMsg(msg, 'success', `${data.message || "Success"}<br><strong>Pay via M-Pesa: ${data.mpesa_number || MPESA_NUMBER}</strong>`);
-      // refresh dashboard to show pending investment
       fetchUserData();
-    } else {
-      setMsg(msg, 'error', data.detail || data.message || `Request failed (status ${res.status}).`);
-    }
+    } else setMsg(msg, 'error', data.detail || data.message || `Request failed (${res.status})`);
   } catch (err) {
     console.error('investRequest error:', err);
     setMsg(msg, 'error', 'Network error.');
@@ -233,7 +209,8 @@ async function investRequest(commodity) {
 
 function startDailyCountdown() {
   const el = document.getElementById("nextDailyEarning");
-  let last = parseInt(localStorage.getItem('lastDailyBonusTime') || Date.now(), 10);
+  if (!el) return;
+  const last = parseInt(localStorage.getItem('lastDailyBonusTime') || Date.now(), 10);
   const next = last + 86400000;
 
   const tick = () => {
@@ -247,10 +224,8 @@ function startDailyCountdown() {
     const s = Math.floor((diff % 60000) / 1000);
     el.textContent = `${h}h ${m}m ${s}s`;
   };
-
   tick();
-  const id = setInterval(tick, 1000);
-  countdownIntervals.push(id);
+  countdownIntervals.push(setInterval(tick, 1000));
 }
 
 function setMsg(el, kind, text) {
@@ -261,8 +236,7 @@ function setMsg(el, kind, text) {
 
 window.logout = function() {
   localStorage.removeItem('username');
-  // optional: remove token as well
-  // localStorage.removeItem('access_token');
+  localStorage.removeItem('access_token');
   window.location.href = 'login.html';
 };
 </script>
