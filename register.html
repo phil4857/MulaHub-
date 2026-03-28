@@ -1,177 +1,148 @@
-# ================== IMPORTS ==================
-import os
-import logging
-from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - Mkoba Wallet</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+  .container { max-width: 400px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+  input, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: 1px solid #ccc; }
+  button { background: #007bff; color: #fff; border: none; cursor: pointer; }
+  button:disabled { background: #aaa; cursor: not-allowed; }
+  .msg { margin-top: 10px; font-weight: bold; }
+  .msg.error { color: #dc3545; }
+  .msg.success { color: #28a745; }
+  .msg.loading { color: #007bff; }
+</style>
+</head>
+<body>
 
-from fastapi import FastAPI, Depends, HTTPException, status, Body
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel, Field, constr, validator
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, JSON, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
-import bcrypt
-import jwt
+<div class="container">
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="text" id="phone" placeholder="Phone (07xxxxxxx or 01xxxxxxx)" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+    <input type="text" id="referral" placeholder="Referral (optional)" />
+    <button type="submit" id="registerBtn">Register</button>
+  </form>
+  <div id="msg" class="msg"></div>
+</div>
 
-# ================== CONFIG ==================
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
-SECRET_KEY = os.getenv("SECRET_KEY", "super-secret")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-ADMIN_PASSWORD = "PHIL4857"
-MPESA_NUMBER = "0752964507"
-REFERRAL_BONUS_PERCENT = 10
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
-COMMODITY_INFO = {
-    "marble": {"price": 650, "expiry_days": 15},
-    "crude_oil": {"price": 800, "expiry_days": 20},
-    "silver": {"price": 1000, "expiry_days": 23},
-    "lead": {"price": 1200, "expiry_days": 25},
-    "platinum": {"price": 1350, "expiry_days": 28},
-    "diamonds": {"price": 1750, "expiry_days": 32},
-    "gold": {"price": 2200, "expiry_days": 35},
-    "uranium": {"price": 3000, "expiry_days": 45},
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('registerForm');
+  const registerBtn = document.getElementById('registerBtn');
+  const msg = document.getElementById('msg');
 
-# ================== APP ==================
-app = FastAPI()
+  const usernameInput = document.getElementById('username');
+  const phoneInput = document.getElementById('phone');
+  const passwordInput = document.getElementById('password');
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+  const referralInput = document.getElementById('referral');
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+  usernameInput.focus();
 
-# ================== DB ==================
-Base = declarative_base()
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
+  // Autofill referral from URL query ?ref=...
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get('ref');
+  if (ref) referralInput.value = ref;
 
-class UserDB(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True)
-    username = Column(String, unique=True)
-    phone = Column(String)
-    password_hash = Column(String)
-    approved = Column(Boolean, default=False)
-    balance = Column(Float, default=0)
-    earnings = Column(Float, default=0)
-    investments = Column(JSON, default={})
-    referral_code = Column(String, nullable=True)
-    referral_bonus_earned = Column(Float, default=0)
+  function showMessage(kind, text) {
+    msg.className = 'msg ' + (kind || '');
+    msg.textContent = text || '';
+  }
 
-class WithdrawalRequest(Base):
-    __tablename__ = "withdrawals"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer)
-    amount = Column(Float)
-    status = Column(String, default="pending")
+  function normalizePhone(p) {
+    if (!p) return '';
+    return p.replace(/[^\d+]/g, '');
+  }
 
-Base.metadata.create_all(bind=engine)
+  function isValidPhone(phone) {
+    return /^(07|01)\d{8}$/.test(phone);
+  }
 
-# ================== SCHEMAS ==================
-class UserCreate(BaseModel):
-    username: str
-    phone: str
-    password: str
-    referral: Optional[str] = None
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showMessage('', '');
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
+    const username = usernameInput.value.trim().toLowerCase();
+    const phone = normalizePhone(phoneInput.value.trim());
+    const password = passwordInput.value;
+    const confirmPwd = confirmPasswordInput.value;
+    const referral = referralInput.value.trim().toLowerCase();
 
-class InvestRequest(BaseModel):
-    commodity: str
-
-# ================== HELPERS ==================
-def hash_pwd(pw):
-    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
-
-def check_pwd(pw, hashed):
-    return bcrypt.checkpw(pw.encode(), hashed.encode())
-
-def create_token(data):
-    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# ================== AUTH ==================
-@app.post("/register")
-def register(payload: UserCreate, db: Session = Depends(get_db)):
-    if db.query(UserDB).filter(UserDB.username == payload.username).first():
-        raise HTTPException(status_code=400, detail="Username exists")
-
-    user = UserDB(
-        username=payload.username.lower(),
-        phone=payload.phone,
-        password_hash=hash_pwd(payload.password),
-        referral_code=payload.referral
-    )
-
-    db.add(user)
-    db.commit()
-
-    return {
-        "message": "Registered successfully",
-        "referral_link": f"https://your-site/register?ref={user.username}"
+    // Validation
+    if (!username || !phone || !password || !confirmPwd) {
+      showMessage('error', 'Fill all required fields.');
+      return;
+    }
+    if (username.length < 3) {
+      showMessage('error', 'Username must be at least 3 characters.');
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      showMessage('error', 'Phone must start with 07 or 01 and be 10 digits.');
+      return;
+    }
+    if (password.length < 6) {
+      showMessage('error', 'Password should be at least 6 characters.');
+      return;
+    }
+    if (password !== confirmPwd) {
+      showMessage('error', 'Passwords do not match.');
+      return;
     }
 
-@app.post("/login")
-def login(payload: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(UserDB).filter(UserDB.username == payload.username.lower()).first()
+    registerBtn.disabled = true;
+    registerBtn.textContent = 'Registering...';
+    showMessage('loading', 'Creating account...');
 
-    if not user or not check_pwd(payload.password, user.password_hash):
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+    try {
+      const payload = { username, phone, password };
+      if (referral) payload.referral = referral;
 
-    if not user.approved:
-        raise HTTPException(status_code=403, detail="Not approved")
+      const res = await fetch(`${BACKEND_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    token = create_token({"sub": user.username})
-    return {"access_token": token}
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        const text = await res.text();
+        data = { message: text };
+      }
 
-# ================== DASHBOARD ==================
-@app.get("/dashboard")
-def dashboard(db: Session = Depends(get_db)):
-    users = db.query(UserDB).all()
-    return {"users": len(users)}
+      if (res.ok) {
+        showMessage('success', data.message || 'Registration successful. Redirecting to login...');
+        localStorage.setItem('just_registered_username', username);
+        setTimeout(() => window.location.href = 'login.html', 1400);
+      } else {
+        let errMsg = data.detail || data.message || 'Registration failed.';
+        if (!errMsg && typeof data === 'object') {
+          if (Array.isArray(data)) errMsg = data.map(i => i.msg || JSON.stringify(i)).join(' • ');
+          else errMsg = JSON.stringify(data);
+        }
+        showMessage('error', errMsg);
+      }
 
-# ================== INVEST ==================
-@app.post("/invest/request")
-def invest_request(payload: InvestRequest):
-    if payload.commodity not in COMMODITY_INFO:
-        raise HTTPException(status_code=400, detail="Invalid commodity")
-
-    return {
-        "price": COMMODITY_INFO[payload.commodity]["price"],
-        "mpesa_number": MPESA_NUMBER
+    } catch (err) {
+      console.error('Register error:', err);
+      showMessage('error', 'Cannot connect to server. Please try again.');
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.textContent = 'Register';
     }
+  });
+});
+</script>
 
-@app.post("/invest/confirm")
-def invest_confirm(payload: InvestRequest, db: Session = Depends(get_db)):
-    user = db.query(UserDB).first()
-
-    price = COMMODITY_INFO[payload.commodity]["price"]
-
-    user.balance += price * 0.1
-    db.commit()
-
-    return {"message": "Investment confirmed"}
-
-# ================== WITHDRAW ==================
-@app.post("/withdraw/request")
-def withdraw(amount: float = Body(...), db: Session = Depends(get_db)):
-    return {"message": "Withdrawal requested"}
-
-# ================== ADMIN ==================
-@app.post("/admin/login")
-def admin_login(password: str = Body(...)):
-    if password != ADMIN_PASSWORD:
-        raise HTTPException(status_code=401, detail="Wrong password")
-    return {"message": "Success"}
+</body>
+</html>
