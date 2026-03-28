@@ -4,30 +4,95 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Register - Mkoba Wallet</title>
+
 <style>
-  body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-  .container { max-width: 400px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
-  input, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: 1px solid #ccc; }
-  button { background: #007bff; color: #fff; border: none; cursor: pointer; }
-  button:disabled { background: #aaa; cursor: not-allowed; }
-  .msg { margin-top: 10px; font-weight: bold; }
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffffee;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    backdrop-filter: blur(6px);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  input, button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #2a5298;
+    box-shadow: 0 0 5px rgba(42,82,152,0.5);
+  }
+
+  button {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+
+  .msg {
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+
   .msg.error { color: #dc3545; }
   .msg.success { color: #28a745; }
   .msg.loading { color: #007bff; }
+
 </style>
 </head>
+
 <body>
 
 <div class="container">
-  <h2>Register</h2>
+  <h2>Create Account</h2>
+
   <form id="registerForm">
     <input type="text" id="username" placeholder="Username" required />
-    <input type="text" id="phone" placeholder="Phone (07xxxxxxx or 01xxxxxxx)" required />
+    <input type="text" id="phone" placeholder="Phone (07xxxxxxxx or 01xxxxxxxx)" required />
     <input type="password" id="password" placeholder="Password" required />
     <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
     <input type="text" id="referral" placeholder="Referral (optional)" />
     <button type="submit" id="registerBtn">Register</button>
   </form>
+
   <div id="msg" class="msg"></div>
 </div>
 
@@ -35,9 +100,10 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
+
   const form = document.getElementById('registerForm');
-  const registerBtn = document.getElementById('registerBtn');
   const msg = document.getElementById('msg');
+  const registerBtn = document.getElementById('registerBtn');
 
   const usernameInput = document.getElementById('username');
   const phoneInput = document.getElementById('phone');
@@ -47,19 +113,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   usernameInput.focus();
 
-  // Autofill referral from URL query ?ref=...
+  // Autofill referral
   const params = new URLSearchParams(window.location.search);
   const ref = params.get('ref');
   if (ref) referralInput.value = ref;
 
-  function showMessage(kind, text) {
-    msg.className = 'msg ' + (kind || '');
-    msg.textContent = text || '';
+  function showMessage(type, text) {
+    msg.className = 'msg ' + type;
+    msg.textContent = text;
   }
 
   function normalizePhone(p) {
-    if (!p) return '';
-    return p.replace(/[^\d+]/g, '');
+    return p.replace(/[^\d]/g, '');
   }
 
   function isValidPhone(phone) {
@@ -68,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    showMessage('', '');
 
     const username = usernameInput.value.trim().toLowerCase();
     const phone = normalizePhone(phoneInput.value.trim());
@@ -78,68 +142,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Validation
     if (!username || !phone || !password || !confirmPwd) {
-      showMessage('error', 'Fill all required fields.');
-      return;
+      return showMessage('error', 'Fill all fields.');
     }
-    if (username.length < 3) {
-      showMessage('error', 'Username must be at least 3 characters.');
-      return;
-    }
+
     if (!isValidPhone(phone)) {
-      showMessage('error', 'Phone must start with 07 or 01 and be 10 digits.');
-      return;
+      return showMessage('error', 'Invalid phone format.');
     }
-    if (password.length < 6) {
-      showMessage('error', 'Password should be at least 6 characters.');
-      return;
-    }
+
     if (password !== confirmPwd) {
-      showMessage('error', 'Passwords do not match.');
-      return;
+      return showMessage('error', 'Passwords do not match.');
     }
 
     registerBtn.disabled = true;
-    registerBtn.textContent = 'Registering...';
+    registerBtn.textContent = "Registering...";
     showMessage('loading', 'Creating account...');
 
     try {
-      const payload = { username, phone, password };
-      if (referral) payload.referral = referral;
-
       const res = await fetch(`${BACKEND_URL}/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, phone, password, referral })
       });
 
       let data;
       try {
         data = await res.json();
       } catch {
-        const text = await res.text();
-        data = { message: text };
+        data = { message: await res.text() };
       }
 
       if (res.ok) {
-        showMessage('success', data.message || 'Registration successful. Redirecting to login...');
-        localStorage.setItem('just_registered_username', username);
-        setTimeout(() => window.location.href = 'login.html', 1400);
+        showMessage('success', data.message || "Registered successfully!");
+        setTimeout(() => window.location.href = "login.html", 1200);
       } else {
-        let errMsg = data.detail || data.message || 'Registration failed.';
-        if (!errMsg && typeof data === 'object') {
-          if (Array.isArray(data)) errMsg = data.map(i => i.msg || JSON.stringify(i)).join(' • ');
-          else errMsg = JSON.stringify(data);
+
+        // ✅ FIXED ERROR HANDLING (NO MORE [object Object])
+        let errMsg = "Registration failed";
+
+        if (typeof data === "string") {
+          errMsg = data;
+        } else if (data.message) {
+          errMsg = data.message;
+        } else if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            errMsg = data.detail.map(e => e.msg || "Error").join(" • ");
+          } else {
+            errMsg = data.detail;
+          }
         }
+
         showMessage('error', errMsg);
       }
 
     } catch (err) {
-      console.error('Register error:', err);
-      showMessage('error', 'Cannot connect to server. Please try again.');
-    } finally {
-      registerBtn.disabled = false;
-      registerBtn.textContent = 'Register';
+      console.error(err);
+      showMessage('error', 'Server not reachable.');
     }
+
+    registerBtn.disabled = false;
+    registerBtn.textContent = "Register";
   });
 });
 </script>
