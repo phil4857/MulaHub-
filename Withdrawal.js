@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Validation
         if (!amount || isNaN(amount) || amount <= 0) return showError("Enter a valid amount greater than 0.");
-        if (amount < 500) return showError("Minimum withdrawal is KES 500.");
+        if (amount < 100) return showError("Minimum withdrawal is KES 100.");
         if (amount > currentBalance) return showError("Amount exceeds current balance.");
 
         submitBtn.disabled = true;
