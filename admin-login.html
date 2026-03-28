@@ -118,6 +118,11 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePassword.textContent = type === "password" ? "👁️" : "🙈";
   });
 
+  function showMessage(type, text) {
+    msg.className = type;
+    msg.textContent = String(text);   // Prevents [object Object]
+  }
+
   loginBtn.addEventListener("click", async () => {
     const password = passwordInput.value.trim();
 
@@ -143,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         data = await res.json();
       } catch (e) {
-        // Fallback if response is not JSON
         data = { detail: "Server error - please try again" };
       }
 
@@ -154,16 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
           window.location.href = "admin-dashboard.html";
         }, 1500);
       } else {
-        // Safest error extraction to prevent [object Object]
-        let errorText = "Invalid admin password";
-        if (typeof data === "string") {
-          errorText = data;
-        } else if (data.detail) {
-          errorText = data.detail;
-        } else if (data.message) {
-          errorText = data.message;
-        }
-        
+        const errorText = data.detail || data.message || "Invalid admin password";
         showMessage("error", errorText);
       }
     } catch (err) {
@@ -174,11 +169,6 @@ document.addEventListener("DOMContentLoaded", () => {
       loginBtn.textContent = "Login";
     }
   });
-
-  function showMessage(type, text) {
-    msg.className = type;
-    msg.textContent = String(text);   // This prevents [object Object]
-  }
 });
 </script>
 
