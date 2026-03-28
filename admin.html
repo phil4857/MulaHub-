@@ -1,1 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Login - Mkoba Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
 
+  .box {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffffee;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    backdrop-filter: blur(6px);
+    text-align: center;
+  }
+
+  h2 {
+    color: #333;
+    margin-bottom: 25px;
+  }
+
+  .password-container {
+    position: relative;
+    margin: 15px 0;
+  }
+
+  .password-container input {
+    width: 100%;
+    padding: 12px 40px 12px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
+  .toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  button:hover {
+    opacity: 0.9;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  #adminMsg {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: bold;
+  }
+
+  .success { background: #d4edda; color: #155724; }
+  .error { background: #f8d7da; color: #721c24; }
+  .loading { background: #e3f2fd; color: #1976d2; }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Admin Login</h2>
+
+  <div class="password-container">
+    <input type="password" id="adminPassword" placeholder="Enter Admin Password" autocomplete="current-password">
+    <span class="toggle-password" id="togglePassword">👁️</span>
+  </div>
+
+  <button id="adminLoginBtn">Login</button>
+  <div id="adminMsg"></div>
+</div>
+
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const passwordInput = document.getElementById("adminPassword");
+  const togglePassword = document.getElementById("togglePassword");
+  const loginBtn = document.getElementById("adminLoginBtn");
+  const msg = document.getElementById("adminMsg");
+
+  // Toggle password visibility
+  togglePassword.addEventListener("click", () => {
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+    togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+  });
+
+  function showMessage(type, text) {
+    msg.className = type;
+    msg.textContent = String(text);   // Prevents [object Object]
+  }
+
+  loginBtn.addEventListener("click", async () => {
+    const password = passwordInput.value.trim();
+
+    if (!password) {
+      showMessage("error", "Please enter the admin password");
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Logging in...";
+    showMessage("loading", "Verifying admin access...");
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/login`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({ password: password })
+      });
+
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = { detail: "Server error - please try again" };
+      }
+
+      if (res.ok) {
+        showMessage("success", "Admin login successful! Redirecting...");
+        localStorage.setItem("adminLoggedIn", "true");
+        setTimeout(() => {
+          window.location.href = "admin-dashboard.html";
+        }, 1500);
+      } else {
+        const errorText = data.detail || data.message || "Invalid admin password";
+        showMessage("error", errorText);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      showMessage("error", "Cannot connect to server. Please check your internet connection.");
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Login";
+    }
+  });
+});
+</script>
+
+</body>
+</html>
