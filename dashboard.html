@@ -147,6 +147,9 @@
     <p>Balance: <span id="balance">KES 0.00</span></p>
     <p>Total Earnings: <span id="earnings">KES 0.00</span></p>
     <p>Total Invested: <span id="invested">KES 0.00</span></p>
+    <p>Referral Bonus Earned: <span id="referralBonus">KES 0.00</span></p>
+    <p>Investments:</p>
+    <div id="investmentsList"></div>
   </div>
 
   <!-- Daily Bonus -->
@@ -176,7 +179,6 @@
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
-const MPESA_NUMBER = "0752964507";
 
 const COMMODITY_INFO = {
   marble:     { price: 650,  days: 15, emoji: "🪨🪨🪨" },
@@ -229,19 +231,29 @@ async function fetchUserData() {
   const msgEl = document.getElementById('msg');
   setMsg(msgEl, 'loading', 'Loading dashboard...');
 
-  const username = localStorage.getItem('username') || '';
   const token = localStorage.getItem('access_token') || '';
-  const headers = { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` };
-
   try {
-    const res = await fetch(`${BACKEND_URL}/dashboard?username=${encodeURIComponent(username)}`, { headers });
+    const res = await fetch(`${BACKEND_URL}/dashboard`, {
+      headers: {'Accept':'application/json','Authorization':`Bearer ${token}`}
+    });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to load');
 
     document.getElementById('balance').textContent = `KES ${Number(data.balance||0).toFixed(2)}`;
     document.getElementById('earnings').textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;
+    document.getElementById('referralBonus').textContent = `KES ${Number(data.referral_bonus_earned||0).toFixed(2)}`;
+
     let investedTotal = 0;
-    if (data.investments) Object.values(data.investments).forEach(i => investedTotal += Number(i.amount||0));
+    const investmentsList = document.getElementById('investmentsList');
+    investmentsList.innerHTML = '';
+    if (data.investments) {
+      Object.entries(data.investments).forEach(([commodity, inv]) => {
+        investedTotal += Number(inv.amount||0);
+        const div = document.createElement('div');
+        div.textContent = `${commodity.replace('_',' ').toUpperCase()}: Amount KES ${Number(inv.amount||0).toFixed(2)}, Days Left: ${inv.days_remaining}, Daily Earning: ${Number(inv.daily_earning||0).toFixed(2)}`;
+        investmentsList.appendChild(div);
+      });
+    }
     document.getElementById('invested').textContent = `KES ${investedTotal.toFixed(2)}`;
 
     setMsg(msgEl, 'success', 'Dashboard loaded!');
@@ -288,7 +300,7 @@ async function investRequest(commodity) {
     });
     const data = await res.json();
     if (!res.ok) return alert(data.message || 'Request failed');
-    alert(`Send payment to ${MPESA_NUMBER}. Amount: KES ${data.price}`);
+    alert(`Send payment to the platform. Amount: KES ${data.price}`);
     await fetchUserData();
   } catch(err) { console.error(err); alert('Server error'); }
 }
