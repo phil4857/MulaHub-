@@ -1,26 +1,23 @@
 mkoba-wallet/
-├── public/                     # Static files accessible by browser
-│   ├── images/                 # All commodity images
+├── public/                     
+│   ├── images/                 # Commodity images
 │   ├── style.css               # Global CSS
 │   └── favicon.ico
-├── src/                        # Source files (HTML + JS)
+├── src/                        
 │   ├── index.html              # Landing page
-│   ├── login.html
-│   ├── register.html
-│   ├── admin/                  # Admin pages
+│   ├── login.html              # Login page
+│   ├── register.html           # Registration page
+│   ├── admin/                  
 │   │   ├── admin.html
-│   │   ├── admin-login.html
 │   │   ├── admin-dashboard.html
 │   │   └── admin-dashboard.js
-│   ├── user/                   # User pages
-│   │   ├── dashboard.html
+│   ├── user/                   
+│   │   ├── dashboard.html      # User dashboard
 │   │   ├── investment-dashboard.html
 │   │   ├── user-dashboard.html
 │   │   └── withdrawal.html
-│   └── js/                     # Shared JS files
-│       ├── script.js
-│       ├── login.js
-│       ├── register.js
-│       └── withdrawal.js
-├── vercel.json                 # Vercel deployment config
+│   └── js/                     
+│       ├── script.js           # Shared scripts (utilities)
+│       └── withdrawal.js       # Withdrawal-specific script
+├── vercel.json                 
 └── README.md
