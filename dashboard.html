@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard - Mkoba Wallet</title>
 <style>
-  /* Global */
   body {
     font-family: Arial, sans-serif;
     margin: 0; padding: 0;
@@ -23,10 +22,7 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   }
 
-  header h1 {
-    margin: 0; font-size: 18px;
-  }
-
+  header h1 { margin: 0; font-size: 18px; }
   header button {
     background: #dc3545;
     border: none;
@@ -36,16 +32,9 @@
     border-radius: 4px;
     transition: 0.3s;
   }
+  header button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-  header button:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  main {
-    padding: 20px;
-  }
-
+  main { padding: 20px; }
   .card {
     background: white;
     padding: 20px;
@@ -54,20 +43,9 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     transition: transform 0.2s, box-shadow 0.2s;
   }
-
-  .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
-  }
-
-  .card h3 {
-    margin-top: 0;
-    color: #2e7d32;
-  }
-
-  .card p {
-    margin: 6px 0;
-  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.2); }
+  .card h3 { margin-top: 0; color: #2e7d32; }
+  .card p { margin: 6px 0; }
 
   #commodityGrid {
     display: grid;
@@ -75,7 +53,6 @@
     gap: 12px;
     margin-top: 10px;
   }
-
   .commodity-card {
     background: #e0f2f1;
     padding: 15px;
@@ -84,18 +61,8 @@
     cursor: pointer;
     transition: 0.3s;
   }
-
-  .commodity-card:hover {
-    background: #26a69a;
-    color: white;
-    transform: scale(1.05);
-  }
-
-  .commodity-card.selected {
-    background: #00796b;
-    color: white;
-    transform: scale(1.05);
-  }
+  .commodity-card:hover { background: #26a69a; color: white; transform: scale(1.05); }
+  .commodity-card.selected { background: #00796b; color: white; transform: scale(1.05); }
 
   button#investBtn, button#dailyBonusBtn, button#copyReferralBtn {
     margin-top: 10px;
@@ -108,26 +75,13 @@
     cursor: pointer;
     transition: 0.3s;
   }
+  button:disabled { background: gray; cursor: not-allowed; }
+  button:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
 
-  button#investBtn:disabled, button#dailyBonusBtn:disabled, button#copyReferralBtn:disabled {
-    background: gray;
-    cursor: not-allowed;
-  }
-
-  button:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  .msg {
-    margin-top: 10px;
-    font-size: 14px;
-  }
-
+  .msg { margin-top: 10px; font-size: 14px; }
   .msg.success { color: green; }
   .msg.error { color: red; }
   .msg.loading { color: orange; }
-
 </style>
 </head>
 <body>
@@ -181,14 +135,14 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 const COMMODITY_INFO = {
-  marble:     { price: 650,  days: 15, emoji: "🪨🪨🪨" },
-  crude_oil:  { price: 800,  days: 20, emoji: "🛢️🛢️🛢️" },
-  silver:     { price: 1000, days: 23, emoji: "🪙🪙🪙" },
-  lead:       { price: 1200, days: 25, emoji: "⚙️⚙️⚙️" },
-  platinum:   { price: 1350, days: 28, emoji: "💎💎💎" },
-  diamonds:   { price: 1750, days: 32, emoji: "💎💎💎" },
-  gold:       { price: 2200, days: 35, emoji: "🪙🪙🪙" },
-  uranium:    { price: 3000, days: 45, emoji: "☢️☢️☢️" }
+  marble: { price: 650,  days: 15, emoji: "🪨🪨🪨" },
+  crude_oil: { price: 800,  days: 20, emoji: "🛢️🛢️🛢️" },
+  silver: { price: 1000, days: 23, emoji: "🪙🪙🪙" },
+  lead: { price: 1200, days: 25, emoji: "⚙️⚙️⚙️" },
+  platinum: { price: 1350, days: 28, emoji: "💎💎💎" },
+  diamonds: { price: 1750, days: 32, emoji: "💎💎💎" },
+  gold: { price: 2200, days: 35, emoji: "🪙🪙🪙" },
+  uranium: { price: 3000, days: 45, emoji: "☢️☢️☢️" }
 };
 
 let selectedCommodity = null;
@@ -196,29 +150,19 @@ let countdownInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const username = localStorage.getItem('username');
-  if (!username) {
-    window.location.href = 'login.html';
-    return;
-  }
+  if (!username) { window.location.href = 'login.html'; return; }
   document.getElementById('usernameDisplay').textContent = username;
-
-  // Referral code
   document.getElementById('refCode').textContent = username;
 
-  // Copy referral
   document.getElementById('copyReferralBtn').addEventListener('click', () => {
-    const link = `https://mkobawallet.com/signup?ref=${username}`;
-    navigator.clipboard.writeText(link).then(() => {
-      alert('Referral link copied!');
-    });
+    navigator.clipboard.writeText(`https://mkobawallet.com/signup?ref=${username}`)
+      .then(()=>alert('Referral link copied!'));
   });
-
-  // Daily bonus
-  startDailyCountdown();
-  document.getElementById('dailyBonusBtn').addEventListener('click', claimDailyBonus);
 
   renderCommodityCards();
   fetchUserData();
+  startDailyCountdown();
+  document.getElementById('dailyBonusBtn').addEventListener('click', claimDailyBonus);
 });
 
 function logout() {
@@ -230,11 +174,10 @@ function logout() {
 async function fetchUserData() {
   const msgEl = document.getElementById('msg');
   setMsg(msgEl, 'loading', 'Loading dashboard...');
-
   const token = localStorage.getItem('access_token') || '';
   try {
     const res = await fetch(`${BACKEND_URL}/dashboard`, {
-      headers: {'Accept':'application/json','Authorization':`Bearer ${token}`}
+      headers:{ 'Accept':'application/json', 'Authorization':`Bearer ${token}` }
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to load');
@@ -243,23 +186,24 @@ async function fetchUserData() {
     document.getElementById('earnings').textContent = `KES ${Number(data.earnings||0).toFixed(2)}`;
     document.getElementById('referralBonus').textContent = `KES ${Number(data.referral_bonus_earned||0).toFixed(2)}`;
 
+    // Investments properly
     let investedTotal = 0;
     const investmentsList = document.getElementById('investmentsList');
     investmentsList.innerHTML = '';
-    if (data.investments) {
-      Object.entries(data.investments).forEach(([commodity, inv]) => {
+    if (data.investments && Array.isArray(data.investments)) {
+      data.investments.forEach(inv => {
         investedTotal += Number(inv.amount||0);
         const div = document.createElement('div');
-        div.textContent = `${commodity.replace('_',' ').toUpperCase()}: Amount KES ${Number(inv.amount||0).toFixed(2)}, Days Left: ${inv.days_remaining}, Daily Earning: ${Number(inv.daily_earning||0).toFixed(2)}`;
+        div.textContent = `${inv.commodity.replace('_',' ').toUpperCase()}: Amount KES ${Number(inv.amount||0).toFixed(2)}, Days Left: ${inv.days_remaining}, Daily Earning: KES ${Number(inv.daily_earning||0).toFixed(2)}`;
         investmentsList.appendChild(div);
       });
     }
     document.getElementById('invested').textContent = `KES ${investedTotal.toFixed(2)}`;
 
     setMsg(msgEl, 'success', 'Dashboard loaded!');
-  } catch (err) {
+  } catch(err){
     console.error(err);
-    setMsg(msgEl, 'error', 'Failed to load dashboard');
+    setMsg(msgEl,'error','Failed to load dashboard');
   }
 }
 
@@ -276,9 +220,7 @@ function renderCommodityCards() {
     card.onclick = () => selectCommodity(key, card);
     grid.appendChild(card);
   });
-
-  const investBtn = document.getElementById('investBtn');
-  investBtn.onclick = () => investRequest(selectedCommodity);
+  document.getElementById('investBtn').onclick = () => investRequest(selectedCommodity);
 }
 
 function selectCommodity(key, cardEl) {
@@ -295,24 +237,23 @@ async function investRequest(commodity) {
   try {
     const res = await fetch(`${BACKEND_URL}/invest/request`, {
       method:'POST',
-      headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-      body: JSON.stringify({commodity})
+      headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` },
+      body: JSON.stringify({ commodity })
     });
     const data = await res.json();
     if (!res.ok) return alert(data.message || 'Request failed');
     alert(`Send payment to the platform. Amount: KES ${data.price}`);
     await fetchUserData();
-  } catch(err) { console.error(err); alert('Server error'); }
+  } catch(err){ console.error(err); alert('Server error'); }
 }
 
 function startDailyCountdown() {
   const el = document.getElementById("nextDailyEarning");
-  let lastClaim = parseInt(localStorage.getItem('lastDailyBonusTime')||Date.now(),10);
-  const next = lastClaim + 86400000; // 24h
-
+  const lastClaim = parseInt(localStorage.getItem('lastDailyBonusTime')||0,10);
+  const next = lastClaim + 86400000;
   const tick = () => {
     const diff = next - Date.now();
-    if(diff<=0) {
+    if(diff <=0){
       el.textContent = "Available now!";
       document.getElementById('dailyBonusBtn').disabled = false;
       return;
@@ -323,9 +264,8 @@ function startDailyCountdown() {
     el.textContent = `${h}h ${m}m ${s}s`;
     document.getElementById('dailyBonusBtn').disabled = true;
   };
-
   tick();
-  countdownInterval = setInterval(tick, 1000);
+  countdownInterval = setInterval(tick,1000);
 }
 
 async function claimDailyBonus() {
@@ -333,22 +273,18 @@ async function claimDailyBonus() {
   try {
     const res = await fetch(`${BACKEND_URL}/daily/claim`, {
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` },
     });
     const data = await res.json();
     if(!res.ok) return alert(data.message || 'Failed');
-    alert(`Daily bonus claimed: KES ${data.amount}`);
+    alert(`Daily bonus claimed: KES ${Number(data.amount||0).toFixed(2)}`);
     localStorage.setItem('lastDailyBonusTime', Date.now());
     startDailyCountdown();
     fetchUserData();
   } catch(err){ console.error(err); alert('Server error'); }
 }
 
-function setMsg(el, kind, text) {
-  if(!el) return;
-  el.className='msg '+(kind||'');
-  el.textContent=text||'';
-}
+function setMsg(el, kind, text) { if(!el) return; el.className='msg '+(kind||''); el.textContent=text||''; }
 </script>
 
 </body>
