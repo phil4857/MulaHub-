@@ -22,10 +22,14 @@
     padding: 40px 30px;
     border-radius: 12px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    backdrop-filter: blur(6px);
     text-align: center;
   }
 
-  h2 { color: #333; margin-bottom: 25px; }
+  h2 {
+    color: #333;
+    margin-bottom: 25px;
+  }
 
   .password-container {
     position: relative;
@@ -63,7 +67,14 @@
     margin-top: 10px;
   }
 
-  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  button:hover {
+    opacity: 0.9;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   #adminMsg {
     margin-top: 15px;
@@ -83,7 +94,7 @@
   <h2>Admin Login</h2>
 
   <div class="password-container">
-    <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+    <input type="password" id="adminPassword" placeholder="Enter Admin Password" autocomplete="current-password">
     <span class="toggle-password" id="togglePassword">👁️</span>
   </div>
 
@@ -100,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("adminLoginBtn");
   const msg = document.getElementById("adminMsg");
 
+  // Toggle password visibility
   togglePassword.addEventListener("click", () => {
     const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
@@ -108,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loginBtn.addEventListener("click", async () => {
     const password = passwordInput.value.trim();
+
     if (!password) {
       showMessage("error", "Please enter the admin password");
       return;
@@ -115,12 +128,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loginBtn.disabled = true;
     loginBtn.textContent = "Logging in...";
-    showMessage("loading", "Verifying...");
+    showMessage("loading", "Verifying admin access...");
 
     try {
       const res = await fetch(`${BACKEND_URL}/admin/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify({ password: password })
       });
 
@@ -128,10 +143,44 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         data = await res.json();
       } catch (e) {
-        data = { detail: "Server returned invalid response" };
+        // Fallback if response is not JSON
+        data = { detail: "Server error - please try again" };
       }
 
       if (res.ok) {
         showMessage("success", "Admin login successful! Redirecting...");
         localStorage.setItem("adminLoggedIn", "true");
-        setTimeout(() =>
+        setTimeout(() => {
+          window.location.href = "admin-dashboard.html";
+        }, 1500);
+      } else {
+        // Safest error extraction to prevent [object Object]
+        let errorText = "Invalid admin password";
+        if (typeof data === "string") {
+          errorText = data;
+        } else if (data.detail) {
+          errorText = data.detail;
+        } else if (data.message) {
+          errorText = data.message;
+        }
+        
+        showMessage("error", errorText);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      showMessage("error", "Cannot connect to server. Please check your internet connection.");
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Login";
+    }
+  });
+
+  function showMessage(type, text) {
+    msg.className = type;
+    msg.textContent = String(text);   // This prevents [object Object]
+  }
+});
+</script>
+
+</body>
+</html>
