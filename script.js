@@ -27,9 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
         padding: "20px"
     });
 
-    // ── Countdown Logic ──
+    // ── Constants ──
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+    // ── Countdown Logic ──
     function updateCountdown() {
         const lastClaimStr = localStorage.getItem("lastEarning");
         const now = Date.now();
@@ -60,14 +61,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Update every second + initial call
-    const countdownInterval = setInterval(updateCountdown, 1000);
+    // ── Initial call + update interval ──
     updateCountdown();
+    const countdownInterval = setInterval(updateCountdown, 1000);
 
     // ── Claim Button Handler ──
     grabBtn.addEventListener("click", async () => {
-        // Already disabled by countdown → extra safety
-        if (grabBtn.disabled) return;
+        if (grabBtn.disabled) return;  // Safety check
 
         grabBtn.disabled = true;
         grabBtn.textContent = "Processing...";
@@ -77,38 +77,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const response = await fetch("https://repo-1red-jipate-bonus.onrender.com/bonus/grab", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.detail || data.message || "Failed to claim bonus");
-            }
+            if (!response.ok) throw new Error(data.detail || data.message || "Failed to claim bonus");
 
-            // Success
             alert(`✅ ${data.message || "Daily bonus claimed successfully!"}`);
-            
+
             // Update last claim time
             localStorage.setItem("lastEarning", Date.now().toString());
-            
-            // Immediately refresh UI
+
+            // Refresh countdown UI
             updateCountdown();
 
         } catch (err) {
             console.error("Bonus claim error:", err);
-            alert(`❌ ${err.message || "Could not claim bonus. Please try again later."}`);
+            alert(`❌ ${err.message || "Could not claim bonus. Try again later."}`);
         } finally {
             grabBtn.disabled = false;
             grabBtn.textContent = "Grab Daily Bonus";
         }
     });
 
-    // ── Cleanup (good practice) ──
-    window.addEventListener("beforeunload", () => {
-        clearInterval(countdownInterval);
-    });
+    // ── Cleanup on unload ──
+    window.addEventListener("beforeunload", () => clearInterval(countdownInterval));
 });
