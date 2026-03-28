@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login</title>
+<title>Login - Mkoba Wallet</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #6a11cb, #2575fc); /* modern gradient */
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
     padding: 20px;
     min-height: 100vh;
     display: flex;
@@ -18,7 +18,7 @@
   .container {
     width: 100%;
     max-width: 400px;
-    background: #ffffffdd; /* semi-transparent white */
+    background: #ffffffdd;
     padding: 30px 25px;
     border-radius: 12px;
     box-shadow: 0 15px 30px rgba(0,0,0,0.2);
@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePassword = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('password');
 
+  // Toggle password visibility
   togglePassword.addEventListener('click', () => {
     const type = passwordInput.type === 'password' ? 'text' : 'password';
     passwordInput.type = type;
@@ -123,16 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     errorMsg.textContent = '';
     successMsg.textContent = '';
 
-    const username = document.getElementById('username')?.value.trim().toLowerCase();
+    const username = document.getElementById('username').value.trim().toLowerCase();
     const password = passwordInput.value;
 
     if (!username || !password) {
       errorMsg.textContent = 'Please enter both username and password.';
-      errorMsg.style.color = '#dc3545';
+      errorMsg.className = 'msg error';
       return;
     }
 
@@ -149,27 +149,28 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ username, password })
       });
 
-      const data = await res.json();
+      let data;
+      try { data = await res.json(); } 
+      catch { data = { message: await res.text() }; }
 
-      if (res.ok) {
-        if (data.access_token) localStorage.setItem('access_token', data.access_token);
+      if (res.ok && data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('username', username);
 
         successMsg.textContent = 'Login successful! Redirecting...';
         successMsg.className = 'msg success';
-
         setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
       } else {
-        errorMsg.style.color = '#dc3545';
-        if (res.status === 403) errorMsg.textContent = data.detail || 'Account not approved.';
-        else if (res.status === 404) errorMsg.textContent = data.detail || 'User not found.';
-        else errorMsg.textContent = data.detail || 'Invalid credentials.';
+        errorMsg.className = 'msg error';
+        if (data.detail) errorMsg.textContent = data.detail;
+        else if (data.message) errorMsg.textContent = data.message;
+        else errorMsg.textContent = 'Invalid credentials.';
         successMsg.textContent = '';
       }
 
     } catch (err) {
       console.error('Login error:', err);
-      errorMsg.style.color = '#dc3545';
+      errorMsg.className = 'msg error';
       errorMsg.textContent = 'Cannot connect to server.';
       successMsg.textContent = '';
     } finally {
