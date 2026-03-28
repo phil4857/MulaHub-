@@ -4,25 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - Mkoba Wallet</title>
+
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    padding: 20px;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
   }
 
   .container {
     width: 100%;
     max-width: 400px;
-    background: #ffffffdd;
-    padding: 30px 25px;
+    background: #ffffffee;
+    padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-    backdrop-filter: blur(5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    backdrop-filter: blur(6px);
   }
 
   h2 {
@@ -37,26 +38,27 @@
     margin: 10px 0;
     border-radius: 6px;
     border: 1px solid #ccc;
-    font-size: 16px;
+    font-size: 15px;
   }
 
   input:focus {
     outline: none;
-    border-color: #6a11cb;
-    box-shadow: 0 0 5px rgba(106,17,203,0.5);
+    border-color: #2c5364;
+    box-shadow: 0 0 6px rgba(44,83,100,0.5);
   }
 
   button {
-    background: #6a11cb;
-    color: #fff;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    color: white;
     border: none;
-    cursor: pointer;
     font-weight: bold;
-    transition: background 0.3s;
+    cursor: pointer;
+    transition: 0.3s;
   }
 
   button:hover {
-    background: #2575fc;
+    opacity: 0.9;
+    transform: translateY(-1px);
   }
 
   button:disabled {
@@ -64,42 +66,47 @@
     cursor: not-allowed;
   }
 
+  .password-container {
+    position: relative;
+  }
+
   .toggle-password {
-    cursor: pointer;
     position: absolute;
-    right: 15px;
-    top: 43px;
-    user-select: none;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
     font-size: 18px;
   }
 
   .msg {
-    margin-top: 12px;
-    font-weight: bold;
+    margin-top: 10px;
     text-align: center;
+    font-weight: bold;
   }
 
   .msg.error { color: #dc3545; }
   .msg.success { color: #28a745; }
-  .msg.loading { color: #2575fc; }
+  .msg.loading { color: #007bff; }
 
-  .password-container {
-    position: relative;
-  }
 </style>
 </head>
+
 <body>
 
 <div class="container">
   <h2>Login</h2>
+
   <form id="loginForm">
     <input type="text" id="username" placeholder="Username" required />
+
     <div class="password-container">
       <input type="password" id="password" placeholder="Password" required />
       <span id="togglePassword" class="toggle-password">👁️</span>
     </div>
+
     <button type="submit" id="loginBtn">Login</button>
   </form>
+
   <div id="loginError" class="msg"></div>
   <div id="loginSuccess" class="msg"></div>
 </div>
@@ -108,6 +115,7 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
+
   const form = document.getElementById('loginForm');
   const errorMsg = document.getElementById('loginError');
   const successMsg = document.getElementById('loginSuccess');
@@ -115,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePassword = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('password');
 
-  // Toggle password visibility
+  // Toggle password
   togglePassword.addEventListener('click', () => {
     const type = passwordInput.type === 'password' ? 'text' : 'password';
     passwordInput.type = type;
@@ -124,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     errorMsg.textContent = '';
     successMsg.textContent = '';
 
@@ -131,16 +140,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = passwordInput.value;
 
     if (!username || !password) {
-      errorMsg.textContent = 'Please enter both username and password.';
       errorMsg.className = 'msg error';
+      errorMsg.textContent = 'Please enter username and password.';
       return;
     }
 
     submitBtn.disabled = true;
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Logging in...';
+
     successMsg.className = 'msg loading';
-    successMsg.textContent = 'Verifying credentials...';
+    successMsg.textContent = 'Checking credentials...';
 
     try {
       const res = await fetch(`${BACKEND_URL}/login`, {
@@ -150,34 +160,58 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       let data;
-      try { data = await res.json(); } 
-      catch { data = { message: await res.text() }; }
+      try {
+        data = await res.json();
+      } catch {
+        data = { message: await res.text() };
+      }
 
       if (res.ok && data.access_token) {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('username', username);
 
-        successMsg.textContent = 'Login successful! Redirecting...';
         successMsg.className = 'msg success';
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+        successMsg.textContent = 'Login successful! Redirecting...';
+
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+
       } else {
+
+        // ✅ FIXED ERROR HANDLING (NO [object Object])
+        let errMsg = 'Login failed.';
+
+        if (typeof data === 'string') {
+          errMsg = data;
+        }
+        else if (data.message) {
+          errMsg = data.message;
+        }
+        else if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            errMsg = data.detail.map(e => e.msg || 'Error').join(' • ');
+          } else {
+            errMsg = data.detail;
+          }
+        }
+
         errorMsg.className = 'msg error';
-        if (data.detail) errorMsg.textContent = data.detail;
-        else if (data.message) errorMsg.textContent = data.message;
-        else errorMsg.textContent = 'Invalid credentials.';
+        errorMsg.textContent = errMsg;
         successMsg.textContent = '';
       }
 
     } catch (err) {
-      console.error('Login error:', err);
+      console.error(err);
       errorMsg.className = 'msg error';
-      errorMsg.textContent = 'Cannot connect to server.';
+      errorMsg.textContent = 'Server not reachable.';
       successMsg.textContent = '';
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText || 'Login';
     }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText || 'Login';
   });
+
 });
 </script>
 
