@@ -138,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
       usersTableBody.innerHTML = "";
       if (!users || users.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="6" style="color:#777;">No users registered yet</td></tr>';
-        showMessage("error", "No users found in the database");
         return;
       }
 
@@ -158,8 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         usersTableBody.appendChild(tr);
       });
-
-      showMessage("success", `${users.length} users loaded successfully`);
     } catch (err) {
       console.error("Fetch users error:", err);
       usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
@@ -172,7 +169,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...bodyData, password: ADMIN_PASSWORD })
+        body: JSON.stringify({ 
+          ...bodyData, 
+          password: ADMIN_PASSWORD 
+        })
       });
 
       const result = await res.json();
@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
     adminAction("terminate-user", { username }, `${username} has been terminated`, fetchUsers);
   };
 
-  // Load the users
+  // Load the users when page opens
   fetchUsers();
 });
 </script>
