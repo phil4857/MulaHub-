@@ -130,7 +130,11 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ password: ADMIN_PASSWORD })
       });
 
-      if (!res.ok) throw new Error("Failed to load users");
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "Unknown error");
+        throw new Error(`HTTP ${res.status}: ${errorText}`);
+      }
+
       const users = await res.json();
 
       usersTableBody.innerHTML = "";
@@ -156,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
         usersTableBody.appendChild(tr);
       });
     } catch (err) {
-      console.error(err);
+      console.error("Fetch users error:", err);
       usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
       showMessage("error", "Failed to load users. Check console (F12) for details.");
     }
