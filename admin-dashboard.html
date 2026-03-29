@@ -118,7 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
     msg.style.display = "block";
     setTimeout(() => msg.style.display = "none", 8000);
   }
-async function fetchUsers() {
+
+  async function fetchUsers() {
     usersTableBody.innerHTML = '<tr><td colspan="6">Loading users...</td></tr>';
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`, {
@@ -159,10 +160,11 @@ async function fetchUsers() {
     } catch (err) {
       console.error("Fetch users error:", err);
       usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
-      showMessage("error", "Failed to load users - check F12 Console for details");
+      showMessage("error", "Failed to load users - check F12 Console");
     }
   }
-async function adminAction(endpoint, bodyData, successMsg, callback) {
+
+  async function adminAction(endpoint, bodyData, successMsg, callback) {
     try {
       const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
         method: "POST",
@@ -186,6 +188,7 @@ async function adminAction(endpoint, bodyData, successMsg, callback) {
       showMessage("error", "Network error");
     }
   }
+
   window.approveUser = (username) => {
     if (!confirm(`Approve user ${username}?`)) return;
     adminAction("approve-user", { username }, `${username} has been approved`, fetchUsers);
@@ -201,7 +204,6 @@ async function adminAction(endpoint, bodyData, successMsg, callback) {
     adminAction("terminate-user", { username }, `${username} has been terminated`, fetchUsers);
   };
 
-  // Load the users when page opens
   fetchUsers();
 });
 </script>
