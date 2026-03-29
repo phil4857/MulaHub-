@@ -68,7 +68,6 @@
     border-radius: 6px;
     text-align: center;
     font-weight: bold;
-    display: none;
   }
 
   .success { background: #d4edda; color: #155724; }
@@ -120,26 +119,33 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => msg.style.display = "none", 8000);
   }
 
-  // Fetch Users
+  // Fetch Users with detailed logging
   async function fetchUsers() {
     usersTableBody.innerHTML = '<tr><td colspan="6">Loading users...</td></tr>';
     try {
+      console.log("Fetching users from:", `${BACKEND_URL}/admin/users`);
+
       const res = await fetch(`${BACKEND_URL}/admin/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: ADMIN_PASSWORD })
       });
 
+      console.log("Response status:", res.status);
+
       if (!res.ok) {
         const errorText = await res.text().catch(() => "Unknown error");
+        console.error("Backend error:", errorText);
         throw new Error(`HTTP ${res.status}: ${errorText}`);
       }
 
       const users = await res.json();
+      console.log("Users received:", users);
 
       usersTableBody.innerHTML = "";
       if (!users || users.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="6" style="color:#777;">No users registered yet</td></tr>';
+        showMessage("error", "No users found in database");
         return;
       }
 
@@ -159,10 +165,12 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         usersTableBody.appendChild(tr);
       });
+
+      showMessage("success", `${users.length} users loaded`);
     } catch (err) {
-      console.error("Fetch users error:", err);
+      console.error("Full fetch error:", err);
       usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
-      showMessage("error", "Failed to load users. Check console (F12) for details.");
+      showMessage("error", "Failed to load users - check F12 Console");
     }
   }
 
@@ -172,10 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          ...bodyData, 
-          password: ADMIN_PASSWORD 
-        })
+        body: JSON.stringify({ ...bodyData, password: ADMIN_PASSWORD })
       });
 
       const result = await res.json();
@@ -188,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (err) {
       console.error(err);
-      showMessage("error", "Network error - please check console (F12)");
+      showMessage("error", "Network error");
     }
   }
 
@@ -207,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     adminAction("terminate-user", { username }, `${username} has been terminated`, fetchUsers);
   };
 
-  // Load users when page opens
+  // Initial load
   fetchUsers();
 });
 </script>
