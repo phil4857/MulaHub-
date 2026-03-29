@@ -118,8 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     msg.style.display = "block";
     setTimeout(() => msg.style.display = "none", 8000);
   }
-
-  async function fetchUsers() {
+async function fetchUsers() {
     usersTableBody.innerHTML = '<tr><td colspan="6">Loading users...</td></tr>';
     try {
       const res = await fetch(`${BACKEND_URL}/admin/users`, {
@@ -163,8 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showMessage("error", "Failed to load users - check F12 Console for details");
     }
   }
-
-  async function adminAction(endpoint, bodyData, successMsg, callback) {
+async function adminAction(endpoint, bodyData, successMsg, callback) {
     try {
       const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
         method: "POST",
@@ -188,7 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showMessage("error", "Network error");
     }
   }
-
   window.approveUser = (username) => {
     if (!confirm(`Approve user ${username}?`)) return;
     adminAction("approve-user", { username }, `${username} has been approved`, fetchUsers);
