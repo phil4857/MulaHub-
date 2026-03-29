@@ -1,5 +1,5 @@
 // withdrawal.js
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
     const username = localStorage.getItem("username");
