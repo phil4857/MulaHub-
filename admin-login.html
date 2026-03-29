@@ -22,7 +22,6 @@
     padding: 40px 30px;
     border-radius: 12px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    backdrop-filter: blur(6px);
     text-align: center;
   }
 
@@ -67,10 +66,6 @@
     margin-top: 10px;
   }
 
-  button:hover {
-    opacity: 0.9;
-  }
-
   button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -94,7 +89,7 @@
   <h2>Admin Login</h2>
 
   <div class="password-container">
-    <input type="password" id="adminPassword" placeholder="Enter Admin Password" autocomplete="current-password">
+    <input type="password" id="adminPassword" placeholder="Enter Admin Password">
     <span class="toggle-password" id="togglePassword">👁️</span>
   </div>
 
@@ -111,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("adminLoginBtn");
   const msg = document.getElementById("adminMsg");
 
-  // Toggle password visibility
   togglePassword.addEventListener("click", () => {
     const type = passwordInput.type === "password" ? "text" : "password";
     passwordInput.type = type;
@@ -120,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showMessage(type, text) {
     msg.className = type;
-    msg.textContent = String(text);   // Prevents [object Object]
+    msg.textContent = String(text || "Unknown error");
   }
 
   loginBtn.addEventListener("click", async () => {
@@ -138,32 +132,39 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch(`${BACKEND_URL}/admin/login`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json" 
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: password })
       });
 
-      let data = {};
+      let data;
       try {
         data = await res.json();
       } catch (e) {
-        data = { detail: "Server error - please try again" };
+        const text = await res.text().catch(() => "Server error");
+        data = { detail: text };
       }
 
       if (res.ok) {
         showMessage("success", "Admin login successful! Redirecting...");
         localStorage.setItem("adminLoggedIn", "true");
-        setTimeout(() => {
-          window.location.href = "admin-dashboard.html";
-        }, 1500);
+        setTimeout(() => window.location.href = "admin-dashboard.html", 1500);
       } else {
-        const errorText = data.detail || data.message || "Invalid admin password";
+        // Extra safe extraction for 422 errors
+        let errorText = "Invalid admin password";
+        if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            errorText = data.detail.map(item => item.msg || item).join(" • ");
+          } else {
+            errorText = data.detail;
+          }
+        } else if (data.message) {
+          errorText = data.message;
+        }
         showMessage("error", errorText);
       }
     } catch (err) {
-      console.error("Login error:", err);
-      showMessage("error", "Cannot connect to server. Please check your internet connection.");
+      console.error(err);
+      showMessage("error", "Cannot connect to server. Please check your internet.");
     } finally {
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
