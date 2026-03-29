@@ -101,7 +101,7 @@
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1.onrender.com";
-const ADMIN_PASSWORD = "PHIL4857";   // Your admin password
+const ADMIN_PASSWORD = "PHIL4857";
 
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("adminLoggedIn") !== "true") {
@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const users = await res.json();
 
       usersTableBody.innerHTML = "";
-      if (!users.length) {
+      if (!users || users.length === 0) {
         usersTableBody.innerHTML = '<tr><td colspan="6" style="color:#777;">No users registered yet</td></tr>';
         return;
       }
@@ -156,9 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
         usersTableBody.appendChild(tr);
       });
     } catch (err) {
-      usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
-      showMessage("error", "Failed to load users");
       console.error(err);
+      usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
+      showMessage("error", "Failed to load users. Check console (F12) for details.");
     }
   }
 
@@ -183,8 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
         showMessage("error", result.detail || "Action failed");
       }
     } catch (err) {
-      showMessage("error", "Network error - please check console");
       console.error(err);
+      showMessage("error", "Network error - please check console (F12)");
     }
   }
 
@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     adminAction("terminate-user", { username }, `${username} has been terminated`, fetchUsers);
   };
 
-  // Load data when page opens
+  // Load users when page opens
   fetchUsers();
 });
 </script>
