@@ -80,11 +80,12 @@ async function fetchUsers() {
   }
 }
 
+// FIXED adminAction function
 async function adminAction(endpoint, username) {
   if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for user ${username}?`)) return;
 
   try {
-    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {   // Fixed here
+    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {   // Corrected line
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
