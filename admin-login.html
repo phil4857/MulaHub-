@@ -106,10 +106,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("adminLoginBtn");
   const msg = document.getElementById("adminMsg");
 
+  // Eye icon toggle (👁️ = show, 🙈 = hide)
   togglePassword.addEventListener("click", () => {
-    const type = passwordInput.type === "password" ? "text" : "password";
-    passwordInput.type = type;
-    togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+    const isPassword = passwordInput.type === "password";
+    passwordInput.type = isPassword ? "text" : "password";
+    togglePassword.textContent = isPassword ? "🙈" : "👁️";
   });
 
   function showMessage(type, text) {
@@ -133,7 +134,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch(`${BACKEND_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: password })
+        body: JSON.stringify({ 
+          username: "admin",      // Required by backend
+          password: password 
+        })
       });
 
       let data;
@@ -147,24 +151,19 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.ok) {
         showMessage("success", "Admin login successful! Redirecting...");
         localStorage.setItem("adminLoggedIn", "true");
-        setTimeout(() => window.location.href = "admin-dashboard.html", 1500);
+        setTimeout(() => {
+          window.location.href = "admin-dashboard.html";
+        }, 1500);
       } else {
-        // Extra safe extraction for 422 errors
-        let errorText = "Invalid admin password";
-        if (data.detail) {
-          if (Array.isArray(data.detail)) {
-            errorText = data.detail.map(item => item.msg || item).join(" • ");
-          } else {
-            errorText = data.detail;
-          }
-        } else if (data.message) {
-          errorText = data.message;
+        let errorText = data.detail || data.message || "Invalid admin credentials";
+        if (Array.isArray(data.detail)) {
+          errorText = data.detail.map(item => item.msg || item).join(" • ");
         }
         showMessage("error", errorText);
       }
     } catch (err) {
       console.error(err);
-      showMessage("error", "Cannot connect to server. Please check your internet.");
+      showMessage("error", "Cannot connect to server. Check Render logs or internet.");
     } finally {
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
