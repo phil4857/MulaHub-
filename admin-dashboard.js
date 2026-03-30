@@ -1,0 +1,106 @@
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
+const ADMIN_PASSWORD = "PHIL4857";
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("adminLoggedIn") !== "true") {
+    alert("Please login as admin first");
+    window.location.href = "admin-login.html";
+    return;
+  }
+
+  const usersTableBody = document.getElementById("usersTableBody");
+  const msg = document.getElementById("msg");
+
+  function showMessage(type, text) {
+    msg.className = `msg ${type}`;
+    msg.textContent = text;
+    msg.style.display = "block";
+    setTimeout(() => msg.style.display = "none", 8000);
+  }
+
+  async function fetchUsers() {
+    usersTableBody.innerHTML = '<tr><td colspan="6">Loading users...</td></tr>';
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: ADMIN_PASSWORD })
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "Unknown error");
+        throw new Error(`HTTP ${res.status}: ${errorText}`);
+      }
+
+      const users = await res.json();
+      console.log("Users received from backend:", users);
+
+      usersTableBody.innerHTML = "";
+      if (!users || users.length === 0) {
+        usersTableBody.innerHTML = '<tr><td colspan="6" style="color:#777;">No users registered yet</td></tr>';
+        return;
+      }
+
+      users.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.username}</td>
+          <td>${user.phone || "N/A"}</td>
+          <td>${user.approved ? '<span style="color:green;">✓ Yes</span>' : '<span style="color:red;">✗ No</span>'}</td>
+          <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
+          <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
+          <td>
+            \( {!user.approved ? `<button class="action-btn approve-btn" onclick="approveUser(' \){user.username}')">Approve</button>` : '<span style="color:green;">Approved</span>'}
+            <button class="action-btn reset-btn" onclick="resetPassword('${user.username}')">Reset Password</button>
+            <button class="action-btn terminate-btn" onclick="terminateUser('${user.username}')">Terminate</button>
+          </td>
+        `;
+        usersTableBody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error("Fetch users error:", err);
+      usersTableBody.innerHTML = '<tr><td colspan="6" style="color:red;">Failed to load users</td></tr>';
+      showMessage("error", "Failed to load users - check F12 Console");
+    }
+  }
+
+  async function adminAction(endpoint, bodyData, successMsg, callback) {
+    try {
+      const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...bodyData, password: ADMIN_PASSWORD })
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        showMessage("success", successMsg);
+        if (callback) callback();
+      } else {
+        showMessage("error", result.detail || "Action failed");
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage("error", "Network error");
+    }
+  }
+
+  window.approveUser = (username) => {
+    if (!confirm(`Approve user ${username}?`)) return;
+    adminAction("approve-user", { username }, `${username} has been approved`, fetchUsers);
+  };
+
+  window.resetPassword = (username) => {
+    if (!confirm(`Reset password for ${username}?`)) return;
+    adminAction("reset-password", { username }, `Password reset for ${username}`, fetchUsers);
+  };
+
+  window.terminateUser = (username) => {
+    if (!confirm(`Terminate ${username}? This is permanent!`)) return;
+    adminAction("terminate-user", { username }, `${username} has been terminated`, fetchUsers);
+  };
+
+  fetchUsers();
+});
+</script>
