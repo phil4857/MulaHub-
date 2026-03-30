@@ -1,71 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard - Mkoba Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+  .header {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  h1 { margin: 0; font-size: 24px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  th { background: #1e3c72; color: white; }
+  .message {
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 6px;
+    font-weight: bold;
+  }
+  .success { background: #d4edda; color: #155724; }
+  .error { background: #f8d7da; color: #721c24; }
+  button.action {
+    padding: 6px 12px;
+    margin: 2px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Admin Dashboard</h1>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div id="message" class="message"></div>
+
+<h2>User Management</h2>
+<table id="usersTable">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Phone</th>
+      <th>Status</th>
+      <th>Balance (KES)</th>
+      <th>Earnings (KES)</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
+const ADMIN_PASSWORD = "PHIL4857";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const passwordInput = document.getElementById("adminPassword");
-  const togglePassword = document.getElementById("togglePassword");
-  const loginBtn = document.getElementById("adminLoginBtn");
-  const msg = document.getElementById("adminMsg");
+function showMessage(type, text) {
+  const msg = document.getElementById("message");
+  if (msg) {
+    msg.className = `message ${type}`;
+    msg.textContent = text;
+  }
+  console.log(`[${type.toUpperCase()}]`, text);
+}
 
-  // Eye icon toggle (👁️ / 🙈)
-  togglePassword.addEventListener("click", () => {
-    const isPassword = passwordInput.type === "password";
-    passwordInput.type = isPassword ? "text" : "password";
-    togglePassword.textContent = isPassword ? "🙈" : "👁️";
-  });
+function populateUsersTable(users) {
+  const tbody = document.querySelector("#usersTable tbody");
+  tbody.innerHTML = "";
 
-  function showMessage(type, text) {
-    msg.className = type;
-    msg.textContent = String(text || "Unknown error");
+  if (!users || users.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;">No registered users yet</td></tr>`;
+    return;
   }
 
-  loginBtn.addEventListener("click", async () => {
-    const password = passwordInput.value.trim();
-
-    if (!password) {
-      showMessage("error", "Please enter the admin password");
-      return;
-    }
-
-    loginBtn.disabled = true;
-    loginBtn.textContent = "Logging in...";
-    showMessage("loading", "Verifying admin access...");
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/admin/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          username: "admin", 
-          password: password 
-        })
-      });
-
-      let data;
-      try {
-        data = await res.json();
-      } catch (e) {
-        const text = await res.text().catch(() => "Server error");
-        data = { detail: text };
-      }
-
-      if (res.ok) {
-        showMessage("success", "Admin login successful! Redirecting...");
-        localStorage.setItem("adminLoggedIn", "true");
-        setTimeout(() => {
-          window.location.href = "admin-dashboard.html";
-        }, 1500);
-      } else {
-        const errorText = data.detail || data.message || "Invalid admin credentials";
-        showMessage("error", errorText);
-      }
-    } catch (err) {
-      console.error(err);
-      showMessage("error", "Cannot connect to server. Check internet or Render logs.");
-    } finally {
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Login";
-    }
+  users.forEach(user => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${user.username || 'N/A'}</td>
+      <td>${user.phone || 'N/A'}</td>
+      <td style="color:\( {user.approved ? 'green' : 'orange'}"> \){user.approved ? '✅ Approved' : '⏳ Pending'}</td>
+      <td>${Number(user.balance || 0).toFixed(2)}</td>
+      <td>${Number(user.earnings || 0).toFixed(2)}</td>
+      <td>
+        <button class="action" onclick="approveUser('${user.username}')" ${user.approved ? 'disabled' : ''}>Approve</button>
+        <button class="action" onclick="resetPassword('${user.username}')">Reset PW</button>
+        <button class="action" onclick="terminateUser('${user.username}')" style="background:#dc3545;color:white;">Terminate</button>
+      </td>
+    `;
+    tbody.appendChild(row);
   });
+}
+
+async function fetchUsers() {
+  const tbody = document.querySelector("#usersTable tbody");
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+
+    console.log("Status:", res.status);
+
+    let data = [];
+    try {
+      data = await res.json();
+      console.log("Received data:", data);
+    } catch (e) {
+      console.error("JSON parse error");
+    }
+
+    if (res.ok) {
+      const users = Array.isArray(data) ? data : (data.users || []);
+      populateUsersTable(users);
+    } else {
+      const errorMsg = data.detail || data.message || `Error ${res.status}`;
+      showMessage("error", errorMsg);
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">${errorMsg}</td></tr>`;
+    }
+  } catch (err) {
+    console.error("Fetch error:", err);
+    showMessage("error", "Cannot connect to backend");
+  }
+}
+
+async function adminAction(endpoint, username) {
+  if (!confirm(`Confirm action on ${username}?`)) return;
+
+  try {
+    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, username: username })
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showMessage("success", result.message || "Action successful");
+      fetchUsers();
+    } else {
+      showMessage("error", result.detail || "Action failed");
+    }
+  } catch (e) {
+    showMessage("error", "Network error");
+  }
+}
+
+function approveUser(u) { adminAction("approve-user", u); }
+function resetPassword(u) { adminAction("reset-password", u); }
+function terminateUser(u) { adminAction("terminate-user", u); }
+
+function logout() {
+  localStorage.removeItem("adminLoggedIn");
+  window.location.href = "admin-login.html";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("adminLoggedIn") !== "true") {
+    window.location.href = "admin-login.html";
+    return;
+  }
+  fetchUsers();
 });
 </script>
+
+</body>
+</html>
