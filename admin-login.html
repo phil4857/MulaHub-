@@ -5,12 +5,7 @@
 <title>Admin Dashboard - Mkoba Wallet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-    margin: 0;
-    padding: 20px;
-  }
+  body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
   .header {
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     color: white;
@@ -22,19 +17,26 @@
     margin-bottom: 20px;
   }
   h1 { margin: 0; font-size: 24px; }
-  button { 
-    padding: 8px 16px; 
-    background: #dc3545; 
-    color: white; 
-    border: none; 
-    border-radius: 4px; 
-    cursor: pointer; 
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+  }
+  .tab {
+    padding: 12px 24px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .tab.active {
+    border-bottom: 3px solid #1e3c72;
+    color: #1e3c72;
   }
   table {
     width: 100%;
     border-collapse: collapse;
     background: white;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 10px;
   }
   th, td {
     padding: 12px;
@@ -44,7 +46,7 @@
   th { background: #1e3c72; color: white; }
   .message {
     padding: 12px;
-    margin: 10px 0;
+    margin: 15px 0;
     border-radius: 6px;
     font-weight: bold;
   }
@@ -54,7 +56,12 @@
     padding: 6px 12px;
     margin: 2px;
     font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
   }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 </style>
 </head>
 <body>
@@ -66,25 +73,47 @@
 
 <div id="message" class="message"></div>
 
-<h2>User Management</h2>
-<table id="usersTable">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Phone</th>
-      <th>Status</th>
-      <th>Balance (KES)</th>
-      <th>Earnings (KES)</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- Populated by JavaScript -->
-  </tbody>
-</table>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">Users</div>
+  <div class="tab" onclick="switchTab(1)">Withdrawals</div>
+</div>
+
+<!-- Users Tab -->
+<div id="tab-users" class="tab-content active">
+  <h2>User Management</h2>
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Phone</th>
+        <th>Status</th>
+        <th>Balance (KES)</th>
+        <th>Earnings (KES)</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- Withdrawals Tab -->
+<div id="tab-withdrawals" class="tab-content">
+  <h2>Withdrawal Requests</h2>
+  <table id="withdrawalsTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Amount (KES)</th>
+        <th>Requested At</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <script>
-// Paste the full corrected admin-dashboard.js here
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 const ADMIN_PASSWORD = "PHIL4857";
 
@@ -93,7 +122,40 @@ function showMessage(type, text) {
   if (msg) {
     msg.className = `message ${type}`;
     msg.textContent = text;
-    setTimeout(() => { msg.textContent = ""; }, 5000);
+    setTimeout(() => msg.textContent = "", 6000);
+  }
+  console.log(`[${type.toUpperCase()}]`, text);
+}
+
+function switchTab(tabIndex) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === tabIndex));
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === tabIndex));
+}
+
+// ==================== USERS ====================
+async function fetchUsers() {
+  const tbody = document.querySelector("#usersTable tbody");
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+
+    let data = [];
+    try { data = await res.json(); } catch(e) {}
+
+    if (res.ok) {
+      const users = Array.isArray(data) ? data : (data.users || []);
+      populateUsersTable(users);
+    } else {
+      showMessage("error", data.detail || "Failed to load users");
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage("error", "Cannot connect to server");
   }
 }
 
@@ -124,12 +186,14 @@ function populateUsersTable(users) {
   });
 }
 
-async function fetchUsers() {
-  const tbody = document.querySelector("#usersTable tbody");
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+// ==================== WITHDRAWALS ====================
+async function fetchWithdrawals() {
+  const tbody = document.querySelector("#withdrawalsTable tbody");
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/admin/users`, {
+    // You may need to adjust this endpoint if your backend has a different one for listing withdrawals
+    const res = await fetch(`${BACKEND_URL}/admin/withdrawals`, {   // Try this first
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: ADMIN_PASSWORD })
@@ -139,20 +203,70 @@ async function fetchUsers() {
     try { data = await res.json(); } catch(e) {}
 
     if (res.ok) {
-      const users = Array.isArray(data) ? data : (data.users || []);
-      populateUsersTable(users);
+      const withdrawals = Array.isArray(data) ? data : (data.withdrawals || []);
+      populateWithdrawalsTable(withdrawals);
     } else {
-      showMessage("error", data.detail || data.message || "Failed to load users");
+      showMessage("error", "No withdrawal endpoint yet or error loading");
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:orange;">Withdrawal list not implemented yet</td></tr>`;
     }
   } catch (err) {
     console.error(err);
-    showMessage("error", "Cannot connect to server");
+    showMessage("error", "Cannot load withdrawals");
   }
 }
 
-async function adminAction(endpoint, username) {
-  if (!confirm(`Confirm action on user ${username}?`)) return;
+function populateWithdrawalsTable(withdrawals) {
+  const tbody = document.querySelector("#withdrawalsTable tbody");
+  tbody.innerHTML = "";
 
+  if (!withdrawals || withdrawals.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending withdrawals</td></tr>`;
+    return;
+  }
+
+  withdrawals.forEach(w => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${w.username || 'N/A'}</td>
+      <td>KES ${Number(w.amount || 0).toFixed(2)}</td>
+      <td>${w.requested_at || 'N/A'}</td>
+      <td>${w.status || 'pending'}</td>
+      <td>
+        <button class="action" onclick="approveWithdrawal(${w.id})" style="background:#28a745;color:white;">Approve</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function approveWithdrawal(withdrawalId) {
+  if (!confirm("Approve this withdrawal?")) return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/withdraw_approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        password: ADMIN_PASSWORD,
+        withdrawal_id: withdrawalId 
+      })
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showMessage("success", result.message || "Withdrawal approved");
+      fetchWithdrawals();
+    } else {
+      showMessage("error", result.detail || "Failed to approve");
+    }
+  } catch (e) {
+    showMessage("error", "Network error");
+  }
+}
+
+// User actions (same as before)
+async function adminAction(endpoint, username) {
+  if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for ${username}?`)) return;
   try {
     const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
       method: "POST",
@@ -161,10 +275,10 @@ async function adminAction(endpoint, username) {
     });
     const result = await res.json().catch(() => ({}));
     if (res.ok) {
-      showMessage("success", result.message || "Action successful");
+      showMessage("success", result.message || "Done");
       fetchUsers();
     } else {
-      showMessage("error", result.detail || "Action failed");
+      showMessage("error", result.detail || "Failed");
     }
   } catch (e) {
     showMessage("error", "Network error");
@@ -176,10 +290,8 @@ function resetPassword(u) { adminAction("reset-password", u); }
 function terminateUser(u) { adminAction("terminate-user", u); }
 
 function logout() {
-  if (confirm("Logout admin?")) {
-    localStorage.removeItem("adminLoggedIn");
-    window.location.href = "admin-login.html";
-  }
+  localStorage.removeItem("adminLoggedIn");
+  window.location.href = "admin-login.html";
 }
 
 // Initialize
@@ -189,6 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
   fetchUsers();
+  fetchWithdrawals();   // Load withdrawals on start
 });
 </script>
 
