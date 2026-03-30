@@ -1,93 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Admin Dashboard - Mkoba Wallet</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
-  }
-  .box {
-    max-width: 1200px;
-    margin: 20px auto;
-    background: #fff;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  }
-  h2, h3 {
-    color: #0a1d66;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 14px;
-  }
-  th, td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: center;
-  }
-  th {
-    background-color: #0a1d66;
-    color: white;
-  }
-  tr:nth-child(even) { background-color: #f2f2f2; }
-  .action-btn {
-    padding: 6px 12px;
-    margin: 2px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    font-size: 13px;
-  }
-  .approve-btn { background: #28a745; }
-  .terminate-btn { background: #dc3545; }
-  .reset-btn { background: #ffc107; color: black; }
-  .msg {
-    margin: 15px 0;
-    padding: 12px;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: bold;
-  }
-  .success { background: #d4edda; color: #155724; }
-  .error { background: #f8d7da; color: #721c24; }
-</style>
-</head>
-<body>
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
-<div class="box">
-  <h2>Admin Dashboard - Mkoba Wallet</h2>
-  <div id="msg" class="msg"></div>
+document.addEventListener("DOMContentLoaded", () => {
+  const passwordInput = document.getElementById("adminPassword");
+  const togglePassword = document.getElementById("togglePassword");
+  const loginBtn = document.getElementById("adminLoginBtn");
+  const msg = document.getElementById("adminMsg");
 
-  <h3>User Management</h3>
-  <table id="usersTable">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Phone</th>
-        <th>Approved</th>
-        <th>Balance</th>
-        <th>Earnings</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="usersTableBody">
-      <tr><td colspan="6">Loading users...</td></tr>
-    </tbody>
-  </table>
-</div>
+  // Eye icon toggle (👁️ / 🙈)
+  togglePassword.addEventListener("click", () => {
+    const isPassword = passwordInput.type === "password";
+    passwordInput.type = isPassword ? "text" : "password";
+    togglePassword.textContent = isPassword ? "🙈" : "👁️";
+  });
 
-<script src="admin-dashboard.js"></script>
-</body>
-</html>
+  function showMessage(type, text) {
+    msg.className = type;
+    msg.textContent = String(text || "Unknown error");
+  }
+
+  loginBtn.addEventListener("click", async () => {
+    const password = passwordInput.value.trim();
+
+    if (!password) {
+      showMessage("error", "Please enter the admin password");
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Logging in...";
+    showMessage("loading", "Verifying admin access...");
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          username: "admin", 
+          password: password 
+        })
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        const text = await res.text().catch(() => "Server error");
+        data = { detail: text };
+      }
+
+      if (res.ok) {
+        showMessage("success", "Admin login successful! Redirecting...");
+        localStorage.setItem("adminLoggedIn", "true");
+        setTimeout(() => {
+          window.location.href = "admin-dashboard.html";
+        }, 1500);
+      } else {
+        const errorText = data.detail || data.message || "Invalid admin credentials";
+        showMessage("error", errorText);
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage("error", "Cannot connect to server. Check internet or Render logs.");
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Login";
+    }
+  });
+});
+</script>
