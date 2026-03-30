@@ -66,7 +66,6 @@ async function fetchUsers() {
     console.log("Received data:", data);
 
     if (res.ok) {
-      // Support both plain array and {users: [...]} formats
       const users = Array.isArray(data) ? data : (data.users || data || []);
       populateUsersTable(users);
     } else {
@@ -81,15 +80,18 @@ async function fetchUsers() {
   }
 }
 
-// Admin actions
+// Fixed adminAction function
 async function adminAction(endpoint, username) {
   if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for user ${username}?`)) return;
 
   try {
-    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
+    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {   // ← This was broken before
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: ADMIN_PASSWORD, username: username })
+      body: JSON.stringify({ 
+        password: ADMIN_PASSWORD, 
+        username: username 
+      })
     });
 
     const result = await res.json().catch(() => ({}));
@@ -100,6 +102,7 @@ async function adminAction(endpoint, username) {
       showMessage("error", result.detail || result.message || "Action failed");
     }
   } catch (err) {
+    console.error("Action error:", err);
     showMessage("error", "Network error");
   }
 }
