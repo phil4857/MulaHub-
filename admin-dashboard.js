@@ -7,7 +7,7 @@ function showMessage(type, text) {
     msg.className = `message ${type}`;
     msg.textContent = text;
   }
-  console.log(`[${type.toUpperCase()}] ${text}`);
+  console.log(`[${type.toUpperCase()}]`, text);
 }
 
 function switchTab(tabIndex) {
@@ -15,7 +15,7 @@ function switchTab(tabIndex) {
   document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === tabIndex));
 }
 
-// ==================== USERS ====================
+// ==================== USERS TAB ====================
 async function fetchUsers() {
   const tbody = document.querySelector("#usersTable tbody");
   if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
@@ -31,13 +31,12 @@ async function fetchUsers() {
     try { data = await res.json(); } catch(e) {}
 
     if (res.ok) {
-      const users = Array.isArray(data) ? data : (data.users || []);
+      const users = Array.isArray(data) ? data : [];
       populateUsersTable(users);
     } else {
       showMessage("error", data.detail || "Failed to load users");
     }
   } catch (err) {
-    console.error(err);
     showMessage("error", "Cannot connect to server");
   }
 }
@@ -46,7 +45,7 @@ function populateUsersTable(users) {
   const tbody = document.querySelector("#usersTable tbody");
   tbody.innerHTML = "";
 
-  if (!users || users.length === 0) {
+  if (users.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;">No registered users yet</td></tr>`;
     return;
   }
@@ -72,7 +71,7 @@ function populateUsersTable(users) {
   });
 }
 
-// ==================== WITHDRAWALS ====================
+// ==================== WITHDRAWALS TAB ====================
 async function fetchWithdrawals() {
   const tbody = document.querySelector("#withdrawalsTable tbody");
   if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;
@@ -88,13 +87,12 @@ async function fetchWithdrawals() {
     try { data = await res.json(); } catch(e) {}
 
     if (res.ok) {
-      const withdrawals = Array.isArray(data) ? data : (data.withdrawals || []);
+      const withdrawals = Array.isArray(data) ? data : [];
       populateWithdrawalsTable(withdrawals);
     } else {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No pending withdrawals</td></tr>`;
     }
   } catch (err) {
-    console.error(err);
     showMessage("error", "Cannot load withdrawals");
   }
 }
@@ -103,7 +101,7 @@ function populateWithdrawalsTable(withdrawals) {
   const tbody = document.querySelector("#withdrawalsTable tbody");
   tbody.innerHTML = "";
 
-  if (!withdrawals || withdrawals.length === 0) {
+  if (withdrawals.length === 0) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending withdrawal requests</td></tr>`;
     return;
   }
@@ -124,18 +122,13 @@ function populateWithdrawalsTable(withdrawals) {
 }
 
 async function approveWithdrawal(id) {
-  if (!confirm("Approve this withdrawal request?")) return;
-
+  if (!confirm("Approve this withdrawal?")) return;
   try {
     const res = await fetch(`${BACKEND_URL}/admin/withdraw_approve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        password: ADMIN_PASSWORD,
-        withdrawal_id: id 
-      })
+      body: JSON.stringify({ password: ADMIN_PASSWORD, withdrawal_id: id })
     });
-
     const result = await res.json().catch(() => ({}));
     if (res.ok) {
       showMessage("success", result.message || "Withdrawal approved successfully");
@@ -148,7 +141,7 @@ async function approveWithdrawal(id) {
   }
 }
 
-// ==================== FIXED USER ACTIONS ====================
+// ==================== MAIN ADMIN ACTIONS (Fixed) ====================
 async function adminAction(endpoint, username) {
   if (!confirm(`Confirm ${endpoint.replace(/-/g, ' ')} for user ${username}?`)) return;
 
@@ -163,23 +156,20 @@ async function adminAction(endpoint, username) {
     });
 
     let result = {};
-    try {
-      result = await res.json();
-    } catch (e) {
-      result = { detail: "Invalid response from server" };
-    }
+    try { 
+      result = await res.json(); 
+    } catch(e) {}
 
     if (res.ok) {
       showMessage("success", result.message || "Action completed successfully!");
-      fetchUsers();                    // Refresh users table
+      fetchUsers();        // Refresh the users table
     } else {
+      // This will now show the real error from your backend
       const errorMsg = result.detail || result.message || `Server error (${res.status})`;
       showMessage("error", errorMsg);
-      console.error(`[${endpoint}] Failed:`, result);
     }
   } catch (err) {
-    console.error("Network / Fetch error:", err);
-    showMessage("error", "Cannot connect to backend. Check Render logs and ensure backend is running.");
+    showMessage("error", "Cannot connect to backend server");
   }
 }
 
@@ -192,7 +182,7 @@ function logout() {
   window.location.href = "admin-login.html";
 }
 
-// Initialize
+// Initialize when page loads
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     window.location.href = "admin-login.html";
