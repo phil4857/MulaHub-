@@ -17,6 +17,20 @@
     margin-bottom: 20px;
   }
   h1 { margin: 0; font-size: 24px; }
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+  }
+  .tab {
+    padding: 12px 24px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .tab.active {
+    border-bottom: 3px solid #1e3c72;
+    color: #1e3c72;
+  }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -45,6 +59,8 @@
     border-radius: 4px;
     cursor: pointer;
   }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 </style>
 </head>
 <body>
@@ -56,20 +72,45 @@
 
 <div id="message" class="message"></div>
 
-<h2>User Management</h2>
-<table id="usersTable">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Phone</th>
-      <th>Status</th>
-      <th>Balance (KES)</th>
-      <th>Earnings (KES)</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">Users</div>
+  <div class="tab" onclick="switchTab(1)">Withdrawals</div>
+</div>
+
+<!-- Users Tab -->
+<div id="tab-users" class="tab-content active">
+  <h2>User Management</h2>
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Phone</th>
+        <th>Status</th>
+        <th>Balance (KES)</th>
+        <th>Earnings (KES)</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- Withdrawals Tab -->
+<div id="tab-withdrawals" class="tab-content">
+  <h2>Withdrawal Requests</h2>
+  <table id="withdrawalsTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Amount (KES)</th>
+        <th>Requested At</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
@@ -82,6 +123,38 @@ function showMessage(type, text) {
     msg.textContent = text;
   }
   console.log(`[${type.toUpperCase()}]`, text);
+}
+
+function switchTab(tabIndex) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === tabIndex));
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === tabIndex));
+}
+
+// ==================== USERS ====================
+async function fetchUsers() {
+  const tbody = document.querySelector("#usersTable tbody");
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+
+    let data = [];
+    try { data = await res.json(); } catch(e) {}
+
+    if (res.ok) {
+      const users = Array.isArray(data) ? data : (data.users || []);
+      populateUsersTable(users);
+    } else {
+      showMessage("error", data.detail || "Failed to load users");
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage("error", "Cannot connect to server");
+  }
 }
 
 function populateUsersTable(users) {
@@ -99,8 +172,8 @@ function populateUsersTable(users) {
       <td>${user.username || 'N/A'}</td>
       <td>${user.phone || 'N/A'}</td>
       <td style="color:\( {user.approved ? 'green' : 'orange'}"> \){user.approved ? '✅ Approved' : '⏳ Pending'}</td>
-      <td>${Number(user.balance || 0).toFixed(2)}</td>
-      <td>${Number(user.earnings || 0).toFixed(2)}</td>
+      <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
+      <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
       <td>
         <button class="action" onclick="approveUser('${user.username}')" ${user.approved ? 'disabled' : ''}>Approve</button>
         <button class="action" onclick="resetPassword('${user.username}')">Reset PW</button>
@@ -111,43 +184,85 @@ function populateUsersTable(users) {
   });
 }
 
-async function fetchUsers() {
-  const tbody = document.querySelector("#usersTable tbody");
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+// ==================== WITHDRAWALS ====================
+async function fetchWithdrawals() {
+  const tbody = document.querySelector("#withdrawalsTable tbody");
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/admin/users`, {
+    const res = await fetch(`${BACKEND_URL}/admin/withdrawals`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: ADMIN_PASSWORD })
     });
 
-    console.log("Status:", res.status);
-
     let data = [];
-    try {
-      data = await res.json();
-      console.log("Received data:", data);
-    } catch (e) {
-      console.error("JSON parse error");
-    }
+    try { data = await res.json(); } catch(e) {}
 
     if (res.ok) {
-      const users = Array.isArray(data) ? data : (data.users || []);
-      populateUsersTable(users);
+      const withdrawals = Array.isArray(data) ? data : (data.withdrawals || []);
+      populateWithdrawalsTable(withdrawals);
     } else {
-      const errorMsg = data.detail || data.message || `Error ${res.status}`;
-      showMessage("error", errorMsg);
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">${errorMsg}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:orange;">No pending withdrawals or endpoint not ready</td></tr>`;
     }
   } catch (err) {
-    console.error("Fetch error:", err);
-    showMessage("error", "Cannot connect to backend");
+    console.error(err);
+    showMessage("error", "Cannot load withdrawals");
   }
 }
 
+function populateWithdrawalsTable(withdrawals) {
+  const tbody = document.querySelector("#withdrawalsTable tbody");
+  tbody.innerHTML = "";
+
+  if (!withdrawals || withdrawals.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending withdrawal requests</td></tr>`;
+    return;
+  }
+
+  withdrawals.forEach(w => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${w.username || 'N/A'}</td>
+      <td>KES ${Number(w.amount || 0).toFixed(2)}</td>
+      <td>${w.requested_at || 'N/A'}</td>
+      <td>${w.status || 'pending'}</td>
+      <td>
+        <button class="action" onclick="approveWithdrawal(${w.id})" style="background:#28a745;color:white;">Approve</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function approveWithdrawal(id) {
+  if (!confirm("Approve this withdrawal request?")) return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/withdraw_approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        password: ADMIN_PASSWORD,
+        withdrawal_id: id 
+      })
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showMessage("success", result.message || "Withdrawal approved");
+      fetchWithdrawals();
+    } else {
+      showMessage("error", result.detail || "Failed to approve");
+    }
+  } catch (e) {
+    showMessage("error", "Network error");
+  }
+}
+
+// User actions
 async function adminAction(endpoint, username) {
-  if (!confirm(`Confirm action on ${username}?`)) return;
+  if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for user ${username}?`)) return;
 
   try {
     const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
@@ -177,12 +292,14 @@ function logout() {
   window.location.href = "admin-login.html";
 }
 
+// Initialize
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     window.location.href = "admin-login.html";
     return;
   }
   fetchUsers();
+  fetchWithdrawals();
 });
 </script>
 
