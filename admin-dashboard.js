@@ -141,7 +141,7 @@ async function approveWithdrawal(id) {
   }
 }
 
-// ==================== MAIN ADMIN ACTIONS (Fixed) ====================
+// ==================== FIXED ADMIN ACTIONS ====================
 async function adminAction(endpoint, username) {
   if (!confirm(`Confirm ${endpoint.replace(/-/g, ' ')} for user ${username}?`)) return;
 
@@ -164,7 +164,6 @@ async function adminAction(endpoint, username) {
       showMessage("success", result.message || "Action completed successfully!");
       fetchUsers();        // Refresh the users table
     } else {
-      // This will now show the real error from your backend
       const errorMsg = result.detail || result.message || `Server error (${res.status})`;
       showMessage("error", errorMsg);
     }
