@@ -7,77 +7,132 @@
 
 <style>
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
-  background: linear-gradient(135deg, #0f2027, #2c5364, #00c6ff);
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   color: #333;
+  min-height: 100vh;
+}
+
+.welcome-banner {
+  background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
+  color: white;
+  padding: 20px 25px;
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 0;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  letter-spacing: 0.8px;
 }
 
 header {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.85);
   color: #fff;
-  padding: 15px 20px;
+  padding: 15px 25px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
-
-main { padding: 20px; }
 
 .card {
-  background: #ffffffee;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.95);
+  padding: 25px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  backdrop-filter: blur(10px);
 }
 
-.card h3 { margin-top: 0; }
+.card h3 {
+  margin-top: 0;
+  color: #1e3c72;
+  border-bottom: 2px solid #00c6ff;
+  padding-bottom: 10px;
+}
 
 #commodityGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
 }
 
 .commodity-card {
-  background: #e3f2fd;
-  padding: 12px;
-  border-radius: 10px;
+  background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+  padding: 18px 12px;
+  border-radius: 14px;
   text-align: center;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  font-size: 1.1rem;
 }
 
 .commodity-card:hover {
-  background: #2196f3;
+  transform: translateY(-8px);
+  box-shadow: 0 12px 25px rgba(33,150,243,0.4);
+  background: linear-gradient(145deg, #2196f3, #1976d2);
   color: white;
 }
 
-.selected {
-  background: #0d47a1 !important;
+.commodity-card.selected {
+  background: linear-gradient(145deg, #0d47a1, #1565c0);
   color: white;
+  transform: scale(1.05);
 }
 
 button {
   width: 100%;
-  padding: 12px;
-  margin-top: 10px;
+  padding: 14px;
+  margin-top: 15px;
   border: none;
-  border-radius: 6px;
-  background: #007bff;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #007bff, #00c6ff);
   color: white;
+  font-weight: bold;
   cursor: pointer;
+  font-size: 1.05rem;
+  transition: all 0.3s;
 }
 
-button:disabled { background: gray; }
+button:hover {
+  background: linear-gradient(90deg, #0056b3, #0099cc);
+  transform: translateY(-2px);
+}
 
-.msg { margin-top: 10px; }
-.success { color: green; }
-.error { color: red; }
-.loading { color: orange; }
+button:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+.msg {
+  padding: 12px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.success { background: #d4edda; color: #155724; }
+.error { background: #f8d7da; color: #721c24; }
+.loading { background: #fff3cd; color: #856404; }
+
+.emoji {
+  font-size: 2.4rem;
+  margin-bottom: 8px;
+  display: block;
+}
 </style>
 </head>
 
 <body>
+
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+  Welcome to Mkoba Wallet where your money grows daily 🤑🎉
+</div>
 
 <header>
   <h3>Welcome, <span id="usernameDisplay"></span></h3>
@@ -89,31 +144,24 @@ button:disabled { background: gray; }
 <div id="msg" class="msg"></div>
 
 <div class="card">
-  <h3>Account</h3>
-  <p>Balance: <span id="balance">KES 0</span></p>
-  <p>Earnings: <span id="earnings">KES 0</span></p>
-  <p>Invested: <span id="invested">KES 0</span></p>
-  <p>Referral Bonus: <span id="referralBonus">KES 0</span></p>
+  <h3>Account Summary</h3>
+  <p>Balance: <strong id="balance">KES 0.00</strong></p>
+  <p>Earnings: <strong id="earnings">KES 0.00</strong></p>
+  <p>Referral Bonus: <strong id="referralBonus">KES 0.00</strong></p>
   <div id="investmentsList"></div>
 </div>
 
 <div class="card">
-  <h3>Daily Bonus</h3>
-  <p id="nextDaily">Checking...</p>
-  <button id="dailyBtn">Claim Daily Bonus</button>
-</div>
-
-<div class="card">
   <h3>Referral</h3>
-  <p id="refLink"></p>
-  <button onclick="copyRef()">Copy Link</button>
+  <p id="refLink" style="word-break:break-all; background:#f0f0f0; padding:12px; border-radius:8px; font-size:1.05rem;"></p>
+  <button onclick="copyRef()">Copy Referral Link</button>
 </div>
 
 <div class="card">
-  <h3>Invest</h3>
+  <h3>Invest in Commodities</h3>
   <div id="commodityGrid"></div>
-  <p>Selected: <span id="selected">None</span></p>
-  <button id="investBtn" disabled>Invest</button>
+  <p>Selected: <strong id="selected">None</strong></p>
+  <button id="investBtn" disabled onclick="invest()">Confirm Investment</button>
 </div>
 
 </main>
@@ -122,154 +170,145 @@ button:disabled { background: gray; }
 const API = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
 const COMMODITIES = {
-  marble:{price:650,days:15},
-  gold:{price:2200,days:35},
-  silver:{price:1000,days:23},
-  uranium:{price:3000,days:45}
+  marble: {price: 650, days: 15},
+  crude_oil: {price: 800, days: 20},
+  silver: {price: 1000, days: 23},
+  lead: {price: 1200, days: 25},
+  platinum: {price: 1350, days: 28},
+  diamonds: {price: 1750, days: 32},
+  gold: {price: 2200, days: 35},
+  uranium: {price: 3000, days: 45}
 };
 
-let selected = null;
+let selectedCommodity = null;
 
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded", () => {
   const username = localStorage.getItem("username");
   const token = localStorage.getItem("access_token");
 
-  if(!username || !token){
-    window.location.href="login.html";
+  if (!username || !token) {
+    window.location.href = "login.html";
     return;
   }
 
-  document.getElementById("usernameDisplay").textContent=username;
-  document.getElementById("refLink").textContent=`https://mkobawallet.com/signup?ref=${username}`;
+  document.getElementById("usernameDisplay").textContent = username;
+  document.getElementById("refLink").textContent = `https://jipate-bonus-v1.vercel.app/register.html?ref=${username}`;
 
   renderCommodities();
   loadDashboard();
-  checkDaily();
 });
 
-function logout(){
+function logout() {
   localStorage.clear();
-  location.href="login.html";
+  location.href = "login.html";
 }
 
-function msg(type,text){
-  const el=document.getElementById("msg");
-  el.className="msg "+type;
-  el.textContent=text;
+function msg(type, text) {
+  const el = document.getElementById("msg");
+  el.className = `msg ${type}`;
+  el.textContent = text;
+  setTimeout(() => { el.textContent = ""; }, 5000);
 }
 
-async function loadDashboard(){
-  msg("loading","Loading...");
-  try{
-    const res=await fetch(API+"/dashboard",{
-      headers:{Authorization:`Bearer ${localStorage.getItem("access_token")}`}
+async function loadDashboard() {
+  msg("loading", "Loading your dashboard...");
+  try {
+    const res = await fetch(`${API}/dashboard`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
     });
 
-    const data=await res.json();
+    const data = await res.json();
 
-    if(!res.ok) throw new Error(data.detail||"Error");
+    if (!res.ok) throw new Error(data.detail || "Failed to load");
 
-    document.getElementById("balance").textContent=`KES ${data.balance.toFixed(2)}`;
-    document.getElementById("earnings").textContent=`KES ${data.earnings.toFixed(2)}`;
-    document.getElementById("referralBonus").textContent=`KES ${data.referral_bonus_earned.toFixed(2)}`;
+    document.getElementById("balance").textContent = `KES ${data.balance.toFixed(2)}`;
+    document.getElementById("earnings").textContent = `KES ${data.earnings.toFixed(2)}`;
+    document.getElementById("referralBonus").textContent = `KES ${data.referral_bonus_earned.toFixed(2)}`;
 
-    let total=0;
-    const list=document.getElementById("investmentsList");
-    list.innerHTML="";
+    const list = document.getElementById("investmentsList");
+    list.innerHTML = "<h4>Your Investments</h4>";
 
-    if(data.investments){
-      Object.entries(data.investments).forEach(([k,v])=>{
-        total+=v.amount;
+    if (data.investments) {
+      Object.entries(data.investments).forEach(([commodity, info]) => {
+        const div = document.createElement("div");
+        div.style.margin = "12px 0";
+        div.style.padding = "14px";
+        div.style.background = "#f8f9fa";
+        div.style.borderRadius = "10px";
 
-        const div=document.createElement("div");
-        div.textContent=`${k.toUpperCase()} | KES ${v.amount} | ${v.days_remaining} days | KES ${v.daily_earning}/day`;
-
+        div.innerHTML = `
+          <span class="emoji">${info.emoji || '🔄'}</span>
+          <strong>${commodity.toUpperCase()}</strong> — KES ${info.amount || 0}<br>
+          Status: <span class="status-\( {info.status}"> \){info.status}</span><br>
+          ${info.time_to_next_earning ? `Next earning in: ${info.time_to_next_earning}` : ''}
+          \( {info.payment_instruction ? `<br><small> \){info.payment_instruction}</small>` : ''}
+        `;
         list.appendChild(div);
       });
     }
 
-    document.getElementById("invested").textContent=`KES ${total.toFixed(2)}`;
-
-    msg("success","Loaded");
-
-  }catch(e){
-    msg("error","Failed to load");
+    msg("success", "Dashboard loaded successfully");
+  } catch (e) {
+    msg("error", e.message || "Failed to load dashboard");
   }
 }
 
-function renderCommodities(){
-  const grid=document.getElementById("commodityGrid");
+function renderCommodities() {
+  const grid = document.getElementById("commodityGrid");
+  grid.innerHTML = "";
 
-  Object.entries(COMMODITIES).forEach(([k,v])=>{
-    const div=document.createElement("div");
-    div.className="commodity-card";
-    div.textContent=`${k.toUpperCase()} - ${v.price}`;
+  Object.entries(COMMODITIES).forEach(([key, val]) => {
+    const div = document.createElement("div");
+    div.className = "commodity-card";
+    div.innerHTML = `
+      <span class="emoji">💎</span>
+      <strong>${key.toUpperCase()}</strong><br>
+      KES ${val.price}
+    `;
 
-    div.onclick=()=>{
-      selected=k;
-      document.getElementById("selected").textContent=k;
-      document.querySelectorAll(".commodity-card").forEach(c=>c.classList.remove("selected"));
+    div.onclick = () => {
+      selectedCommodity = key;
+      document.getElementById("selected").textContent = key.toUpperCase();
+      document.querySelectorAll(".commodity-card").forEach(c => c.classList.remove("selected"));
       div.classList.add("selected");
-      document.getElementById("investBtn").disabled=false;
+      document.getElementById("investBtn").disabled = false;
     };
 
     grid.appendChild(div);
   });
-
-  document.getElementById("investBtn").onclick=invest;
 }
 
-async function invest(){
-  if(!selected) return;
+async function invest() {
+  if (!selectedCommodity) return;
 
-  try{
-    const res=await fetch(API+"/invest/request",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        Authorization:`Bearer ${localStorage.getItem("access_token")}`
+  try {
+    const res = await fetch(`${API}/invest/request`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`
       },
-      body:JSON.stringify({commodity:selected})
+      body: JSON.stringify({ commodity: selectedCommodity })
     });
 
-    const data=await res.json();
+    const data = await res.json();
 
-    if(!res.ok) throw new Error(data.message);
+    if (!res.ok) throw new Error(data.message || "Investment failed");
 
-    alert(`Pay KES ${data.price}`);
+    alert(`✅ Request submitted!\n\n${data.payment_instruction || 'Please pay via M-Pesa'}`);
     loadDashboard();
+    selectedCommodity = null;
+    document.getElementById("selected").textContent = "None";
+    document.getElementById("investBtn").disabled = true;
 
-  }catch(e){
-    alert("Error investing");
+  } catch (e) {
+    alert("Error: " + e.message);
   }
 }
 
-async function checkDaily(){
-  document.getElementById("nextDaily").textContent="Ready to claim";
-}
-
-document.getElementById("dailyBtn").onclick=async ()=>{
-  try{
-    const res=await fetch(API+"/daily/claim",{
-      method:"POST",
-      headers:{Authorization:`Bearer ${localStorage.getItem("access_token")}`}
-    });
-
-    const data=await res.json();
-
-    if(!res.ok) throw new Error(data.detail||data.message);
-
-    alert(`You got KES ${data.amount}`);
-    loadDashboard();
-
-  }catch(e){
-    alert(e.message);
-  }
-};
-
-function copyRef(){
+function copyRef() {
   navigator.clipboard.writeText(document.getElementById("refLink").textContent);
-  alert("Copied");
+  alert("✅ Referral link copied to clipboard!");
 }
 </script>
 
