@@ -122,7 +122,6 @@ function showMessage(type, text) {
     msg.className = `message ${type}`;
     msg.textContent = text;
   }
-  console.log(`[${type.toUpperCase()}]`, text);
 }
 
 function switchTab(tabIndex) {
@@ -130,7 +129,7 @@ function switchTab(tabIndex) {
   document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === tabIndex));
 }
 
-// ==================== USERS ====================
+// Users
 async function fetchUsers() {
   const tbody = document.querySelector("#usersTable tbody");
   tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
@@ -184,7 +183,7 @@ function populateUsersTable(users) {
   });
 }
 
-// ==================== WITHDRAWALS ====================
+// Withdrawals
 async function fetchWithdrawals() {
   const tbody = document.querySelector("#withdrawalsTable tbody");
   tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;
@@ -203,10 +202,9 @@ async function fetchWithdrawals() {
       const withdrawals = Array.isArray(data) ? data : (data.withdrawals || []);
       populateWithdrawalsTable(withdrawals);
     } else {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:orange;">No pending withdrawals or endpoint not ready</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No pending withdrawals</td></tr>`;
     }
   } catch (err) {
-    console.error(err);
     showMessage("error", "Cannot load withdrawals");
   }
 }
@@ -236,24 +234,19 @@ function populateWithdrawalsTable(withdrawals) {
 }
 
 async function approveWithdrawal(id) {
-  if (!confirm("Approve this withdrawal request?")) return;
-
+  if (!confirm("Approve this withdrawal?")) return;
   try {
     const res = await fetch(`${BACKEND_URL}/admin/withdraw_approve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        password: ADMIN_PASSWORD,
-        withdrawal_id: id 
-      })
+      body: JSON.stringify({ password: ADMIN_PASSWORD, withdrawal_id: id })
     });
-
     const result = await res.json().catch(() => ({}));
     if (res.ok) {
-      showMessage("success", result.message || "Withdrawal approved");
+      showMessage("success", result.message || "Approved");
       fetchWithdrawals();
     } else {
-      showMessage("error", result.detail || "Failed to approve");
+      showMessage("error", result.detail || "Failed");
     }
   } catch (e) {
     showMessage("error", "Network error");
@@ -262,15 +255,13 @@ async function approveWithdrawal(id) {
 
 // User actions
 async function adminAction(endpoint, username) {
-  if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for user ${username}?`)) return;
-
+  if (!confirm(`Confirm action for ${username}?`)) return;
   try {
     const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: ADMIN_PASSWORD, username: username })
     });
-
     const result = await res.json().catch(() => ({}));
     if (res.ok) {
       showMessage("success", result.message || "Action successful");
@@ -292,7 +283,7 @@ function logout() {
   window.location.href = "admin-login.html";
 }
 
-// Initialize
+// Start
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     window.location.href = "admin-login.html";
