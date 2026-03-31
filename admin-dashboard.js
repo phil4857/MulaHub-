@@ -10,13 +10,40 @@ function showMessage(type, text) {
   console.log(`[${type.toUpperCase()}]`, text);
 }
 
+function switchTab(tabIndex) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === tabIndex));
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === tabIndex));
+}
+
+// ==================== USERS ====================
+async function fetchUsers() {
+  const tbody = document.querySelector("#usersTable tbody");
+  if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+
+    let data = [];
+    try { data = await res.json(); } catch(e) {}
+
+    if (res.ok) {
+      const users = Array.isArray(data) ? data : (data.users || []);
+      populateUsersTable(users);
+    } else {
+      showMessage("error", data.detail || "Failed to load users");
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage("error", "Cannot connect to server");
+  }
+}
+
 function populateUsersTable(users) {
   const tbody = document.querySelector("#usersTable tbody");
-  if (!tbody) {
-    console.error("Table body not found!");
-    return;
-  }
-
   tbody.innerHTML = "";
 
   if (!users || users.length === 0) {
@@ -26,11 +53,13 @@ function populateUsersTable(users) {
 
   users.forEach(user => {
     const approvedText = user.approved ? '✅ Approved' : '⏳ Pending';
+    const statusColor = user.approved ? 'green' : 'orange';
+
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${user.username || 'N/A'}</td>
       <td>${user.phone || 'N/A'}</td>
-      <td style="color:\( {user.approved ? 'green' : 'orange'}"> \){approvedText}</td>
+      <td style="color:\( {statusColor}"> \){approvedText}</td>
       <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
       <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
       <td>
@@ -43,41 +72,83 @@ function populateUsersTable(users) {
   });
 }
 
-async function fetchUsers() {
-  const tbody = document.querySelector("#usersTable tbody");
-  if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+// ==================== WITHDRAWALS ====================
+async function fetchWithdrawals() {
+  const tbody = document.querySelector("#withdrawalsTable tbody");
+  if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/admin/users`, {
+    const res = await fetch(`${BACKEND_URL}/admin/withdrawals`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: ADMIN_PASSWORD })
     });
 
-    console.log("Response status:", res.status);
-
     let data = [];
-    try {
-      data = await res.json();
-      console.log("Received data:", data);
-    } catch (e) {
-      console.error("JSON parse error:", e);
-    }
+    try { data = await res.json(); } catch(e) {}
 
     if (res.ok) {
-      const users = Array.isArray(data) ? data : (data.users || data || []);
-      populateUsersTable(users);
+      const withdrawals = Array.isArray(data) ? data : (data.withdrawals || []);
+      populateWithdrawalsTable(withdrawals);
     } else {
-      const errorMsg = data.detail || data.message || `Error ${res.status}`;
-      showMessage("error", errorMsg);
-      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Failed to load users</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No pending withdrawals</td></tr>`;
     }
   } catch (err) {
-    console.error("Fetch error:", err);
-    showMessage("error", "Cannot connect to backend");
+    console.error(err);
+    showMessage("error", "Cannot load withdrawals");
   }
 }
 
+function populateWithdrawalsTable(withdrawals) {
+  const tbody = document.querySelector("#withdrawalsTable tbody");
+  tbody.innerHTML = "";
+
+  if (!withdrawals || withdrawals.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending withdrawal requests</td></tr>`;
+    return;
+  }
+
+  withdrawals.forEach(w => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${w.username || 'N/A'}</td>
+      <td>KES ${Number(w.amount || 0).toFixed(2)}</td>
+      <td>${w.requested_at || 'N/A'}</td>
+      <td>${w.status || 'pending'}</td>
+      <td>
+        <button class="action" onclick="approveWithdrawal(${w.id})" style="background:#28a745;color:white;">Approve</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function approveWithdrawal(id) {
+  if (!confirm("Approve this withdrawal request?")) return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/withdraw_approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        password: ADMIN_PASSWORD,
+        withdrawal_id: id 
+      })
+    });
+
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showMessage("success", result.message || "Withdrawal approved successfully");
+      fetchWithdrawals();
+    } else {
+      showMessage("error", result.detail || "Failed to approve withdrawal");
+    }
+  } catch (e) {
+    showMessage("error", "Network error");
+  }
+}
+
+// User actions
 async function adminAction(endpoint, username) {
   if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for user ${username}?`)) return;
 
@@ -94,7 +165,7 @@ async function adminAction(endpoint, username) {
     const result = await res.json().catch(() => ({}));
     if (res.ok) {
       showMessage("success", result.message || "Action successful");
-      fetchUsers(); // refresh
+      fetchUsers();
     } else {
       showMessage("error", result.detail || result.message || "Action failed");
     }
@@ -104,9 +175,9 @@ async function adminAction(endpoint, username) {
   }
 }
 
-function approveUser(username) { adminAction("approve-user", username); }
-function resetPassword(username) { adminAction("reset-password", username); }
-function terminateUser(username) { adminAction("terminate-user", username); }
+function approveUser(u) { adminAction("approve-user", u); }
+function resetPassword(u) { adminAction("reset-password", u); }
+function terminateUser(u) { adminAction("terminate-user", u); }
 
 function logout() {
   localStorage.removeItem("adminLoggedIn");
@@ -120,4 +191,5 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
   fetchUsers();
+  fetchWithdrawals();
 });
