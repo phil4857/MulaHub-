@@ -7,7 +7,7 @@ function showMessage(type, text) {
     msg.className = `message ${type}`;
     msg.textContent = text;
   }
-  console.log(`[${type.toUpperCase()}]`, text);
+  console.log(`[${type.toUpperCase()}] ${text}`);
 }
 
 function switchTab(tabIndex) {
@@ -59,7 +59,7 @@ function populateUsersTable(users) {
     row.innerHTML = `
       <td>${user.username || 'N/A'}</td>
       <td>${user.phone || 'N/A'}</td>
-      <td style="color:\( {statusColor}"> \){approvedText}</td>
+      <td style="color: \( {statusColor};"> \){approvedText}</td>
       <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
       <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
       <td>
@@ -148,9 +148,9 @@ async function approveWithdrawal(id) {
   }
 }
 
-// User actions
+// ==================== FIXED USER ACTIONS ====================
 async function adminAction(endpoint, username) {
-  if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for user ${username}?`)) return;
+  if (!confirm(`Confirm ${endpoint.replace(/-/g, ' ')} for user ${username}?`)) return;
 
   try {
     const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
@@ -162,16 +162,24 @@ async function adminAction(endpoint, username) {
       })
     });
 
-    const result = await res.json().catch(() => ({}));
+    let result = {};
+    try {
+      result = await res.json();
+    } catch (e) {
+      result = { detail: "Invalid response from server" };
+    }
+
     if (res.ok) {
-      showMessage("success", result.message || "Action successful");
-      fetchUsers();
+      showMessage("success", result.message || "Action completed successfully!");
+      fetchUsers();                    // Refresh users table
     } else {
-      showMessage("error", result.detail || result.message || "Action failed");
+      const errorMsg = result.detail || result.message || `Server error (${res.status})`;
+      showMessage("error", errorMsg);
+      console.error(`[${endpoint}] Failed:`, result);
     }
   } catch (err) {
-    console.error("Action error:", err);
-    showMessage("error", "Network error");
+    console.error("Network / Fetch error:", err);
+    showMessage("error", "Cannot connect to backend. Check Render logs and ensure backend is running.");
   }
 }
 
