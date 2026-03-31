@@ -151,7 +151,6 @@ async function fetchUsers() {
       showMessage("error", data.detail || "Failed to load users");
     }
   } catch (err) {
-    console.error(err);
     showMessage("error", "Cannot connect to server");
   }
 }
@@ -166,11 +165,14 @@ function populateUsersTable(users) {
   }
 
   users.forEach(user => {
+    const approvedText = user.approved ? '✅ Approved' : '⏳ Pending';
+    const statusColor = user.approved ? 'green' : 'orange';
+
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${user.username || 'N/A'}</td>
       <td>${user.phone || 'N/A'}</td>
-      <td style="color:\( {user.approved ? 'green' : 'orange'}"> \){user.approved ? '✅ Approved' : '⏳ Pending'}</td>
+      <td style="color:\( {statusColor}"> \){approvedText}</td>
       <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
       <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
       <td>
