@@ -2,13 +2,12 @@ const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 const ADMIN_PASSWORD = "PHIL4857";
 
 function showMessage(type, text) {
-  const msg = document.getElementById("message") || console;
-  if (typeof msg.textContent !== 'undefined') {
-    msg.className = type;
+  const msg = document.getElementById("message");
+  if (msg) {
+    msg.className = `message ${type}`;
     msg.textContent = text;
-  } else {
-    console.log(type.toUpperCase() + ":", text);
   }
+  console.log(`[${type.toUpperCase()}]`, text);
 }
 
 function populateUsersTable(users) {
@@ -21,22 +20,23 @@ function populateUsersTable(users) {
   tbody.innerHTML = "";
 
   if (!users || users.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;">No registered users yet</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;">No registered users yet</td></tr>`;
     return;
   }
 
   users.forEach(user => {
+    const approvedText = user.approved ? '✅ Approved' : '⏳ Pending';
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${user.username || 'N/A'}</td>
       <td>${user.phone || 'N/A'}</td>
-      <td>${user.approved ? '✅ Approved' : '❌ Pending'}</td>
-      <td>KES ${user.balance ? Number(user.balance).toFixed(2) : '0.00'}</td>
-      <td>KES ${user.earnings ? Number(user.earnings).toFixed(2) : '0.00'}</td>
+      <td style="color:\( {user.approved ? 'green' : 'orange'}"> \){approvedText}</td>
+      <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
+      <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
       <td>
-        <button onclick="approveUser('${user.username}')" ${user.approved ? 'disabled style="opacity:0.5"' : ''}>Approve</button>
-        <button onclick="resetPassword('${user.username}')">Reset PW</button>
-        <button onclick="terminateUser('${user.username}')" style="background:#dc3545;color:white;">Terminate</button>
+        <button class="action" onclick="approveUser('${user.username}')" ${user.approved ? 'disabled' : ''}>Approve</button>
+        <button class="action" onclick="resetPassword('${user.username}')">Reset PW</button>
+        <button class="action" onclick="terminateUser('${user.username}')" style="background:#dc3545;color:white;">Terminate</button>
       </td>
     `;
     tbody.appendChild(row);
@@ -59,11 +59,10 @@ async function fetchUsers() {
     let data = [];
     try {
       data = await res.json();
+      console.log("Received data:", data);
     } catch (e) {
       console.error("JSON parse error:", e);
     }
-
-    console.log("Received data:", data);
 
     if (res.ok) {
       const users = Array.isArray(data) ? data : (data.users || data || []);
@@ -71,21 +70,19 @@ async function fetchUsers() {
     } else {
       const errorMsg = data.detail || data.message || `Error ${res.status}`;
       showMessage("error", errorMsg);
-      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Failed to load users (${errorMsg})</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Failed to load users</td></tr>`;
     }
   } catch (err) {
     console.error("Fetch error:", err);
-    showMessage("error", "Network error - cannot reach backend");
-    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:red;">Cannot connect to server</td></tr>`;
+    showMessage("error", "Cannot connect to backend");
   }
 }
 
-// FIXED adminAction function
 async function adminAction(endpoint, username) {
   if (!confirm(`Confirm ${endpoint.replace('-', ' ')} for user ${username}?`)) return;
 
   try {
-    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {   // Corrected line
+    const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -97,7 +94,7 @@ async function adminAction(endpoint, username) {
     const result = await res.json().catch(() => ({}));
     if (res.ok) {
       showMessage("success", result.message || "Action successful");
-      fetchUsers(); // refresh table
+      fetchUsers(); // refresh
     } else {
       showMessage("error", result.detail || result.message || "Action failed");
     }
@@ -112,10 +109,8 @@ function resetPassword(username) { adminAction("reset-password", username); }
 function terminateUser(username) { adminAction("terminate-user", username); }
 
 function logout() {
-  if (confirm("Logout?")) {
-    localStorage.removeItem("adminLoggedIn");
-    window.location.href = "admin-login.html";
-  }
+  localStorage.removeItem("adminLoggedIn");
+  window.location.href = "admin-login.html";
 }
 
 // Initialize
