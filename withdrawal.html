@@ -1,89 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Withdraw Funds - Mkoba Wallets🤑💲</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw Funds - Mkoba Wallet 💸</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  body { background: linear-gradient(to right, #f0f9f7, #e0f2fe); font-family: 'Segoe UI', Arial, sans-serif; }
+  .welcome-banner {
+    background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
+    color: white;
+    padding: 22px 25px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
   }
-
-  .container {
+  .card {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    padding: 2.5rem;
-    width: 100%;
-    max-width: 480px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    padding: 2rem;
   }
-
-  h1 {
-    text-align: center;
-    color: #2c3e50;
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-  }
-
   .balance-box {
     background: #e8f4fd;
     border-radius: 12px;
     padding: 1.5rem;
     text-align: center;
-    margin-bottom: 2rem;
     border: 1px solid #b3d4fc;
   }
-
-  .balance-box h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.1rem;
-    color: #555;
-  }
-
-  .balance {
-    font-size: 2.4rem;
-    font-weight: bold;
-    color: #1e90ff;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #333;
-  }
-
-  input, select {
-    width: 100%;
-    padding: 12px 16px;
-    margin-bottom: 1.2rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-  }
-
-  input:focus, select:focus {
-    outline: none;
-    border-color: #1e90ff;
-    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.15);
-  }
-
-  .amount-hints {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-  }
-
   .amount-btn {
     background: #f0f4f8;
     border: 1px solid #d1dbe4;
@@ -93,93 +38,181 @@
     font-weight: 600;
     transition: all 0.2s;
   }
-
   .amount-btn:hover {
     background: #e0e9f2;
     border-color: #a8c0d4;
   }
-
-  button[type="submit"] {
-    width: 100%;
-    padding: 14px;
-    background: #1e90ff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-
-  button[type="submit"]:hover {
-    background: #0c7cd5;
-  }
-
-  .note {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-    color: #666;
+  .msg {
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin: 15px 0;
+    font-weight: 600;
     text-align: center;
   }
-
-  #msg {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    min-height: 24px;
-  }
-
-  @media (max-width: 480px) {
-    .container {
-      padding: 1.8rem;
-    }
-  }
+  .success { background: #d4edda; color: #155724; }
+  .error { background: #f8d7da; color: #721c24; }
+  .loading { background: #fff3cd; color: #856404; }
 </style>
 </head>
-<body>
+<body class="p-6">
 
-<div class="container">
-  <h1>Withdraw Funds</h1>
-
-  <div class="balance-box">
-    <h2>Available Balance</h2>
-    <div class="balance">KES 0.00</div>
-  </div>
-
-  <div id="msg"></div>
-
-  <form id="withdrawalForm">
-    <label for="amount">Withdrawal Amount (KES)</label>
-    <input type="number" id="amount" name="amount" min="100" step="1" placeholder="e.g. 5000" required />
-
-    <div class="amount-hints">
-      <button type="button" class="amount-btn" data-amount="100">5,000</button>
-      <button type="button" class="amount-btn" data-amount="500">10,000</button>
-      <button type="button" class="amount-btn" data-amount="200">20,000</button>
-      <button type="button" class="amount-btn" data-amount="max">Max</button>
-    </div>
-
-    <label for="method">Withdrawal Method</label>
-    <select id="method" name="method" required>
-      <option value="">Select method</option>
-      <option value="mpesa">M-Pesa</option>
-      <option value="bank">Bank Transfer</option>
-      <option value="airtel">Airtel Money</option>
-      <option value="paypal">PayPal</option>
-    </select>
-
-    <label for="account">Account/Phone Number</label>
-    <input type="text" id="account" name="account" placeholder="e.g. 0712345678 or Bank Account No." required />
-
-    <button type="submit">Withdraw Now</button>
-  </form>
-
-  <p class="note">
-    Withdrawal requests are processed within 24 hours. Fees may apply depending on method. Minimum withdrawal: KES 100. Admin approval required.
-  </p>
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+  Welcome to Mkoba Wallet where your money grows daily 🤑🎉
 </div>
 
-<script src="withdrawal.js"></script>
+<div class="max-w-md mx-auto mt-8">
+
+  <div class="card">
+    <h1 class="text-2xl font-bold text-center mb-6 text-indigo-700">Withdraw Funds</h1>
+
+    <div class="balance-box mb-8">
+      <h2 class="text-gray-500 text-sm mb-1">Available Balance</h2>
+      <div id="balance" class="text-4xl font-bold text-indigo-600">KES 0.00</div>
+    </div>
+
+    <div id="msg" class="msg"></div>
+
+    <form id="withdrawalForm">
+      <label class="block text-sm font-semibold mb-2 text-gray-700">Withdrawal Amount (KES)</label>
+      <input type="number" id="amount" min="100" step="1" placeholder="e.g. 5000" 
+        class="w-full p-4 text-2xl text-center border border-gray-300 rounded-2xl mb-6 focus:outline-none focus:border-indigo-500">
+
+      <div class="amount-hints flex flex-wrap gap-3 mb-8">
+        <button type="button" class="amount-btn flex-1" data-amount="5000">5,000</button>
+        <button type="button" class="amount-btn flex-1" data-amount="10000">10,000</button>
+        <button type="button" class="amount-btn flex-1" data-amount="20000">20,000</button>
+        <button type="button" class="amount-btn flex-1" data-amount="50000">50,000</button>
+      </div>
+
+      <label class="block text-sm font-semibold mb-2 text-gray-700">Withdrawal Method</label>
+      <select id="method" class="w-full p-4 border border-gray-300 rounded-2xl mb-6">
+        <option value="">Select method</option>
+        <option value="mpesa">M-Pesa</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="airtel">Airtel Money</option>
+        <option value="paypal">PayPal</option>
+      </select>
+
+      <label class="block text-sm font-semibold mb-2 text-gray-700">Account / Phone Number</label>
+      <input type="text" id="account" placeholder="e.g. 0712345678 or Bank Account No." 
+        class="w-full p-4 border border-gray-300 rounded-2xl mb-6">
+
+      <button type="submit" 
+        class="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-3xl font-bold text-xl">
+        Request Withdrawal
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-600 mt-8">
+      Minimum withdrawal: KES 100<br>
+      Requests are processed within 24 hours after admin approval.
+    </p>
+  </div>
+
+</div>
+
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const username = localStorage.getItem("username");
+  if (!username) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  loadBalance();
+
+  // Quick amount buttons
+  document.querySelectorAll(".amount-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("amount").value = btn.dataset.amount;
+    });
+  });
+
+  // Form submit
+  document.getElementById("withdrawalForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const amount = parseFloat(document.getElementById("amount").value);
+    const method = document.getElementById("method").value;
+    const account = document.getElementById("account").value.trim();
+
+    if (!amount || amount < 100) {
+      showMsg("error", "Minimum withdrawal is KES 100");
+      return;
+    }
+    if (!method) {
+      showMsg("error", "Please select a withdrawal method");
+      return;
+    }
+    if (!account) {
+      showMsg("error", "Please enter account or phone number");
+      return;
+    }
+
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        },
+        body: JSON.stringify({ 
+          amount: amount,
+          method: method,
+          account: account 
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showMsg("success", data.message || "Withdrawal request submitted successfully. Awaiting admin approval.");
+        document.getElementById("amount").value = "";
+        document.getElementById("account").value = "";
+        loadBalance(); // Refresh balance
+      } else {
+        showMsg("error", data.detail || data.message || "Failed to submit request");
+      }
+    } catch (e) {
+      showMsg("error", "Network error. Please try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Request Withdrawal";
+    }
+  });
+});
+
+async function loadBalance() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/dashboard`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
+    });
+    const data = await res.json();
+    document.getElementById("balance").textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
+  } catch (e) {
+    console.error("Failed to load balance");
+  }
+}
+
+function showMsg(type, text) {
+  const msg = document.getElementById("msg");
+  msg.className = `msg ${type}`;
+  msg.textContent = text;
+  setTimeout(() => msg.textContent = "", 8000);
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
+</script>
+
 </body>
 </html>
