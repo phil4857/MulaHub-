@@ -6,59 +6,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-  .header {
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
+  .header { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 15px 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
   h1 { margin: 0; font-size: 24px; }
-  .tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #ddd;
-  }
-  .tab {
-    padding: 12px 24px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  .tab.active {
-    border-bottom: 3px solid #1e3c72;
-    color: #1e3c72;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
+  .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+  .tab { padding: 12px 24px; cursor: pointer; font-weight: bold; }
+  .tab.active { border-bottom: 3px solid #1e3c72; color: #1e3c72; }
+  table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
   th { background: #1e3c72; color: white; }
-  .message {
-    padding: 12px;
-    margin: 15px 0;
-    border-radius: 6px;
-    font-weight: bold;
-  }
+  .message { padding: 12px; margin: 15px 0; border-radius: 6px; font-weight: bold; }
   .success { background: #d4edda; color: #155724; }
   .error { background: #f8d7da; color: #721c24; }
-  button.action {
-    padding: 8px 12px;
-    margin: 2px;
-    font-size: 14px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+  button.action { padding: 8px 12px; margin: 2px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 </style>
@@ -75,6 +34,7 @@
 <div class="tabs">
   <div class="tab active" onclick="switchTab(0)">Users</div>
   <div class="tab" onclick="switchTab(1)">Withdrawals</div>
+  <div class="tab" onclick="switchTab(2)">Investments</div>
 </div>
 
 <!-- Users Tab -->
@@ -112,6 +72,23 @@
   </table>
 </div>
 
+<!-- Investments Tab (New) -->
+<div id="tab-investments" class="tab-content">
+  <h2>Pending Investments</h2>
+  <table id="investmentsTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Commodity</th>
+        <th>Amount (KES)</th>
+        <th>Requested At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 const ADMIN_PASSWORD = "PHIL4857";
@@ -122,7 +99,6 @@ function showMessage(type, text) {
     msg.className = `message ${type}`;
     msg.textContent = text;
   }
-  console.log(`[${type.toUpperCase()}]`, text);
 }
 
 function switchTab(n) {
@@ -130,10 +106,10 @@ function switchTab(n) {
   document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===n));
 }
 
-// ==================== USERS TAB ====================
+// Users
 async function fetchUsers() {
   const tbody = document.querySelector("#usersTable tbody");
-  if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>`;
 
   try {
     const res = await fetch(`${BACKEND_URL}/admin/users`, {
@@ -141,16 +117,8 @@ async function fetchUsers() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: ADMIN_PASSWORD })
     });
-
-    let data = [];
-    try { data = await res.json(); } catch(e) {}
-
-    if (res.ok) {
-      const users = Array.isArray(data) ? data : [];
-      populateUsersTable(users);
-    } else {
-      showMessage("error", data.detail || "Failed to load users");
-    }
+    const users = await res.json().catch(() => []);
+    populateUsersTable(users);
   } catch (err) {
     showMessage("error", "Cannot connect to server");
   }
@@ -161,23 +129,19 @@ function populateUsersTable(users) {
   tbody.innerHTML = "";
 
   if (users.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;">No registered users yet</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;">No users yet</td></tr>`;
     return;
   }
 
   users.forEach(user => {
-    const approvedText = user.approved ? '✅ Approved' : '⏳ Pending';
-    const statusColor = user.approved ? 'green' : 'orange';
-
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${user.username || 'N/A'}</td>
+      <td>${user.username}</td>
       <td>${user.phone || 'N/A'}</td>
-      <td style="color: \( {statusColor};"> \){approvedText}</td>
+      <td style="color:\( {user.approved ? 'green' : 'orange'}"> \){user.approved ? '✅ Approved' : '⏳ Pending'}</td>
       <td>KES ${Number(user.balance || 0).toFixed(2)}</td>
       <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>
       <td>
-        <button class="action" onclick="approveUser('${user.username}')" ${user.approved ? 'disabled' : ''}>Approve</button>
         <button class="action" onclick="resetPassword('${user.username}')">Reset PW</button>
         <button class="action" onclick="terminateUser('${user.username}')" style="background:#dc3545;color:white;">Terminate</button>
       </td>
@@ -186,10 +150,10 @@ function populateUsersTable(users) {
   });
 }
 
-// ==================== WITHDRAWALS TAB ====================
+// Withdrawals
 async function fetchWithdrawals() {
   const tbody = document.querySelector("#withdrawalsTable tbody");
-  if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>`;
 
   try {
     const res = await fetch(`${BACKEND_URL}/admin/withdrawals`, {
@@ -197,16 +161,8 @@ async function fetchWithdrawals() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: ADMIN_PASSWORD })
     });
-
-    let data = [];
-    try { data = await res.json(); } catch(e) {}
-
-    if (res.ok) {
-      const withdrawals = Array.isArray(data) ? data : [];
-      populateWithdrawalsTable(withdrawals);
-    } else {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No pending withdrawals</td></tr>`;
-    }
+    const withdrawals = await res.json().catch(() => []);
+    populateWithdrawalsTable(withdrawals);
   } catch (err) {
     showMessage("error", "Cannot load withdrawals");
   }
@@ -217,7 +173,7 @@ function populateWithdrawalsTable(withdrawals) {
   tbody.innerHTML = "";
 
   if (withdrawals.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending withdrawal requests</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending withdrawals</td></tr>`;
     return;
   }
 
@@ -237,7 +193,7 @@ function populateWithdrawalsTable(withdrawals) {
 }
 
 async function approveWithdrawal(id) {
-  if (!confirm("Approve this withdrawal request?")) return;
+  if (!confirm("Approve this withdrawal?")) return;
   try {
     const res = await fetch(`${BACKEND_URL}/admin/withdraw_approve`, {
       method: "POST",
@@ -246,48 +202,104 @@ async function approveWithdrawal(id) {
     });
     const result = await res.json().catch(() => ({}));
     if (res.ok) {
-      showMessage("success", result.message || "Withdrawal approved successfully");
+      showMessage("success", result.message || "Withdrawal approved");
       fetchWithdrawals();
     } else {
-      showMessage("error", result.detail || "Failed to approve withdrawal");
+      showMessage("error", result.detail || "Failed");
     }
   } catch (e) {
     showMessage("error", "Network error");
   }
 }
 
-// ==================== FIXED ADMIN ACTIONS ====================
+// Investments Tab (New)
+async function fetchInvestments() {
+  const tbody = document.querySelector("#investmentsTable tbody");
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading pending investments...</td></tr>`;
+
+  try {
+    // Note: You need to add /admin/pending-investments endpoint in backend if not present
+    const res = await fetch(`${BACKEND_URL}/admin/pending-investments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+    const investments = await res.json().catch(() => []);
+    populateInvestmentsTable(investments);
+  } catch (err) {
+    showMessage("error", "Cannot load pending investments");
+  }
+}
+
+function populateInvestmentsTable(investments) {
+  const tbody = document.querySelector("#investmentsTable tbody");
+  tbody.innerHTML = "";
+
+  if (investments.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending investments</td></tr>`;
+    return;
+  }
+
+  investments.forEach(inv => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${inv.username}</td>
+      <td>${inv.commodity}</td>
+      <td>KES ${Number(inv.amount || 0).toFixed(2)}</td>
+      <td>${inv.requested_at || 'N/A'}</td>
+      <td>
+        <button class="action" onclick="approveInvestment('\( {inv.username}', ' \){inv.commodity}')" style="background:#28a745;color:white;">Approve Payment</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function approveInvestment(username, commodity) {
+  if (!confirm(`Approve investment in ${commodity} for ${username}?`)) return;
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/approve-investment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, username: username, investment_commodity: commodity })
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) {
+      showMessage("success", result.message || "Investment approved");
+      fetchInvestments();
+    } else {
+      showMessage("error", result.detail || "Failed to approve");
+    }
+  } catch (e) {
+    showMessage("error", "Network error");
+  }
+}
+
+// Admin Actions
 async function adminAction(endpoint, username) {
-  if (!confirm(`Confirm ${endpoint.replace(/-/g, ' ')} for user ${username}?`)) return;
+  if (!confirm(`Confirm ${endpoint.replace(/-/g, ' ')} for ${username}?`)) return;
 
   try {
     const res = await fetch(`\( {BACKEND_URL}/admin/ \){endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        password: ADMIN_PASSWORD, 
-        username: username 
-      })
+      body: JSON.stringify({ password: ADMIN_PASSWORD, username: username })
     });
 
     let result = {};
-    try { 
-      result = await res.json(); 
-    } catch(e) {}
+    try { result = await res.json(); } catch(e) {}
 
     if (res.ok) {
       showMessage("success", result.message || "Action completed successfully!");
-      fetchUsers();        // Refresh the users table
+      fetchUsers();
     } else {
-      const errorMsg = result.detail || result.message || `Server error (${res.status})`;
-      showMessage("error", errorMsg);
+      showMessage("error", result.detail || result.message || `Server error (${res.status})`);
     }
   } catch (err) {
     showMessage("error", "Cannot connect to backend server");
   }
 }
 
-function approveUser(u) { adminAction("approve-user", u); }
 function resetPassword(u) { adminAction("reset-password", u); }
 function terminateUser(u) { adminAction("terminate-user", u); }
 
@@ -296,7 +308,6 @@ function logout() {
   window.location.href = "admin-login.html";
 }
 
-// Initialize when page loads
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     window.location.href = "admin-login.html";
@@ -304,6 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   fetchUsers();
   fetchWithdrawals();
+  fetchInvestments();   // New
 });
 </script>
 
