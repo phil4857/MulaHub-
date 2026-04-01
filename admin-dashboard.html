@@ -148,7 +148,7 @@ function switchTab(n) {
   document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===n));
 }
 
-// ==================== USERS TAB ====================
+// Users
 async function fetchUsers() {
   const tbody = document.querySelector("#usersTable tbody");
   if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;
@@ -203,7 +203,7 @@ function populateUsersTable(users) {
   });
 }
 
-// ==================== WITHDRAWALS TAB ====================
+// Withdrawals
 async function fetchWithdrawals() {
   const tbody = document.querySelector("#withdrawalsTable tbody");
   if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;
@@ -273,7 +273,7 @@ async function approveWithdrawal(id) {
   }
 }
 
-// ==================== PENDING INVESTMENTS TAB ====================
+// Pending Investments
 async function fetchInvestments() {
   const tbody = document.querySelector("#investmentsTable tbody");
   if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading pending investments...</td></tr>`;
@@ -347,7 +347,7 @@ async function approveInvestment(username, commodity) {
   }
 }
 
-// ==================== SIMPLE ADMIN ACTIONS ====================
+// Simple admin actions
 async function adminAction(endpoint, username) {
   if (!confirm(`Confirm ${endpoint.replace(/-/g, ' ')} for user ${username}?`)) return;
 
@@ -384,7 +384,6 @@ function logout() {
   window.location.href = "admin-login.html";
 }
 
-// Initialize
 document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("adminLoggedIn") !== "true") {
     window.location.href = "admin-login.html";
