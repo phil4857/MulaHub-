@@ -86,7 +86,7 @@
     </div>
   </div>
 
-  <!-- EARNINGS TAB (Main Fix Here) -->
+  <!-- EARNINGS TAB -->
   <div id="tabContent1" class="tab-content hidden">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-white rounded-3xl p-8 shadow-2xl text-center">
@@ -117,25 +117,64 @@
     </div>
   </div>
 
-  <!-- WITHDRAW TAB -->
+  <!-- WITHDRAW TAB (Updated with 20% charge + multiple methods) -->
   <div id="tabContent2" class="tab-content hidden">
-    <div class="bg-white rounded-3xl p-10 shadow-2xl text-center">
-      <h2 class="text-3xl font-bold mb-6 text-indigo-700">Withdraw Funds</h2>
-      <p class="text-4xl font-bold text-indigo-700 mb-8">Available: KES <span id="withdrawBalance">0.00</span></p>
+    <div class="bg-white rounded-3xl p-8 shadow-2xl">
+      <h2 class="text-3xl font-bold text-center mb-6 text-indigo-700">Withdraw Funds</h2>
       
+      <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 mb-8 text-center">
+        <p class="text-gray-600">Available Balance</p>
+        <p id="withdrawBalance" class="text-5xl font-bold text-indigo-700">KES 0.00</p>
+      </div>
+
+      <div id="withdrawMsg" class="msg hidden"></div>
+
       <div class="max-w-md mx-auto">
-        <input type="number" id="withdrawAmount" placeholder="Enter amount" 
-          class="w-full p-5 text-2xl text-center border border-gray-300 rounded-2xl mb-6">
+        <label class="block text-sm font-semibold mb-2 text-gray-700">Amount to Withdraw (KES)</label>
+        <input type="number" id="withdrawAmount" min="100" placeholder="e.g. 5000" 
+          class="w-full p-5 text-2xl text-center border border-gray-300 rounded-2xl mb-4 focus:outline-none focus:border-indigo-500"
+          oninput="updateChargePreview()">
+
+        <!-- Live Charge Preview -->
+        <div id="chargePreview" class="hidden bg-amber-50 border border-amber-300 p-5 rounded-2xl mb-6">
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Requested:</span>
+              <span id="previewRequested" class="font-medium">KES 0</span>
+            </div>
+            <div class="flex justify-between text-red-600">
+              <span>20% Charge:</span>
+              <span id="previewCharge" class="font-medium">KES 0</span>
+            </div>
+            <div class="flex justify-between border-t pt-3 font-bold">
+              <span>You will receive:</span>
+              <span id="previewNet" class="text-green-600">KES 0</span>
+            </div>
+          </div>
+        </div>
+
+        <label class="block text-sm font-semibold mb-2 text-gray-700">Payment Method</label>
+        <select id="withdrawMethod" class="w-full p-5 border border-gray-300 rounded-2xl mb-6">
+          <option value="">Select Method</option>
+          <option value="mpesa">M-Pesa</option>
+          <option value="airtel">Airtel Money</option>
+          <option value="bank">Bank Transfer</option>
+          <option value="paypal">PayPal</option>
+        </select>
+
+        <label class="block text-sm font-semibold mb-2 text-gray-700">Account / Phone Number</label>
+        <input type="text" id="withdrawAccount" placeholder="0712345678 or Bank Account Number" 
+          class="w-full p-5 border border-gray-300 rounded-2xl mb-8">
+
         <button onclick="requestWithdrawal()" 
           class="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-3xl font-bold text-xl">
-          Request Withdrawal
+          Submit Withdrawal Request
         </button>
       </div>
 
-      <div class="mt-10 bg-yellow-50 border-2 border-yellow-400 p-8 rounded-3xl">
-        <p class="text-xl font-semibold mb-4">After approval, send to M-Pesa:</p>
-        <p class="text-5xl font-bold text-red-600 mb-6">0752964507</p>
-      </div>
+      <p class="text-center text-xs text-gray-500 mt-8">
+        Minimum withdrawal: KES 100 • 20% service charge applies • Processed after admin approval
+      </p>
     </div>
   </div>
 
@@ -186,9 +225,8 @@ async function loadDashboard() {
     });
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data.detail || "Failed to load dashboard");
+    if (!res.ok) throw new Error(data.detail || "Failed to load");
 
-    // Update summary cards
     document.getElementById("balance").textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
     document.getElementById("earnings").textContent = `KES ${Number(data.earnings || 0).toFixed(2)}`;
     document.getElementById("referralBonus").textContent = `KES ${Number(data.referral_bonus_earned || 0).toFixed(2)}`;
@@ -233,7 +271,7 @@ function renderInvestments(investments) {
 
   Object.entries(investments).forEach(([commodity, info]) => {
     const isApproved = info.status === "approved";
-    const canGrab = isApproved && (info.can_grab === true);
+    const canGrab = isApproved && info.can_grab === true;
 
     let cardHTML = `
       <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow">
@@ -246,7 +284,7 @@ function renderInvestments(investments) {
             </div>
           </div>
           <span class="px-4 py-1 rounded-full text-sm ${isApproved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-            ${isApproved ? 'Approved' : 'Pending Approval'}
+            ${isApproved ? 'Approved' : 'Pending'}
           </span>
         </div>
     `;
@@ -259,13 +297,13 @@ function renderInvestments(investments) {
             <p class="text-2xl font-bold text-green-600">KES ${info.daily_earning}</p>
           </div>
           <div>
-            <p class="text-gray-500">Days Remaining</p>
+            <p class="text-gray-500">Days Left</p>
             <p class="text-2xl font-bold">${info.days_remaining}</p>
           </div>
         </div>
 
         <div class="mt-4 p-4 bg-gray-50 rounded-2xl text-center">
-          <p class="font-medium">${info.time_to_next || "Ready to claim!"}</p>
+          <p class="font-medium">${info.time_to_next || "Ready now!"}</p>
         </div>
 
         <button onclick="grabBonus('${commodity}')" 
@@ -301,13 +339,13 @@ async function grabBonus(commodity) {
     const result = await res.json();
 
     if (res.ok) {
-      showMsg("success", result.message || `✅ Bonus of KES ${result.earned} added!`);
-      loadDashboard();        // This will update Balance + Earnings
+      showMsg("success", result.message || `✅ Bonus added!`);
+      loadDashboard();
     } else {
       showMsg("error", result.detail || result.message || "Failed to grab bonus");
     }
   } catch (e) {
-    showMsg("error", "Network error. Please try again.");
+    showMsg("error", "Network error");
   }
 }
 
@@ -329,25 +367,62 @@ async function invest() {
     const data = await res.json();
 
     if (res.ok) {
-      alert(`✅ Investment request sent!\n\nPay KES ${COMMODITY_INFO[selectedCommodity].price} to M-Pesa: 0752964507`);
+      alert(`✅ Request sent!\nPay KES ${COMMODITY_INFO[selectedCommodity].price} to M-Pesa 0752964507`);
       loadDashboard();
       selectedCommodity = null;
       document.getElementById("selected").textContent = "-- None --";
       btn.disabled = true;
       btn.textContent = "Request Investment";
     } else {
-      alert(data.message || "Request failed");
+      alert(data.message || "Failed");
     }
   } catch (e) {
     alert("Error: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Request Investment";
   }
+}
+
+// Updated Withdrawal with 20% charge preview
+function updateChargePreview() {
+  const amount = parseFloat(document.getElementById("withdrawAmount").value);
+  const preview = document.getElementById("chargePreview");
+
+  if (!amount || amount < 100) {
+    preview.classList.add("hidden");
+    return;
+  }
+
+  const charge = Math.round(amount * 0.20);
+  const net = amount - charge;
+
+  document.getElementById("previewRequested").textContent = `KES ${amount}`;
+  document.getElementById("previewCharge").textContent = `KES ${charge}`;
+  document.getElementById("previewNet").textContent = `KES ${net}`;
+
+  preview.classList.remove("hidden");
 }
 
 async function requestWithdrawal() {
   const amount = parseFloat(document.getElementById("withdrawAmount").value);
-  if (!amount || amount <= 0) return alert("Enter a valid amount");
+  const method = document.getElementById("withdrawMethod").value;
+  const account = document.getElementById("withdrawAccount").value.trim();
 
-  if (!confirm(`Request KES ${amount} withdrawal?`)) return;
+  if (!amount || amount < 100) {
+    showMsg("error", "Minimum withdrawal is KES 100");
+    return;
+  }
+  if (!method) {
+    showMsg("error", "Please select a payment method");
+    return;
+  }
+  if (!account) {
+    showMsg("error", "Please enter account/phone number");
+    return;
+  }
+
+  if (!confirm(`Request KES ${amount} withdrawal?\n20% charge will apply.`)) return;
 
   try {
     const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
@@ -356,19 +431,31 @@ async function requestWithdrawal() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("access_token")}`
       },
-      body: JSON.stringify({ amount })
+      body: JSON.stringify({ 
+        amount: amount, 
+        payment_method: method 
+      })
     });
+
     const data = await res.json();
-    alert(data.message || "Withdrawal request submitted.");
-    loadDashboard();
+
+    if (res.ok) {
+      showMsg("success", data.message || "Withdrawal request submitted successfully.");
+      document.getElementById("withdrawAmount").value = "";
+      document.getElementById("withdrawAccount").value = "";
+      document.getElementById("chargePreview").classList.add("hidden");
+      loadDashboard();
+    } else {
+      showMsg("error", data.detail || data.message || "Failed to submit");
+    }
   } catch (e) {
-    alert("Network error");
+    showMsg("error", "Network error");
   }
 }
 
 function copyRef() {
   const link = document.getElementById("refLink").value;
-  navigator.clipboard.writeText(link).then(() => alert("Referral link copied!"));
+  navigator.clipboard.writeText(link).then(() => alert("✅ Referral link copied!"));
 }
 
 function switchTab(n) {
