@@ -33,21 +33,18 @@
   .msg { padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; text-align: center; }
   .success { background: #d4edda; color: #155724; }
   .error { background: #f8d7da; color: #721c24; }
-  .loading { background: #fff3cd; color: #856404; }
   .grab-btn {
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
   }
-  .grab-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .grab-btn:hover {
+    transform: scale(1.03);
   }
 </style>
 </head>
 <body class="p-6">
 
-<!-- Welcome Banner -->
 <div class="welcome-banner">
-  Welcome to Mkoba Wallet where your money grows daily 🤑🎉
+  Welcome to Mkoba Wallet – Your money grows daily! 🤑
 </div>
 
 <div class="max-w-6xl mx-auto">
@@ -60,13 +57,13 @@
 
   <!-- M-Pesa Banner -->
   <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 p-5 rounded-2xl mb-8 text-center font-medium">
-    Send investment money to M-Pesa: <span class="font-bold text-red-600">0752964507</span><br>
-    <small class="text-yellow-700">Include your username in the transaction message for fast verification</small>
+    Send investment to M-Pesa: <span class="font-bold text-red-600">0752964507</span><br>
+    <small class="text-yellow-700">Include your username in the message</small>
   </div>
 
   <div id="msg" class="msg"></div>
 
-  <!-- Tab Buttons -->
+  <!-- Tabs -->
   <div class="flex flex-wrap gap-3 justify-center mb-8">
     <button onclick="switchTab(0)" id="tab0" class="tab-btn active px-8 py-3 rounded-2xl font-semibold">Invest</button>
     <button onclick="switchTab(1)" id="tab1" class="tab-btn px-8 py-3 rounded-2xl font-semibold">Earnings</button>
@@ -76,28 +73,28 @@
   <!-- INVEST TAB -->
   <div id="tabContent0" class="tab-content">
     <div class="bg-white rounded-3xl p-8 shadow-2xl">
-      <h2 class="text-3xl font-bold text-center mb-8 text-indigo-700">Choose Your Investment</h2>
+      <h2 class="text-3xl font-bold text-center mb-8 text-indigo-700">Choose Investment</h2>
       <div id="commodityGrid" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
 
       <div class="mt-12 text-center">
         <p class="text-xl mb-4">Selected: <span id="selected" class="font-bold text-indigo-600">-- None --</span></p>
         <button id="investBtn" onclick="invest()" disabled 
-          class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-xl font-bold py-5 px-16 rounded-3xl w-full max-w-md disabled:opacity-50">
+          class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-xl font-bold py-5 px-16 rounded-3xl w-full max-w-md disabled:opacity-50">
           Request Investment
         </button>
       </div>
     </div>
   </div>
 
-  <!-- EARNINGS TAB -->
+  <!-- EARNINGS TAB (Main Fix Here) -->
   <div id="tabContent1" class="tab-content hidden">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-white rounded-3xl p-8 shadow-2xl text-center">
-        <p class="text-gray-500 text-sm">Balance</p>
+        <p class="text-gray-500 text-sm">Current Balance</p>
         <p id="balance" class="text-4xl font-bold text-indigo-700">KES 0.00</p>
       </div>
       <div class="bg-white rounded-3xl p-8 shadow-2xl text-center">
-        <p class="text-gray-500 text-sm">Earnings</p>
+        <p class="text-gray-500 text-sm">Total Earnings</p>
         <p id="earnings" class="text-4xl font-bold text-green-600">KES 0.00</p>
       </div>
       <div class="bg-white rounded-3xl p-8 shadow-2xl text-center">
@@ -107,16 +104,16 @@
     </div>
 
     <div class="bg-white rounded-3xl p-8 shadow-2xl">
-      <h3 class="font-bold text-xl mb-6 flex items-center gap-2">
-        <span>Your Investments & Daily Bonuses</span>
-      </h3>
+      <h3 class="font-bold text-2xl mb-6">Your Investments & Daily Bonuses</h3>
       <div id="investmentsList" class="space-y-6"></div>
     </div>
 
     <div class="bg-white rounded-3xl p-8 shadow-2xl mt-8">
-      <h3 class="font-bold text-xl mb-4">Referral</h3>
+      <h3 class="font-bold text-xl mb-4">Your Referral Link</h3>
       <input id="refLink" readonly class="w-full bg-gray-100 p-4 rounded-2xl text-sm font-mono" />
-      <button onclick="copyRef()" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-2xl font-semibold">Copy Referral Link</button>
+      <button onclick="copyRef()" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-2xl font-semibold">
+        Copy Referral Link
+      </button>
     </div>
   </div>
 
@@ -127,7 +124,7 @@
       <p class="text-4xl font-bold text-indigo-700 mb-8">Available: KES <span id="withdrawBalance">0.00</span></p>
       
       <div class="max-w-md mx-auto">
-        <input type="number" id="withdrawAmount" placeholder="Amount to withdraw" 
+        <input type="number" id="withdrawAmount" placeholder="Enter amount" 
           class="w-full p-5 text-2xl text-center border border-gray-300 rounded-2xl mb-6">
         <button onclick="requestWithdrawal()" 
           class="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-3xl font-bold text-xl">
@@ -136,9 +133,8 @@
       </div>
 
       <div class="mt-10 bg-yellow-50 border-2 border-yellow-400 p-8 rounded-3xl">
-        <p class="text-xl font-semibold mb-4">Send to this M-Pesa number after approval:</p>
+        <p class="text-xl font-semibold mb-4">After approval, send to M-Pesa:</p>
         <p class="text-5xl font-bold text-red-600 mb-6">0752964507</p>
-        <p class="text-sm text-gray-700">Include your username in the transaction message</p>
       </div>
     </div>
   </div>
@@ -147,30 +143,26 @@
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
-const MPESA_NUMBER = "0752964507";
 
 const COMMODITY_INFO = {
-  marble:     { price: 650,  days: 15, emoji: "🪨🪨🪨" },
-  crude_oil:  { price: 800,  days: 20, emoji: "🛢️🛢️🛢️" },
-  silver:     { price: 1000, days: 23, emoji: "🪙🪙🪙" },
-  lead:       { price: 1200, days: 25, emoji: "⚙️⚙️⚙️" },
-  platinum:   { price: 1350, days: 28, emoji: "💎💎💎" },
-  diamonds:   { price: 1750, days: 32, emoji: "💎💎💎" },
-  gold:       { price: 2200, days: 35, emoji: "🪙🪙🪙" },
-  uranium:    { price: 3000, days: 45, emoji: "☢️☢️☢️" }
+  marble:     { price: 650, emoji: "🪨" },
+  crude_oil:  { price: 800, emoji: "🛢️" },
+  silver:     { price: 1000, emoji: "🪙" },
+  lead:       { price: 1200, emoji: "⚙️" },
+  platinum:   { price: 1350, emoji: "💎" },
+  diamonds:   { price: 1750, emoji: "💎" },
+  gold:       { price: 2200, emoji: "🪙" },
+  uranium:    { price: 3000, emoji: "☢️" }
 };
 
 let selectedCommodity = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  const username = localStorage.getItem("username");
-  if (!username) {
+  if (!localStorage.getItem("access_token")) {
     window.location.href = "login.html";
     return;
   }
-
-  document.getElementById("refLink").value = `https://jipate-bonus-v1.vercel.app/register.html?ref=${username}`;
-
+  document.getElementById("refLink").value = `https://jipate-bonus-v1.vercel.app/register.html?ref=${localStorage.getItem("username") || ""}`;
   renderCommodities();
   loadDashboard();
 });
@@ -184,44 +176,41 @@ function showMsg(type, text) {
   const msgEl = document.getElementById("msg");
   msgEl.textContent = text;
   msgEl.className = `msg ${type}`;
-  setTimeout(() => msgEl.textContent = "", 8000);
+  setTimeout(() => msgEl.textContent = "", 7000);
 }
 
 async function loadDashboard() {
-  showMsg("loading", "Loading your dashboard...");
   try {
     const res = await fetch(`${BACKEND_URL}/dashboard`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
     });
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data.detail || "Failed to load");
+    if (!res.ok) throw new Error(data.detail || "Failed to load dashboard");
 
+    // Update summary cards
     document.getElementById("balance").textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
     document.getElementById("earnings").textContent = `KES ${Number(data.earnings || 0).toFixed(2)}`;
     document.getElementById("referralBonus").textContent = `KES ${Number(data.referral_bonus_earned || 0).toFixed(2)}`;
     document.getElementById("withdrawBalance").textContent = Number(data.balance || 0).toFixed(2);
 
     renderInvestments(data.investments || {});
-    showMsg("", "");
   } catch (e) {
-    showMsg("error", e.message || "Failed to load dashboard");
+    showMsg("error", e.message || "Could not load dashboard");
   }
 }
 
 function renderCommodities() {
   const grid = document.getElementById("commodityGrid");
   grid.innerHTML = "";
-
   Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
     const card = document.createElement("div");
     card.className = "commodity-card p-6 text-center cursor-pointer bg-white rounded-3xl shadow";
     card.innerHTML = `
-      <div class="emoji">${com.emoji}</div>
-      <div class="font-bold text-xl mb-1">${key.replace("_", " ").toUpperCase()}</div>
-      <div class="text-2xl font-semibold text-indigo-600">KES ${com.price}</div>
+      <div class="emoji text-5xl">${com.emoji}</div>
+      <div class="font-bold text-xl mt-3">${key.replace("_", " ").toUpperCase()}</div>
+      <div class="text-2xl font-semibold text-indigo-600 mt-1">KES ${com.price}</div>
     `;
-
     card.onclick = () => {
       selectedCommodity = key;
       document.getElementById("selected").textContent = key.replace("_", " ").toUpperCase();
@@ -229,7 +218,6 @@ function renderCommodities() {
       card.classList.add("selected");
       document.getElementById("investBtn").disabled = false;
     };
-
     grid.appendChild(card);
   });
 }
@@ -239,66 +227,66 @@ function renderInvestments(investments) {
   container.innerHTML = "";
 
   if (Object.keys(investments).length === 0) {
-    container.innerHTML = `<p class="text-gray-500 text-center py-8">No investments yet. Go to Invest tab to start.</p>`;
+    container.innerHTML = `<p class="text-center text-gray-500 py-12">No investments yet. Start investing in the Invest tab.</p>`;
     return;
   }
 
   Object.entries(investments).forEach(([commodity, info]) => {
     const isApproved = info.status === "approved";
-    const canGrab = isApproved && info.can_grab === true;
+    const canGrab = isApproved && (info.can_grab === true);
 
-    let html = `
-      <div class="p-6 bg-white border border-gray-200 rounded-3xl shadow-sm">
-        <div class="flex items-start justify-between">
-          <div>
-            <span class="emoji text-4xl">${info.emoji || '🔄'}</span>
-            <div class="mt-2">
-              <strong class="text-xl">${commodity.toUpperCase()}</strong><br>
-              <span class="text-indigo-600 font-semibold">KES ${Number(info.amount || 0).toFixed(0)}</span>
+    let cardHTML = `
+      <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-4">
+            <span class="text-5xl">${info.emoji || '📦'}</span>
+            <div>
+              <h4 class="font-bold text-xl">${commodity.toUpperCase()}</h4>
+              <p class="text-indigo-600">KES ${Number(info.amount || 0).toFixed(0)}</p>
             </div>
           </div>
-          <div class="text-right">
-            <span class="inline-block px-4 py-1 rounded-full text-sm font-medium ${isApproved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-              ${isApproved ? '✅ Approved' : '🕒 Pending'}
-            </span>
-          </div>
+          <span class="px-4 py-1 rounded-full text-sm ${isApproved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+            ${isApproved ? 'Approved' : 'Pending Approval'}
+          </span>
         </div>
+    `;
 
-        ${isApproved ? `
-        <div class="mt-6 grid grid-cols-2 gap-4 text-sm">
+    if (isApproved) {
+      cardHTML += `
+        <div class="mt-6 grid grid-cols-2 gap-6 text-sm">
           <div>
             <p class="text-gray-500">Daily Bonus</p>
-            <p class="font-semibold text-green-600">KES ${info.daily_earning}</p>
+            <p class="text-2xl font-bold text-green-600">KES ${info.daily_earning}</p>
           </div>
           <div>
-            <p class="text-gray-500">Days Left</p>
-            <p class="font-semibold">${info.days_remaining} days</p>
+            <p class="text-gray-500">Days Remaining</p>
+            <p class="text-2xl font-bold">${info.days_remaining}</p>
           </div>
         </div>
 
         <div class="mt-4 p-4 bg-gray-50 rounded-2xl text-center">
-          <p class="text-gray-600 text-sm">${info.time_to_next || 'Ready to grab!'}</p>
+          <p class="font-medium">${info.time_to_next || "Ready to claim!"}</p>
         </div>
 
         <button onclick="grabBonus('${commodity}')" 
-          class="grab-btn w-full mt-5 py-4 rounded-2xl font-bold text-white text-lg ${canGrab ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-gray-400 cursor-not-allowed'}"
+          class="grab-btn w-full mt-6 py-4 rounded-2xl font-bold text-lg text-white ${canGrab ? 
+            'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700' : 
+            'bg-gray-400 cursor-not-allowed'}"
           ${canGrab ? '' : 'disabled'}>
-          ${canGrab ? '🎁 GRAB DAILY BONUS NOW' : '⏳ Wait for next bonus'}
+          ${canGrab ? '🎁 GRAB DAILY BONUS NOW' : '⏳ Next bonus in ' + (info.time_to_next || '')}
         </button>
-        ` : `
-        <div class="mt-6 p-4 bg-yellow-50 border border-yellow-300 rounded-2xl text-center">
-          <p class="text-amber-700">Waiting for admin approval</p>
-        </div>
-        `}
-      </div>
-    `;
+      `;
+    } else {
+      cardHTML += `<div class="mt-6 p-4 bg-yellow-50 rounded-2xl text-center text-amber-700">Waiting for admin approval...</div>`;
+    }
 
-    container.innerHTML += html;
+    cardHTML += `</div>`;
+    container.innerHTML += cardHTML;
   });
 }
 
 async function grabBonus(commodity) {
-  if (!confirm(`Grab daily bonus for ${commodity.toUpperCase()}?`)) return;
+  if (!confirm(`Claim daily bonus for ${commodity.toUpperCase()}?`)) return;
 
   try {
     const res = await fetch(`${BACKEND_URL}/bonus/grab`, {
@@ -307,16 +295,16 @@ async function grabBonus(commodity) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("access_token")}`
       },
-      body: JSON.stringify({ commodity: commodity })
+      body: JSON.stringify({ commodity })
     });
 
-    const data = await res.json();
+    const result = await res.json();
 
     if (res.ok) {
-      showMsg("success", data.message || "Bonus grabbed successfully!");
-      loadDashboard();   // Refresh to update balance and countdown
+      showMsg("success", result.message || `✅ Bonus of KES ${result.earned} added!`);
+      loadDashboard();        // This will update Balance + Earnings
     } else {
-      showMsg("error", data.detail || data.message || "Failed to grab bonus");
+      showMsg("error", result.detail || result.message || "Failed to grab bonus");
     }
   } catch (e) {
     showMsg("error", "Network error. Please try again.");
@@ -325,10 +313,9 @@ async function grabBonus(commodity) {
 
 async function invest() {
   if (!selectedCommodity) return;
-
   const btn = document.getElementById("investBtn");
   btn.disabled = true;
-  btn.textContent = "Processing...";
+  btn.textContent = "Requesting...";
 
   try {
     const res = await fetch(`${BACKEND_URL}/invest/request`, {
@@ -339,34 +326,28 @@ async function invest() {
       },
       body: JSON.stringify({ commodity: selectedCommodity })
     });
-
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data.message || "Investment failed");
-
-    alert(`✅ Request submitted!\n\nPay KES ${COMMODITY_INFO[selectedCommodity].price} via M-Pesa to ${MPESA_NUMBER}`);
-
-    loadDashboard();
-    selectedCommodity = null;
-    document.getElementById("selected").textContent = "-- None --";
-    document.getElementById("investBtn").disabled = true;
-    document.getElementById("investBtn").textContent = "Request Investment";
-
+    if (res.ok) {
+      alert(`✅ Investment request sent!\n\nPay KES ${COMMODITY_INFO[selectedCommodity].price} to M-Pesa: 0752964507`);
+      loadDashboard();
+      selectedCommodity = null;
+      document.getElementById("selected").textContent = "-- None --";
+      btn.disabled = true;
+      btn.textContent = "Request Investment";
+    } else {
+      alert(data.message || "Request failed");
+    }
   } catch (e) {
     alert("Error: " + e.message);
-    btn.disabled = false;
-    btn.textContent = "Request Investment";
   }
 }
 
 async function requestWithdrawal() {
   const amount = parseFloat(document.getElementById("withdrawAmount").value);
-  if (!amount || amount <= 0) {
-    alert("Please enter a valid amount");
-    return;
-  }
+  if (!amount || amount <= 0) return alert("Enter a valid amount");
 
-  if (!confirm(`Request withdrawal of KES ${amount}?`)) return;
+  if (!confirm(`Request KES ${amount} withdrawal?`)) return;
 
   try {
     const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
@@ -377,34 +358,23 @@ async function requestWithdrawal() {
       },
       body: JSON.stringify({ amount })
     });
-
     const data = await res.json();
-
-    if (res.ok) {
-      alert(data.message || "Withdrawal request submitted successfully.");
-      loadDashboard();
-    } else {
-      alert(data.detail || data.message || "Failed to submit withdrawal");
-    }
+    alert(data.message || "Withdrawal request submitted.");
+    loadDashboard();
   } catch (e) {
-    alert("Network error. Please try again.");
+    alert("Network error");
   }
 }
 
 function copyRef() {
   const link = document.getElementById("refLink").value;
-  navigator.clipboard.writeText(link).then(() => alert("✅ Referral link copied!"));
+  navigator.clipboard.writeText(link).then(() => alert("Referral link copied!"));
 }
 
 function switchTab(n) {
-  document.querySelectorAll('.tab-content').forEach((c, i) => {
-    c.classList.toggle('hidden', i !== n);
-  });
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', i === n);
-  });
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('hidden', i !== n));
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === n));
 }
 </script>
-
 </body>
 </html>
