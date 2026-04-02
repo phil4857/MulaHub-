@@ -27,7 +27,7 @@
     margin: 20px 0 30px 0;
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
     animation: pulse 3s infinite;
-    font-size: 1.1rem;
+    font-size: 1.12rem;
   }
   @keyframes pulse {
     0%, 100% { opacity: 1; }
@@ -64,7 +64,7 @@
   Welcome to Mkoba Wallet – Your money grows daily! 🤑
 </div>
 
-<!-- Live Banner: Thousands of people... -->
+<!-- Live Banner: Thousands of people are earning more than 300 daily -->
 <div class="live-banner">
   🚀 Thousands of people are earning more than 300 daily with Mkoba Wallet<br>
   <span style="font-size: 0.95rem; opacity: 0.95;">Start your journey to financial freedom today</span>
@@ -120,7 +120,7 @@
         <p class="text-gray-500 text-sm">Total Earnings</p>
         <p id="earnings" class="text-4xl font-bold text-green-600">KES 0.00</p>
       </div>
-      <div class="bg-white rounded-3xl p-8 shadow-2xl text-center">
+      <div class="bg-white rounded-3xl p-8 shadow-2xl text-center border-2 border-amber-400">
         <p class="text-gray-500 text-sm">Referral Bonus</p>
         <p id="referralBonus" class="text-4xl font-bold text-amber-600">KES 0.00</p>
       </div>
@@ -250,6 +250,7 @@ async function loadDashboard() {
 
     if (!res.ok) throw new Error(data.detail || "Failed to load");
 
+    // Update all values
     document.getElementById("balance").textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
     document.getElementById("earnings").textContent = `KES ${Number(data.earnings || 0).toFixed(2)}`;
     document.getElementById("referralBonus").textContent = `KES ${Number(data.referral_bonus_earned || 0).toFixed(2)}`;
