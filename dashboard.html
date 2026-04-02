@@ -64,7 +64,7 @@
   Welcome to Mkoba Wallet – Your money grows daily! 🤑
 </div>
 
-<!-- Live Banner: Thousands of people are earning more than 300 daily -->
+<!-- Live Banner -->
 <div class="live-banner">
   🚀 Thousands of people are earning more than 300 daily with Mkoba Wallet<br>
   <span style="font-size: 0.95rem; opacity: 0.95;">Start your journey to financial freedom today</span>
@@ -250,7 +250,6 @@ async function loadDashboard() {
 
     if (!res.ok) throw new Error(data.detail || "Failed to load");
 
-    // Update all values
     document.getElementById("balance").textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
     document.getElementById("earnings").textContent = `KES ${Number(data.earnings || 0).toFixed(2)}`;
     document.getElementById("referralBonus").textContent = `KES ${Number(data.referral_bonus_earned || 0).toFixed(2)}`;
@@ -258,6 +257,7 @@ async function loadDashboard() {
 
     renderInvestments(data.investments || {});
   } catch (e) {
+    console.error("Dashboard load error:", e);
     showMsg("error", e.message || "Could not load dashboard");
   }
 }
@@ -369,6 +369,7 @@ async function grabBonus(commodity) {
       showMsg("error", result.detail || result.message || "Failed to grab bonus");
     }
   } catch (e) {
+    console.error("Grab bonus error:", e);
     showMsg("error", "Network error");
   }
 }
@@ -401,6 +402,7 @@ async function invest() {
       alert(data.message || "Failed");
     }
   } catch (e) {
+    console.error("Invest error:", e);
     alert("Error: " + e.message);
   } finally {
     btn.disabled = false;
@@ -428,11 +430,13 @@ function updateChargePreview() {
 }
 
 async function requestWithdrawal() {
-  const amount = parseFloat(document.getElementById("withdrawAmount").value);
+  const amount = parseFloat(document.getElementById("withdrawAmount").value) || 0;
   const method = document.getElementById("withdrawMethod").value;
   const account = document.getElementById("withdrawAccount").value.trim();
 
-  if (!amount || amount < 100) {
+  console.log("Withdrawal attempt:", { amount, method, account }); // Debug log
+
+  if (amount < 100) {
     showMsg("error", "Minimum withdrawal is KES 100");
     return;
   }
@@ -461,18 +465,20 @@ async function requestWithdrawal() {
     });
 
     const data = await res.json();
+    console.log("Withdrawal response:", data);
 
     if (res.ok) {
       showMsg("success", data.message || "Withdrawal request submitted successfully.");
       document.getElementById("withdrawAmount").value = "";
       document.getElementById("withdrawAccount").value = "";
       document.getElementById("chargePreview").classList.add("hidden");
-      loadDashboard();
+      loadDashboard();   // Refresh everything including referral if needed
     } else {
       showMsg("error", data.detail || data.message || "Failed to submit");
     }
   } catch (e) {
-    showMsg("error", "Network error");
+    console.error("Withdrawal error:", e);
+    showMsg("error", "Network error - check console for details");
   }
 }
 
