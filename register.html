@@ -4,123 +4,224 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Register - Mkoba Wallet</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
   body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #1e40af 0%, #f97316 50%, #ea580c 100%);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://picsum.photos/id/1015/1920/1080') center/cover no-repeat;
+    opacity: 0.12;
+    z-index: -1;
   }
 
   .container {
     width: 100%;
-    max-width: 400px;
-    background: #ffffffee;
-    padding: 30px;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  }
+
+  .live-banner-top {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    color: white;
+    padding: 12px 20px;
     border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    backdrop-filter: blur(6px);
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+  }
+
+  .live-banner-bottom {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    margin-top: 24px;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.5);
+    animation: pulse 3s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.9; }
   }
 
   h2 {
     text-align: center;
-    margin-bottom: 20px;
-    color: #333;
+    margin-bottom: 1.8rem;
+    color: #1e40af;
+    font-size: 1.85rem;
+    font-weight: 700;
   }
 
-  input, button {
+  .input-group {
+    position: relative;
+    margin-bottom: 1.2rem;
+  }
+
+  input {
     width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    padding: 14px 16px;
+    padding-right: 50px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    color: #1f2937;
     font-size: 15px;
+    transition: all 0.3s;
   }
 
   input:focus {
     outline: none;
-    border-color: #2a5298;
-    box-shadow: 0 0 5px rgba(42,82,152,0.5);
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+  }
+
+  .toggle-eye {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 1.35rem;
   }
 
   button {
-    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #1e40af, #f97316);
     color: white;
     border: none;
+    border-radius: 12px;
     font-weight: bold;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s;
+    margin-top: 10px;
   }
 
   button:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
   }
 
   button:disabled {
-    background: #aaa;
+    background: #9ca3af;
     cursor: not-allowed;
   }
 
   .msg {
-    margin-top: 10px;
+    margin-top: 15px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 10px;
   }
-
-  .msg.error { color: #dc3545; }
-  .msg.success { color: #28a745; }
-  .msg.loading { color: #007bff; }
-
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Create Account</h2>
+  <!-- Top Live Welcome Banner -->
+  <div class="live-banner-top">
+    🎉 Welcome to Mkoba Wallet 🎉🎉
+  </div>
+
+  <h2>Join Mkoba Wallet</h2>
 
   <form id="registerForm">
-    <input type="text" id="username" placeholder="Username" required />
-    <input type="text" id="phone" placeholder="Phone (07xxxxxxxx or 01xxxxxxxx)" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
-    <input type="text" id="referral" placeholder="Referral (optional)" />
-    <button type="submit" id="registerBtn">Register</button>
+    <div class="input-group">
+      <input type="text" id="username" placeholder="Choose username" required />
+    </div>
+
+    <div class="input-group">
+      <input type="text" id="phone" placeholder="Phone number (07xxxxxxxx or 01xxxxxxxx)" required />
+    </div>
+
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Create password" required />
+      <span class="toggle-eye" onclick="togglePassword('password')"><i class="fas fa-eye"></i></span>
+    </div>
+
+    <div class="input-group">
+      <input type="password" id="confirmPassword" placeholder="Confirm password" required />
+      <span class="toggle-eye" onclick="togglePassword('confirmPassword')"><i class="fas fa-eye"></i></span>
+    </div>
+
+    <div class="input-group">
+      <input type="text" id="referral" placeholder="Referral code (optional)" />
+    </div>
+
+    <button type="submit" id="registerBtn">Create My Account</button>
   </form>
 
   <div id="msg" class="msg"></div>
+
+  <!-- Bottom Motivational Banner -->
+  <div class="live-banner-bottom">
+    🚀 Thousands of Kenyans are growing their money daily with Mkoba Wallet<br>
+    <span class="text-sm opacity-90">Start your journey to financial freedom today</span>
+  </div>
 </div>
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
-
   const form = document.getElementById('registerForm');
   const msg = document.getElementById('msg');
   const registerBtn = document.getElementById('registerBtn');
 
-  const usernameInput = document.getElementById('username');
-  const phoneInput = document.getElementById('phone');
-  const passwordInput = document.getElementById('password');
-  const confirmPasswordInput = document.getElementById('confirmPassword');
-  const referralInput = document.getElementById('referral');
-
-  usernameInput.focus();
-
-  // Autofill referral
+  // Autofill referral from URL
   const params = new URLSearchParams(window.location.search);
   const ref = params.get('ref');
-  if (ref) referralInput.value = ref;
+  if (ref) document.getElementById('referral').value = ref;
 
   function showMessage(type, text) {
-    msg.className = 'msg ' + type;
+    msg.className = `msg ${type}`;
     msg.textContent = text;
+    setTimeout(() => msg.textContent = "", 8000);
+  }
+
+  function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = field.parentElement.querySelector('.toggle-eye i');
+    
+    if (field.type === "password") {
+      field.type = "text";
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    } else {
+      field.type = "password";
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    }
   }
 
   function normalizePhone(p) {
@@ -134,73 +235,60 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const username = usernameInput.value.trim().toLowerCase();
-    const phone = normalizePhone(phoneInput.value.trim());
-    const password = passwordInput.value;
-    const confirmPwd = confirmPasswordInput.value;
-    const referral = referralInput.value.trim().toLowerCase();
+    const username = document.getElementById('username').value.trim().toLowerCase();
+    const phone = normalizePhone(document.getElementById('phone').value.trim());
+    const password = document.getElementById('password').value;
+    const confirmPwd = document.getElementById('confirmPassword').value;
+    const referral = document.getElementById('referral').value.trim().toLowerCase();
 
-    // Validation
     if (!username || !phone || !password || !confirmPwd) {
-      return showMessage('error', 'Fill all fields.');
+      return showMessage('error', 'Please fill all required fields');
     }
 
     if (!isValidPhone(phone)) {
-      return showMessage('error', 'Invalid phone format.');
+      return showMessage('error', 'Phone number must start with 07 or 01 and be 10 digits');
     }
 
     if (password !== confirmPwd) {
-      return showMessage('error', 'Passwords do not match.');
+      return showMessage('error', 'Passwords do not match');
+    }
+
+    if (password.length < 6) {
+      return showMessage('error', 'Password must be at least 6 characters');
     }
 
     registerBtn.disabled = true;
-    registerBtn.textContent = "Registering...";
-    showMessage('loading', 'Creating account...');
+    registerBtn.textContent = "Creating account...";
+    showMessage('loading', 'Please wait...');
 
     try {
       const res = await fetch(`${BACKEND_URL}/register`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ username, phone, password, referral })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          username, 
+          phone, 
+          password, 
+          referral: referral || null 
+        })
       });
 
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = { message: await res.text() };
-      }
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        showMessage('success', data.message || "Registered successfully!");
-        setTimeout(() => window.location.href = "login.html", 1200);
+        showMessage('success', data.message || "Account created successfully! 🎉");
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1500);
       } else {
-
-        // ✅ FIXED ERROR HANDLING (NO MORE [object Object])
-        let errMsg = "Registration failed";
-
-        if (typeof data === "string") {
-          errMsg = data;
-        } else if (data.message) {
-          errMsg = data.message;
-        } else if (data.detail) {
-          if (Array.isArray(data.detail)) {
-            errMsg = data.detail.map(e => e.msg || "Error").join(" • ");
-          } else {
-            errMsg = data.detail;
-          }
-        }
-
-        showMessage('error', errMsg);
+        showMessage('error', data.detail || data.message || "Registration failed. Try again.");
       }
-
     } catch (err) {
-      console.error(err);
-      showMessage('error', 'Server not reachable.');
+      showMessage('error', "Cannot connect to server. Please check your internet.");
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Create My Account";
     }
-
-    registerBtn.disabled = false;
-    registerBtn.textContent = "Register";
   });
 });
 </script>
