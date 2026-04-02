@@ -30,6 +30,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // ── Constants ──
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+    // ── Create Live Banner ──
+    function createLiveBanner() {
+        const banner = document.createElement("div");
+        banner.style.cssText = `
+            background: linear-gradient(90deg, #10b981, #34d399);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 14px;
+            text-align: center;
+            font-weight: 700;
+            margin: 25px 0 35px 0;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+            animation: pulse 3s infinite;
+            font-size: 1.12rem;
+            line-height: 1.45;
+        `;
+        banner.innerHTML = `
+            🚀 Thousands of people are earning more than 300 daily with Mkoba Wallet<br>
+            <span style="font-size: 0.96rem; opacity: 0.95; font-weight: 500;">
+                Start your journey to financial freedom today
+            </span>
+        `;
+
+        // Insert banner below any existing top banner / welcome area
+        const firstElement = document.body.firstElementChild;
+        if (firstElement) {
+            document.body.insertBefore(banner, firstElement.nextSibling || firstElement);
+        } else {
+            document.body.appendChild(banner);
+        }
+    }
+
     // ── Countdown Logic ──
     function updateCountdown() {
         const lastClaimStr = localStorage.getItem("lastEarning");
@@ -67,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ── Claim Button Handler ──
     grabBtn.addEventListener("click", async () => {
-        if (grabBtn.disabled) return;  // Safety check
+        if (grabBtn.disabled) return;
 
         grabBtn.disabled = true;
         grabBtn.textContent = "Processing...";
@@ -90,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Update last claim time
             localStorage.setItem("lastEarning", Date.now().toString());
 
-            // Refresh countdown UI
+            // Refresh countdown
             updateCountdown();
 
         } catch (err) {
@@ -101,6 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
             grabBtn.textContent = "Grab Daily Bonus";
         }
     });
+
+    // ── Create the live banner ──
+    createLiveBanner();
 
     // ── Cleanup on unload ──
     window.addEventListener("beforeunload", () => clearInterval(countdownInterval));
