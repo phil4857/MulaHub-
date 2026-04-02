@@ -16,5 +16,3 @@ if (!countdownEl || !grabBtn) {
     console.warn("Required elements #countdown or #grabBonusBtn not found.");  
     return;  
 }
-
-What does it contain
