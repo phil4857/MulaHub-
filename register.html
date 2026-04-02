@@ -34,34 +34,35 @@
 
   .container {
     width: 100%;
-    max-width: 420px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    padding: 2.5rem;
-    border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    max-width: 460px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+    padding: 2.8rem 2rem;
+    border-radius: 28px;
+    box-shadow: 0 25px 65px rgba(0, 0, 0, 0.4);
   }
 
   .live-banner-top {
     background: linear-gradient(90deg, #f59e0b, #d97706);
     color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
+    padding: 16px 20px;
+    border-radius: 16px;
     text-align: center;
     font-weight: 700;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    font-size: 1.3rem;
+    margin-bottom: 28px;
+    box-shadow: 0 5px 20px rgba(245, 158, 11, 0.5);
   }
 
   .live-banner-bottom {
     background: linear-gradient(90deg, #10b981, #34d399);
     color: white;
-    padding: 14px 20px;
-    border-radius: 12px;
+    padding: 16px 20px;
+    border-radius: 16px;
     text-align: center;
     font-weight: 600;
-    margin-top: 24px;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.5);
+    margin-top: 28px;
+    box-shadow: 0 5px 20px rgba(16, 185, 129, 0.5);
     animation: pulse 3s infinite;
   }
 
@@ -72,62 +73,62 @@
 
   h2 {
     text-align: center;
-    margin-bottom: 1.8rem;
+    margin-bottom: 2rem;
     color: #1e40af;
-    font-size: 1.85rem;
+    font-size: 2.2rem;
     font-weight: 700;
   }
 
   .input-group {
     position: relative;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.6rem;
   }
 
   input {
     width: 100%;
-    padding: 14px 16px;
-    padding-right: 50px;
+    padding: 18px 22px;
+    padding-right: 62px;
     background: white;
     border: 2px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 16px;
     color: #1f2937;
-    font-size: 15px;
+    font-size: 1.3rem;           /* Bigger for phones */
     transition: all 0.3s;
   }
 
   input:focus {
     outline: none;
     border-color: #f97316;
-    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.25);
   }
 
   .toggle-eye {
     position: absolute;
-    right: 16px;
+    right: 22px;
     top: 50%;
     transform: translateY(-50%);
     color: #6b7280;
     cursor: pointer;
-    font-size: 1.35rem;
+    font-size: 1.8rem;           /* Larger eye icon */
   }
 
   button {
     width: 100%;
-    padding: 14px;
+    padding: 18px;
     background: linear-gradient(135deg, #1e40af, #f97316);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 16px;
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1.35rem;          /* Big button text */
     cursor: pointer;
     transition: all 0.3s;
-    margin-top: 10px;
+    margin-top: 12px;
   }
 
   button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(249, 115, 22, 0.45);
   }
 
   button:disabled {
@@ -136,11 +137,12 @@
   }
 
   .msg {
-    margin-top: 15px;
+    margin-top: 20px;
     text-align: center;
     font-weight: 600;
-    padding: 12px;
-    border-radius: 10px;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 1.15rem;
   }
 </style>
 </head>
@@ -148,9 +150,9 @@
 <body>
 
 <div class="container">
-  <!-- Top Live Welcome Banner -->
+  <!-- Top Welcome Banner -->
   <div class="live-banner-top">
-    🎉 Welcome to Mkoba Wallet 🎉🎉
+    🎉 Welcome to Mkoba Wallet 💲🎉🎉
   </div>
 
   <h2>Join Mkoba Wallet</h2>
@@ -198,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const msg = document.getElementById('msg');
   const registerBtn = document.getElementById('registerBtn');
 
-  // Autofill referral from URL
   const params = new URLSearchParams(window.location.search);
   const ref = params.get('ref');
   if (ref) document.getElementById('referral').value = ref;
@@ -209,18 +210,19 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => msg.textContent = "", 8000);
   }
 
+  // Fixed and reliable password toggle
   function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const icon = field.parentElement.querySelector('.toggle-eye i');
+    const input = document.getElementById(fieldId);
+    const eyeIcon = input.parentElement.querySelector('.toggle-eye i');
     
-    if (field.type === "password") {
-      field.type = "text";
-      icon.classList.remove('fa-eye');
-      icon.classList.add('fa-eye-slash');
+    if (input.type === "password") {
+      input.type = "text";
+      eyeIcon.classList.remove("fa-eye");
+      eyeIcon.classList.add("fa-eye-slash");
     } else {
-      field.type = "password";
-      icon.classList.remove('fa-eye-slash');
-      icon.classList.add('fa-eye');
+      input.type = "password";
+      eyeIcon.classList.remove("fa-eye-slash");
+      eyeIcon.classList.add("fa-eye");
     }
   }
 
@@ -277,9 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (res.ok) {
         showMessage('success', data.message || "Account created successfully! 🎉");
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1500);
+        setTimeout(() => window.location.href = "login.html", 1500);
       } else {
         showMessage('error', data.detail || data.message || "Registration failed. Try again.");
       }
