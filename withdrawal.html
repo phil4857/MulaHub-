@@ -51,7 +51,6 @@
   }
   .success { background: #d4edda; color: #155724; }
   .error { background: #f8d7da; color: #721c24; }
-  .loading { background: #fff3cd; color: #856404; }
 </style>
 </head>
 <body class="p-6">
@@ -85,18 +84,34 @@
         <button type="button" class="amount-btn flex-1" data-amount="50000">50,000</button>
       </div>
 
+      <!-- Live Charge Breakdown -->
+      <div id="chargeBreakdown" class="hidden bg-amber-50 border border-amber-300 p-4 rounded-2xl mb-6 text-sm">
+        <div class="flex justify-between mb-1">
+          <span class="text-gray-600">Requested Amount:</span>
+          <span id="requestedAmt" class="font-semibold">KES 0</span>
+        </div>
+        <div class="flex justify-between mb-1">
+          <span class="text-red-600">20% Withdrawal Charge:</span>
+          <span id="chargeAmt" class="font-semibold text-red-600">KES 0</span>
+        </div>
+        <div class="flex justify-between border-t pt-2 mt-2">
+          <span class="font-bold">You will receive:</span>
+          <span id="netAmt" class="font-bold text-green-600">KES 0</span>
+        </div>
+      </div>
+
       <label class="block text-sm font-semibold mb-2 text-gray-700">Withdrawal Method</label>
       <select id="method" class="w-full p-4 border border-gray-300 rounded-2xl mb-6">
         <option value="">Select method</option>
         <option value="mpesa">M-Pesa</option>
-        <option value="bank">Bank Transfer</option>
         <option value="airtel">Airtel Money</option>
+        <option value="bank">Bank Transfer</option>
         <option value="paypal">PayPal</option>
       </select>
 
       <label class="block text-sm font-semibold mb-2 text-gray-700">Account / Phone Number</label>
       <input type="text" id="account" placeholder="e.g. 0712345678 or Bank Account No." 
-        class="w-full p-4 border border-gray-300 rounded-2xl mb-6">
+        class="w-full p-4 border border-gray-300 rounded-2xl mb-8">
 
       <button type="submit" 
         class="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-3xl font-bold text-xl">
@@ -106,7 +121,7 @@
 
     <p class="text-center text-sm text-gray-600 mt-8">
       Minimum withdrawal: KES 100<br>
-      Requests are processed within 24 hours after admin approval.
+      20% charge applies • Processed within 24 hours after admin approval.
     </p>
   </div>
 
@@ -128,8 +143,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".amount-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.getElementById("amount").value = btn.dataset.amount;
+      updateChargeBreakdown();
     });
   });
+
+  // Live charge calculation
+  document.getElementById("amount").addEventListener("input", updateChargeBreakdown);
 
   // Form submit
   document.getElementById("withdrawalForm").addEventListener("submit", async (e) => {
@@ -165,18 +184,19 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: JSON.stringify({ 
           amount: amount,
-          method: method,
-          account: account 
+          payment_method: method 
         })
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        showMsg("success", data.message || "Withdrawal request submitted successfully. Awaiting admin approval.");
+        showMsg("success", data.message || "Withdrawal request submitted successfully.");
+        // Clear form
         document.getElementById("amount").value = "";
         document.getElementById("account").value = "";
-        loadBalance(); // Refresh balance
+        document.getElementById("chargeBreakdown").classList.add("hidden");
+        loadBalance(); 
       } else {
         showMsg("error", data.detail || data.message || "Failed to submit request");
       }
@@ -188,6 +208,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+function updateChargeBreakdown() {
+  const amountInput = document.getElementById("amount");
+  const breakdown = document.getElementById("chargeBreakdown");
+  const amount = parseFloat(amountInput.value);
+
+  if (!amount || amount < 100) {
+    breakdown.classList.add("hidden");
+    return;
+  }
+
+  const charge = amount * 0.20;
+  const net = amount - charge;
+
+  document.getElementById("requestedAmt").textContent = `KES ${amount.toFixed(0)}`;
+  document.getElementById("chargeAmt").textContent = `KES ${charge.toFixed(0)}`;
+  document.getElementById("netAmt").textContent = `KES ${net.toFixed(0)}`;
+
+  breakdown.classList.remove("hidden");
+}
 
 async function loadBalance() {
   try {
