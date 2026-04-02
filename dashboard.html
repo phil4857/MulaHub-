@@ -17,6 +17,22 @@
     text-shadow: 0 2px 10px rgba(0,0,0,0.4);
     box-shadow: 0 6px 20px rgba(0,0,0,0.35);
   }
+  .live-banner {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 14px;
+    text-align: center;
+    font-weight: 700;
+    margin: 20px 0 30px 0;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    animation: pulse 3s infinite;
+    font-size: 1.1rem;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.92; }
+  }
   .commodity-card {
     transition: all 0.3s ease;
     border: 2px solid transparent;
@@ -43,8 +59,15 @@
 </head>
 <body class="p-6">
 
+<!-- Top Welcome Banner -->
 <div class="welcome-banner">
   Welcome to Mkoba Wallet – Your money grows daily! 🤑
+</div>
+
+<!-- Live Banner: Thousands of people... -->
+<div class="live-banner">
+  🚀 Thousands of people are earning more than 300 daily with Mkoba Wallet<br>
+  <span style="font-size: 0.95rem; opacity: 0.95;">Start your journey to financial freedom today</span>
 </div>
 
 <div class="max-w-6xl mx-auto">
@@ -117,7 +140,7 @@
     </div>
   </div>
 
-  <!-- WITHDRAW TAB (Updated with 20% charge + multiple methods) -->
+  <!-- WITHDRAW TAB -->
   <div id="tabContent2" class="tab-content hidden">
     <div class="bg-white rounded-3xl p-8 shadow-2xl">
       <h2 class="text-3xl font-bold text-center mb-6 text-indigo-700">Withdraw Funds</h2>
@@ -384,7 +407,6 @@ async function invest() {
   }
 }
 
-// Updated Withdrawal with 20% charge preview
 function updateChargePreview() {
   const amount = parseFloat(document.getElementById("withdrawAmount").value);
   const preview = document.getElementById("chargePreview");
