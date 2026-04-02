@@ -34,6 +34,13 @@
   .success { background: #d4edda; color: #155724; }
   .error { background: #f8d7da; color: #721c24; }
   .loading { background: #fff3cd; color: #856404; }
+  .grab-btn {
+    transition: all 0.2s ease;
+  }
+  .grab-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 </style>
 </head>
 <body class="p-6">
@@ -100,8 +107,10 @@
     </div>
 
     <div class="bg-white rounded-3xl p-8 shadow-2xl">
-      <h3 class="font-bold text-xl mb-4">Your Investments</h3>
-      <div id="investmentsList" class="space-y-4"></div>
+      <h3 class="font-bold text-xl mb-6 flex items-center gap-2">
+        <span>Your Investments & Daily Bonuses</span>
+      </h3>
+      <div id="investmentsList" class="space-y-6"></div>
     </div>
 
     <div class="bg-white rounded-3xl p-8 shadow-2xl mt-8">
@@ -175,7 +184,7 @@ function showMsg(type, text) {
   const msgEl = document.getElementById("msg");
   msgEl.textContent = text;
   msgEl.className = `msg ${type}`;
-  setTimeout(() => msgEl.textContent = "", 6000);
+  setTimeout(() => msgEl.textContent = "", 8000);
 }
 
 async function loadDashboard() {
@@ -194,7 +203,7 @@ async function loadDashboard() {
     document.getElementById("withdrawBalance").textContent = Number(data.balance || 0).toFixed(2);
 
     renderInvestments(data.investments || {});
-    showMsg("success", "Dashboard loaded");
+    showMsg("", "");
   } catch (e) {
     showMsg("error", e.message || "Failed to load dashboard");
   }
@@ -227,22 +236,91 @@ function renderCommodities() {
 
 function renderInvestments(investments) {
   const container = document.getElementById("investmentsList");
-  container.innerHTML = "<h3 class='font-bold text-lg mb-4'>Your Investments</h3>";
+  container.innerHTML = "";
+
   if (Object.keys(investments).length === 0) {
-    container.innerHTML += "<p class='text-gray-500'>No active investments yet.</p>";
+    container.innerHTML = `<p class="text-gray-500 text-center py-8">No investments yet. Go to Invest tab to start.</p>`;
     return;
   }
+
   Object.entries(investments).forEach(([commodity, info]) => {
-    const div = document.createElement("div");
-    div.className = "p-5 bg-gray-50 rounded-2xl mb-4";
-    div.innerHTML = `
-      <span class="emoji text-3xl">${info.emoji || '🔄'}</span>
-      <strong>${commodity.toUpperCase()}</strong> — KES ${info.amount || 0}<br>
-      Status: <span class="font-medium">${info.status}</span>
-      ${info.time_to_next_earning ? `<br>Next earning: ${info.time_to_next_earning}` : ''}
+    const isApproved = info.status === "approved";
+    const canGrab = isApproved && info.can_grab === true;
+
+    let html = `
+      <div class="p-6 bg-white border border-gray-200 rounded-3xl shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <span class="emoji text-4xl">${info.emoji || '🔄'}</span>
+            <div class="mt-2">
+              <strong class="text-xl">${commodity.toUpperCase()}</strong><br>
+              <span class="text-indigo-600 font-semibold">KES ${Number(info.amount || 0).toFixed(0)}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="inline-block px-4 py-1 rounded-full text-sm font-medium ${isApproved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+              ${isApproved ? '✅ Approved' : '🕒 Pending'}
+            </span>
+          </div>
+        </div>
+
+        ${isApproved ? `
+        <div class="mt-6 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-gray-500">Daily Bonus</p>
+            <p class="font-semibold text-green-600">KES ${info.daily_earning}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Days Left</p>
+            <p class="font-semibold">${info.days_remaining} days</p>
+          </div>
+        </div>
+
+        <div class="mt-4 p-4 bg-gray-50 rounded-2xl text-center">
+          <p class="text-gray-600 text-sm">${info.time_to_next || 'Ready to grab!'}</p>
+        </div>
+
+        <button onclick="grabBonus('${commodity}')" 
+          class="grab-btn w-full mt-5 py-4 rounded-2xl font-bold text-white text-lg ${canGrab ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' : 'bg-gray-400 cursor-not-allowed'}"
+          ${canGrab ? '' : 'disabled'}>
+          ${canGrab ? '🎁 GRAB DAILY BONUS NOW' : '⏳ Wait for next bonus'}
+        </button>
+        ` : `
+        <div class="mt-6 p-4 bg-yellow-50 border border-yellow-300 rounded-2xl text-center">
+          <p class="text-amber-700">Waiting for admin approval</p>
+        </div>
+        `}
+      </div>
     `;
-    container.appendChild(div);
+
+    container.innerHTML += html;
   });
+}
+
+async function grabBonus(commodity) {
+  if (!confirm(`Grab daily bonus for ${commodity.toUpperCase()}?`)) return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/bonus/grab`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`
+      },
+      body: JSON.stringify({ commodity: commodity })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      showMsg("success", data.message || "Bonus grabbed successfully!");
+      loadDashboard();   // Refresh to update balance and countdown
+    } else {
+      showMsg("error", data.detail || data.message || "Failed to grab bonus");
+    }
+  } catch (e) {
+    showMsg("error", "Network error. Please try again.");
+  }
 }
 
 async function invest() {
@@ -303,7 +381,7 @@ async function requestWithdrawal() {
     const data = await res.json();
 
     if (res.ok) {
-      alert(data.message || "Withdrawal request submitted successfully. Waiting for admin approval.");
+      alert(data.message || "Withdrawal request submitted successfully.");
       loadDashboard();
     } else {
       alert(data.detail || data.message || "Failed to submit withdrawal");
