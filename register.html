@@ -4,293 +4,302 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Register - Mkoba Wallet</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-  body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #1e40af 0%, #f97316 50%, #ea580c 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    position: relative;
-    overflow: hidden;
-  }
 
-  body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('https://picsum.photos/id/1015/1920/1080') center/cover no-repeat;
-    opacity: 0.12;
-    z-index: -1;
-  }
+body{
+font-family:'Segoe UI',Arial,sans-serif;
+background:linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%);
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:0;
+overflow:hidden;
+}
 
-  .container {
-    width: 100%;
-    max-width: 460px;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(14px);
-    padding: 2.8rem 2rem;
-    border-radius: 28px;
-    box-shadow: 0 25px 65px rgba(0, 0, 0, 0.4);
-  }
+.container{
+width:100%;
+max-width:480px;
+background:white;
+padding:3rem 2.2rem;
+border-radius:26px;
+box-shadow:0 25px 65px rgba(0,0,0,0.35);
+}
 
-  .live-banner-top {
-    background: linear-gradient(90deg, #f59e0b, #d97706);
-    color: white;
-    padding: 16px 20px;
-    border-radius: 16px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.3rem;
-    margin-bottom: 28px;
-    box-shadow: 0 5px 20px rgba(245, 158, 11, 0.5);
-  }
+.live-banner-top{
+background:#27ae60;
+color:white;
+padding:16px;
+border-radius:14px;
+text-align:center;
+font-weight:700;
+font-size:1.45rem;
+margin-bottom:26px;
+box-shadow:0 5px 15px rgba(39,174,96,0.4);
+}
 
-  .live-banner-bottom {
-    background: linear-gradient(90deg, #10b981, #34d399);
-    color: white;
-    padding: 16px 20px;
-    border-radius: 16px;
-    text-align: center;
-    font-weight: 600;
-    margin-top: 28px;
-    box-shadow: 0 5px 20px rgba(16, 185, 129, 0.5);
-    animation: pulse 3s infinite;
-  }
+.live-banner-bottom{
+background:#e67e22;
+color:white;
+padding:16px;
+border-radius:14px;
+text-align:center;
+font-weight:600;
+margin-top:26px;
+font-size:1.2rem;
+animation:pulse 3s infinite;
+}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.9; }
-  }
+@keyframes pulse{
+0%,100%{opacity:1;}
+50%{opacity:.9;}
+}
 
-  h2 {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #1e40af;
-    font-size: 2.2rem;
-    font-weight: 700;
-  }
+h2{
+text-align:center;
+margin-bottom:2rem;
+color:#e67e22;
+font-size:2.3rem;
+font-weight:700;
+}
 
-  .input-group {
-    position: relative;
-    margin-bottom: 1.6rem;
-  }
+.input-group{
+position:relative;
+margin-bottom:1.7rem;
+}
 
-  input {
-    width: 100%;
-    padding: 18px 22px;
-    padding-right: 62px;
-    background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 16px;
-    color: #1f2937;
-    font-size: 1.3rem;           /* Bigger for phones */
-    transition: all 0.3s;
-  }
+input{
+width:100%;
+padding:20px 22px;
+padding-right:70px;
+background:white;
+border:2px solid #e5e7eb;
+border-radius:16px;
+color:#1f2937;
+font-size:1.35rem;
+transition:.3s;
+}
 
-  input:focus {
-    outline: none;
-    border-color: #f97316;
-    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.25);
-  }
+input:focus{
+outline:none;
+border-color:#27ae60;
+box-shadow:0 0 0 4px rgba(39,174,96,.25);
+}
 
-  .toggle-eye {
-    position: absolute;
-    right: 22px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6b7280;
-    cursor: pointer;
-    font-size: 1.8rem;           /* Larger eye icon */
-  }
+.toggle-eye{
+position:absolute;
+right:22px;
+top:50%;
+transform:translateY(-50%);
+color:#6b7280;
+cursor:pointer;
+font-size:1.9rem;
+}
 
-  button {
-    width: 100%;
-    padding: 18px;
-    background: linear-gradient(135deg, #1e40af, #f97316);
-    color: white;
-    border: none;
-    border-radius: 16px;
-    font-weight: bold;
-    font-size: 1.35rem;          /* Big button text */
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 12px;
-  }
+button{
+width:100%;
+padding:20px;
+background:#27ae60;
+color:white;
+border:none;
+border-radius:16px;
+font-weight:bold;
+font-size:1.4rem;
+cursor:pointer;
+transition:.3s;
+margin-top:12px;
+}
 
-  button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(249, 115, 22, 0.45);
-  }
+button:hover{
+transform:translateY(-3px);
+background:#219653;
+box-shadow:0 12px 30px rgba(39,174,96,.45);
+}
 
-  button:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-  }
+button:disabled{
+background:#9ca3af;
+cursor:not-allowed;
+}
 
-  .msg {
-    margin-top: 20px;
-    text-align: center;
-    font-weight: 600;
-    padding: 16px;
-    border-radius: 14px;
-    font-size: 1.15rem;
-  }
+.msg{
+margin-top:20px;
+text-align:center;
+font-weight:600;
+padding:16px;
+border-radius:14px;
+font-size:1.2rem;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <!-- Top Welcome Banner -->
-  <div class="live-banner-top">
-    🎉 Welcome to Mkoba Wallet 💲🎉🎉
-  </div>
 
-  <h2>Join Mkoba Wallet</h2>
+<div class="live-banner-top">
+🎉 Welcome to Mkoba Wallet 🤑
+</div>
 
-  <form id="registerForm">
-    <div class="input-group">
-      <input type="text" id="username" placeholder="Choose username" required />
-    </div>
+<h2>Create Your Account</h2>
 
-    <div class="input-group">
-      <input type="text" id="phone" placeholder="Phone number (07xxxxxxxx or 01xxxxxxxx)" required />
-    </div>
+<form id="registerForm">
 
-    <div class="input-group">
-      <input type="password" id="password" placeholder="Create password" required />
-      <span class="toggle-eye" onclick="togglePassword('password')"><i class="fas fa-eye"></i></span>
-    </div>
+<div class="input-group">
+<input type="text" id="username" placeholder="Choose username" required>
+</div>
 
-    <div class="input-group">
-      <input type="password" id="confirmPassword" placeholder="Confirm password" required />
-      <span class="toggle-eye" onclick="togglePassword('confirmPassword')"><i class="fas fa-eye"></i></span>
-    </div>
+<div class="input-group">
+<input type="text" id="phone" placeholder="Phone number (07xxxxxxxx)" required>
+</div>
 
-    <div class="input-group">
-      <input type="text" id="referral" placeholder="Referral code (optional)" />
-    </div>
+<div class="input-group">
+<input type="password" id="password" placeholder="Create password" required>
+<span class="toggle-eye" onclick="togglePassword('password')">
+<i class="fas fa-eye"></i>
+</span>
+</div>
 
-    <button type="submit" id="registerBtn">Create My Account</button>
-  </form>
+<div class="input-group">
+<input type="password" id="confirmPassword" placeholder="Confirm password" required>
+<span class="toggle-eye" onclick="togglePassword('confirmPassword')">
+<i class="fas fa-eye"></i>
+</span>
+</div>
 
-  <div id="msg" class="msg"></div>
+<div class="input-group">
+<input type="text" id="referral" placeholder="Referral code (optional)">
+</div>
 
-  <!-- Bottom Motivational Banner -->
-  <div class="live-banner-bottom">
-    🚀 Thousands of Kenyans are growing their money daily with Mkoba Wallet<br>
-    <span class="text-sm opacity-90">Start your journey to financial freedom today</span>
-  </div>
+<button type="submit" id="registerBtn">Create My Account</button>
+
+</form>
+
+<div id="msg" class="msg"></div>
+
+<div class="live-banner-bottom">
+🚀 Thousands of people are making money daily with Mkoba Wallet 💰
+</div>
+
 </div>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('registerForm');
-  const msg = document.getElementById('msg');
-  const registerBtn = document.getElementById('registerBtn');
+const BACKEND_URL="https://repo-1red-jipate-bonus-1-kwee.onrender.com"
 
-  const params = new URLSearchParams(window.location.search);
-  const ref = params.get('ref');
-  if (ref) document.getElementById('referral').value = ref;
+function togglePassword(fieldId){
 
-  function showMessage(type, text) {
-    msg.className = `msg ${type}`;
-    msg.textContent = text;
-    setTimeout(() => msg.textContent = "", 8000);
-  }
+const input=document.getElementById(fieldId)
+const icon=input.parentElement.querySelector("i")
 
-  // Fixed and reliable password toggle
-  function togglePassword(fieldId) {
-    const input = document.getElementById(fieldId);
-    const eyeIcon = input.parentElement.querySelector('.toggle-eye i');
-    
-    if (input.type === "password") {
-      input.type = "text";
-      eyeIcon.classList.remove("fa-eye");
-      eyeIcon.classList.add("fa-eye-slash");
-    } else {
-      input.type = "password";
-      eyeIcon.classList.remove("fa-eye-slash");
-      eyeIcon.classList.add("fa-eye");
-    }
-  }
+if(input.type==="password"){
+input.type="text"
+icon.classList.remove("fa-eye")
+icon.classList.add("fa-eye-slash")
+}else{
+input.type="password"
+icon.classList.remove("fa-eye-slash")
+icon.classList.add("fa-eye")
+}
 
-  function normalizePhone(p) {
-    return p.replace(/[^\d]/g, '');
-  }
+}
 
-  function isValidPhone(phone) {
-    return /^(07|01)\d{8}$/.test(phone);
-  }
+document.addEventListener("DOMContentLoaded",()=>{
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+const form=document.getElementById("registerForm")
+const msg=document.getElementById("msg")
+const registerBtn=document.getElementById("registerBtn")
 
-    const username = document.getElementById('username').value.trim().toLowerCase();
-    const phone = normalizePhone(document.getElementById('phone').value.trim());
-    const password = document.getElementById('password').value;
-    const confirmPwd = document.getElementById('confirmPassword').value;
-    const referral = document.getElementById('referral').value.trim().toLowerCase();
+const params=new URLSearchParams(window.location.search)
+const ref=params.get("ref")
+if(ref)document.getElementById("referral").value=ref
 
-    if (!username || !phone || !password || !confirmPwd) {
-      return showMessage('error', 'Please fill all required fields');
-    }
+function showMessage(type,text){
 
-    if (!isValidPhone(phone)) {
-      return showMessage('error', 'Phone number must start with 07 or 01 and be 10 digits');
-    }
+msg.className=`msg ${type}`
+msg.textContent=text
+setTimeout(()=>msg.textContent="",8000)
 
-    if (password !== confirmPwd) {
-      return showMessage('error', 'Passwords do not match');
-    }
+}
 
-    if (password.length < 6) {
-      return showMessage('error', 'Password must be at least 6 characters');
-    }
+function normalizePhone(p){
+return p.replace(/[^\d]/g,'')
+}
 
-    registerBtn.disabled = true;
-    registerBtn.textContent = "Creating account...";
-    showMessage('loading', 'Please wait...');
+function isValidPhone(phone){
+return /^(07|01)\d{8}$/.test(phone)
+}
 
-    try {
-      const res = await fetch(`${BACKEND_URL}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          username, 
-          phone, 
-          password, 
-          referral: referral || null 
-        })
-      });
+form.addEventListener("submit",async(e)=>{
 
-      const data = await res.json().catch(() => ({}));
+e.preventDefault()
 
-      if (res.ok) {
-        showMessage('success', data.message || "Account created successfully! 🎉");
-        setTimeout(() => window.location.href = "login.html", 1500);
-      } else {
-        showMessage('error', data.detail || data.message || "Registration failed. Try again.");
-      }
-    } catch (err) {
-      showMessage('error', "Cannot connect to server. Please check your internet.");
-    } finally {
-      registerBtn.disabled = false;
-      registerBtn.textContent = "Create My Account";
-    }
-  });
-});
+const username=document.getElementById("username").value.trim().toLowerCase()
+const phone=normalizePhone(document.getElementById("phone").value.trim())
+const password=document.getElementById("password").value
+const confirmPwd=document.getElementById("confirmPassword").value
+const referral=document.getElementById("referral").value.trim().toLowerCase()
+
+if(!username||!phone||!password||!confirmPwd){
+return showMessage("error","Please fill all required fields")
+}
+
+if(!isValidPhone(phone)){
+return showMessage("error","Phone must start with 07 or 01 and be 10 digits")
+}
+
+if(password!==confirmPwd){
+return showMessage("error","Passwords do not match")
+}
+
+if(password.length<6){
+return showMessage("error","Password must be at least 6 characters")
+}
+
+registerBtn.disabled=true
+registerBtn.textContent="Creating account..."
+
+try{
+
+const res=await fetch(`${BACKEND_URL}/register`,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+username,
+phone,
+password,
+referral:referral||null
+})
+})
+
+const data=await res.json().catch(()=>({}))
+
+if(res.ok){
+showMessage("success",data.message||"Account created successfully 🎉")
+setTimeout(()=>window.location.href="login.html",1500)
+}else{
+showMessage("error",data.detail||data.message||"Registration failed")
+}
+
+}catch{
+
+showMessage("error","Cannot connect to server")
+
+}finally{
+
+registerBtn.disabled=false
+registerBtn.textContent="Create My Account"
+
+}
+
+})
+
+})
+
 </script>
 
 </body>
