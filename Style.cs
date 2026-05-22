@@ -1,26 +1,33 @@
 /* ============================================
-   Mkoba Wallet - Main Stylesheet
-   Light Blue Professional Theme
-=========================================== */
+   MulaHub - Main Stylesheet
+   Green • Gold • Navy Theme
+============================================ */
 
 /* ── Root Variables ── */
 :root {
-  --primary: #007bff;        /* Main blue - buttons, links */
-  --primary-dark: #0056b3;
-  --primary-darker: #003366;  /* Headers, accents */
-  --bg-light: #e6f0ff;        /* Page background */
-  --card-bg: #ffffff;
-  --card-light: #f8f9fa;
-  --text-dark: #1a1f36;
-  --text-muted: #555;
-  --border: #d1d9e6;
-  --success: #28a745;
-  --danger: #dc3545;
-  --warning: #ffc107;
-  --info: #17a2b8;
-  --radius: 10px;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+  --primary: #10B981;
+  --primary-dark: #059669;
+  --primary-darker: #0F172A;
+
+  --bg-light: #F8FAFC;
+  --card-bg: #FFFFFF;
+  --card-light: #F1F5F9;
+
+  --text-dark: #1E293B;
+  --text-muted: #64748B;
+
+  --border: #E2E8F0;
+
+  --success: #22C55E;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --info: #06B6D4;
+
+  --radius: 12px;
+
+  --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 8px 30px rgba(15, 23, 42, 0.12);
+
   --transition: all 0.25s ease;
 }
 
@@ -30,7 +37,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
   background-color: var(--bg-light);
   color: var(--text-dark);
   margin: 0;
@@ -57,40 +64,68 @@ body {
   background: var(--card-bg);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+/* ── MulaHub Logo ── */
+.logo {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #10B981;
+}
+
+.logo span {
+  color: #F59E0B;
 }
 
 /* ── Typography ── */
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: var(--primary-darker);
   text-align: center;
   margin-bottom: 1.5rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-h1 { font-size: 1.9rem; }
-h2 { font-size: 1.6rem; }
-h3 { font-size: 1.35rem; }
+h1 {
+  font-size: 2rem;
+}
 
-/* ── Header / Banner ── */
+h2 {
+  font-size: 1.7rem;
+}
+
+h3 {
+  font-size: 1.35rem;
+}
+
+/* ── Header ── */
 header {
-  background: var(--primary-darker);
+  background: linear-gradient(
+    135deg,
+    #0F172A,
+    #10B981
+  );
   color: white;
-  padding: 1.2rem;
+  padding: 1.5rem;
   text-align: center;
   border-radius: var(--radius);
   margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-md);
 }
 
 .payment-info {
-  background: #f0f8ff;
-  color: var(--primary-darker);
+  background: #ECFDF5;
+  color: #065F46;
   text-align: center;
   padding: 1rem;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
-  border-bottom: 3px solid var(--primary-darker);
+  border-left: 5px solid #10B981;
   border-radius: var(--radius);
   margin-bottom: 1.5rem;
 }
@@ -104,11 +139,12 @@ input[type="tel"],
 select,
 textarea {
   width: 100%;
-  padding: 0.9rem 1.1rem;
+  padding: 0.95rem 1rem;
   margin: 0.6rem 0 1.2rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
+  background: white;
   transition: var(--transition);
 }
 
@@ -116,22 +152,26 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  border-color: #10B981;
+  box-shadow: 0 0 0 4px rgba(16,185,129,.15);
 }
 
-/* Buttons */
+/* ── Buttons ── */
 button,
 .btn {
   display: inline-block;
   width: 100%;
-  padding: 0.95rem;
-  background: var(--primary);
+  padding: 1rem;
+  background: linear-gradient(
+    135deg,
+    #10B981,
+    #059669
+  );
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1.05rem;
-  font-weight: 600;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
   text-align: center;
@@ -139,38 +179,33 @@ button,
 
 button:hover,
 .btn:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-button:active,
-.btn:active {
-  transform: translateY(0);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 button:disabled,
 .btn:disabled {
-  background: #ccc;
+  background: #CBD5E1;
   cursor: not-allowed;
   transform: none;
 }
 
 .btn-danger {
-  background: var(--danger);
-}
-
-.btn-danger:hover {
-  background: #c82333;
+  background: linear-gradient(
+    135deg,
+    #EF4444,
+    #DC2626
+  );
 }
 
 .btn-outline {
   background: transparent;
-  border: 2px solid var(--primary);
-  color: var(--primary);
+  border: 2px solid #10B981;
+  color: #10B981;
 }
 
 .btn-outline:hover {
-  background: var(--primary);
+  background: #10B981;
   color: white;
 }
 
@@ -178,64 +213,76 @@ button:disabled,
 .user-card,
 .commodity-card,
 .card {
-  border: 1px solid var(--border);
-  padding: 1.2rem;
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
   margin-bottom: 1.2rem;
-  border-radius: var(--radius);
-  background: #fafcff;
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
   transition: var(--transition);
 }
 
 .user-card:hover,
 .commodity-card:hover,
 .card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   box-shadow: var(--shadow-md);
+}
+
+.commodity-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 5px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    #10B981,
+    #F59E0B
+  );
 }
 
 .commodity-card img {
   width: 90px;
   height: 90px;
   object-fit: contain;
-  margin: 0 auto 0.8rem;
   display: block;
+  margin: 0 auto 1rem;
 }
 
 .countdown {
   font-weight: 700;
   color: var(--danger);
   margin-top: 0.5rem;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
 
-/* ── Messages / Alerts ── */
+/* ── Alerts ── */
 .error,
 .success,
 .info {
-  padding: 0.9rem 1.2rem;
-  margin: 0.8rem 0;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 10px;
   text-align: center;
 }
 
 .error {
-  color: #721c24;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  background: #FEE2E2;
+  color: #991B1B;
 }
 
 .success {
-  color: #155724;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
+  background: #DCFCE7;
+  color: #166534;
 }
 
 .info {
-  color: #0c5460;
-  background-color: #d1ecf1;
-  border: 1px solid #bee5eb;
+  background: #E0F2FE;
+  color: #075985;
 }
 
 /* ── Footer ── */
@@ -243,29 +290,60 @@ footer {
   text-align: center;
   padding: 2rem 1rem;
   color: var(--text-muted);
-  font-size: 0.9rem;
   margin-top: 3rem;
   border-top: 1px solid var(--border);
 }
 
-/* ── Utility Classes ── */
-.text-center { text-align: center; }
-.mt-1 { margin-top: 1rem; }
-.mt-2 { margin-top: 1.5rem; }
-.mb-1 { margin-bottom: 1rem; }
-.mb-2 { margin-bottom: 1.5rem; }
-.p-2 { padding: 1.5rem; }
+/* ── Utilities ── */
+.text-center {
+  text-align: center;
+}
 
-/* ── Dark Mode (optional - activate with class or prefers-color-scheme) ── */
+.mt-1 {
+  margin-top: 1rem;
+}
+
+.mt-2 {
+  margin-top: 1.5rem;
+}
+
+.mb-1 {
+  margin-bottom: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 1.5rem;
+}
+
+.p-2 {
+  padding: 1.5rem;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .container,
+  .small-container {
+    margin: 1rem;
+    padding: 1.2rem;
+  }
+
+  h1 {
+    font-size: 1.7rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* ── Dark Mode ── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-light: #0d1b2a;
-    --card-bg: #1b263b;
-    --text-dark: #e0e7ff;
-    --text-muted: #a0aec0;
-    --border: #33415c;
+    --bg-light: #020617;
+    --card-bg: #0F172A;
+    --card-light: #1E293B;
+    --text-dark: #F8FAFC;
+    --text-muted: #CBD5E1;
+    --border: #334155;
   }
-  
-  body { background: var(--bg-light); color: var(--text-dark); }
-  .container, .small-container, .card { background: var(--card-bg); }
 }
