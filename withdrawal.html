@@ -3,68 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Withdraw Funds - Mkoba Wallet 💸</title>
+<title>MulaHub - Withdraw Funds 💸</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-  body { background: linear-gradient(to right, #f0f9f7, #e0f2fe); font-family: 'Segoe UI', Arial, sans-serif; }
-  .welcome-banner {
-    background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
+  body {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    font-family: 'Segoe UI', Arial, sans-serif;
     color: white;
-    padding: 22px 25px;
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
   }
+
+  /* Top Banner */
+  .welcome-banner {
+    background: linear-gradient(90deg, #00c2ff, #7c3aed, #ffd700);
+    color: #0f172a;
+    padding: 20px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.3rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+
+  /* Card */
   .card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.35);
     padding: 2rem;
+    color: #111827;
+    backdrop-filter: blur(10px);
   }
+
+  /* Balance box */
   .balance-box {
-    background: #e8f4fd;
-    border-radius: 12px;
-    padding: 1.5rem;
+    background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+    border-radius: 14px;
+    padding: 1.8rem;
     text-align: center;
-    border: 1px solid #b3d4fc;
+    border: 1px solid #93c5fd;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   }
+
+  /* Input */
+  input, select {
+    transition: all 0.25s ease;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0,194,255,0.2);
+  }
+
+  /* Quick buttons */
   .amount-btn {
-    background: #f0f4f8;
-    border: 1px solid #d1dbe4;
-    border-radius: 8px;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-  .amount-btn:hover {
-    background: #e0e9f2;
-    border-color: #a8c0d4;
-  }
-  .msg {
-    padding: 12px 18px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
-    margin: 15px 0;
+    padding: 10px 14px;
     font-weight: 600;
-    text-align: center;
+    cursor: pointer;
   }
-  .success { background: #d4edda; color: #155724; }
-  .error { background: #f8d7da; color: #721c24; }
+
+  .amount-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+  }
+
+  /* Message */
+  .msg {
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    margin: 15px 0;
+  }
+
+  .success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .error {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  /* Button */
+  button[type="submit"] {
+    background: linear-gradient(90deg, #00c2ff, #7c3aed);
+    box-shadow: 0 10px 25px rgba(0,194,255,0.25);
+  }
+
+  button[type="submit"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(124,58,237,0.35);
+  }
 </style>
 </head>
+
 <body class="p-6">
 
-<!-- Welcome Banner -->
+<!-- Welcome -->
 <div class="welcome-banner">
-  Welcome to Mkoba Wallet where your money grows daily 🤑🎉
+  MulaHub Withdrawals — Fast, Secure & Admin Approved 💸⚡
 </div>
 
 <div class="max-w-md mx-auto mt-8">
 
   <div class="card">
-    <h1 class="text-2xl font-bold text-center mb-6 text-indigo-700">Withdraw Funds</h1>
 
+    <h1 class="text-2xl font-bold text-center mb-6 text-indigo-700">
+      Withdraw Funds
+    </h1>
+
+    <!-- Balance -->
     <div class="balance-box mb-8">
       <h2 class="text-gray-500 text-sm mb-1">Available Balance</h2>
       <div id="balance" class="text-4xl font-bold text-indigo-600">KES 0.00</div>
@@ -73,34 +126,36 @@
     <div id="msg" class="msg"></div>
 
     <form id="withdrawalForm">
-      <label class="block text-sm font-semibold mb-2 text-gray-700">Withdrawal Amount (KES)</label>
-      <input type="number" id="amount" min="100" step="1" placeholder="e.g. 5000" 
-        class="w-full p-4 text-2xl text-center border border-gray-300 rounded-2xl mb-6 focus:outline-none focus:border-indigo-500">
 
-      <div class="amount-hints flex flex-wrap gap-3 mb-8">
-        <button type="button" class="amount-btn flex-1" data-amount="5000">5,000</button>
-        <button type="button" class="amount-btn flex-1" data-amount="10000">10,000</button>
-        <button type="button" class="amount-btn flex-1" data-amount="20000">20,000</button>
-        <button type="button" class="amount-btn flex-1" data-amount="50000">50,000</button>
+      <label class="block text-sm font-semibold mb-2">Amount (KES)</label>
+      <input type="number" id="amount" min="100" step="1"
+        class="w-full p-4 text-2xl text-center border border-gray-300 rounded-2xl mb-6">
+
+      <!-- Quick Picks -->
+      <div class="flex flex-wrap gap-3 mb-8">
+        <button type="button" class="amount-btn flex-1" data-amount="5000">5K</button>
+        <button type="button" class="amount-btn flex-1" data-amount="10000">10K</button>
+        <button type="button" class="amount-btn flex-1" data-amount="20000">20K</button>
+        <button type="button" class="amount-btn flex-1" data-amount="50000">50K</button>
       </div>
 
-      <!-- Live Charge Breakdown -->
-      <div id="chargeBreakdown" class="hidden bg-amber-50 border border-amber-300 p-4 rounded-2xl mb-6 text-sm">
-        <div class="flex justify-between mb-1">
-          <span class="text-gray-600">Requested Amount:</span>
+      <!-- Breakdown -->
+      <div id="chargeBreakdown" class="hidden bg-yellow-50 border border-yellow-300 p-4 rounded-2xl mb-6 text-sm">
+        <div class="flex justify-between">
+          <span>Requested:</span>
           <span id="requestedAmt" class="font-semibold">KES 0</span>
         </div>
-        <div class="flex justify-between mb-1">
-          <span class="text-red-600">20% Withdrawal Charge:</span>
-          <span id="chargeAmt" class="font-semibold text-red-600">KES 0</span>
+        <div class="flex justify-between text-red-600">
+          <span>Service Fee (20%)</span>
+          <span id="chargeAmt" class="font-semibold">KES 0</span>
         </div>
         <div class="flex justify-between border-t pt-2 mt-2">
-          <span class="font-bold">You will receive:</span>
+          <span class="font-bold">You receive:</span>
           <span id="netAmt" class="font-bold text-green-600">KES 0</span>
         </div>
       </div>
 
-      <label class="block text-sm font-semibold mb-2 text-gray-700">Withdrawal Method</label>
+      <label class="block text-sm font-semibold mb-2">Withdrawal Method</label>
       <select id="method" class="w-full p-4 border border-gray-300 rounded-2xl mb-6">
         <option value="">Select method</option>
         <option value="mpesa">M-Pesa</option>
@@ -109,22 +164,22 @@
         <option value="paypal">PayPal</option>
       </select>
 
-      <label class="block text-sm font-semibold mb-2 text-gray-700">Account / Phone Number</label>
-      <input type="text" id="account" placeholder="e.g. 0712345678 or Bank Account No." 
+      <label class="block text-sm font-semibold mb-2">Account / Phone</label>
+      <input type="text" id="account"
         class="w-full p-4 border border-gray-300 rounded-2xl mb-8">
 
-      <button type="submit" 
-        class="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-3xl font-bold text-xl">
+      <button type="submit"
+        class="w-full text-white py-5 rounded-3xl font-bold text-xl">
         Request Withdrawal
       </button>
+
     </form>
 
     <p class="text-center text-sm text-gray-600 mt-8">
-      Minimum withdrawal: KES 100<br>
-      20% charge applies • Processed within 24 hours after admin approval.
+      Minimum: KES 100 • 20% fee applies • Processed after approval
     </p>
-  </div>
 
+  </div>
 </div>
 
 <script>
@@ -139,7 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadBalance();
 
-  // Quick amount buttons
   document.querySelectorAll(".amount-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.getElementById("amount").value = btn.dataset.amount;
@@ -147,10 +201,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Live charge calculation
   document.getElementById("amount").addEventListener("input", updateChargeBreakdown);
 
-  // Form submit
   document.getElementById("withdrawalForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -158,22 +210,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const method = document.getElementById("method").value;
     const account = document.getElementById("account").value.trim();
 
-    if (!amount || amount < 100) {
-      showMsg("error", "Minimum withdrawal is KES 100");
-      return;
-    }
-    if (!method) {
-      showMsg("error", "Please select a withdrawal method");
-      return;
-    }
-    if (!account) {
-      showMsg("error", "Please enter account or phone number");
-      return;
-    }
+    if (!amount || amount < 100) return showMsg("error", "Minimum is KES 100");
+    if (!method) return showMsg("error", "Select method");
+    if (!account) return showMsg("error", "Enter account");
 
-    const btn = e.target.querySelector('button[type="submit"]');
+    const btn = e.target.querySelector("button");
     btn.disabled = true;
-    btn.textContent = "Submitting...";
+    btn.textContent = "Processing...";
 
     try {
       const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
@@ -182,26 +225,23 @@ document.addEventListener("DOMContentLoaded", () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("access_token")}`
         },
-        body: JSON.stringify({ 
-          amount: amount,
-          payment_method: method 
-        })
+        body: JSON.stringify({ amount, payment_method: method })
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        showMsg("success", data.message || "Withdrawal request submitted successfully.");
-        // Clear form
+        showMsg("success", data.message || "Request sent");
         document.getElementById("amount").value = "";
         document.getElementById("account").value = "";
         document.getElementById("chargeBreakdown").classList.add("hidden");
-        loadBalance(); 
+        loadBalance();
       } else {
-        showMsg("error", data.detail || data.message || "Failed to submit request");
+        showMsg("error", data.detail || "Failed");
       }
-    } catch (e) {
-      showMsg("error", "Network error. Please try again.");
+
+    } catch {
+      showMsg("error", "Network error");
     } finally {
       btn.disabled = false;
       btn.textContent = "Request Withdrawal";
@@ -210,47 +250,38 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function updateChargeBreakdown() {
-  const amountInput = document.getElementById("amount");
-  const breakdown = document.getElementById("chargeBreakdown");
-  const amount = parseFloat(amountInput.value);
+  const amount = parseFloat(document.getElementById("amount").value);
+  const box = document.getElementById("chargeBreakdown");
 
-  if (!amount || amount < 100) {
-    breakdown.classList.add("hidden");
-    return;
-  }
+  if (!amount || amount < 100) return box.classList.add("hidden");
 
-  const charge = amount * 0.20;
-  const net = amount - charge;
+  const fee = amount * 0.2;
+  const net = amount - fee;
 
-  document.getElementById("requestedAmt").textContent = `KES ${amount.toFixed(0)}`;
-  document.getElementById("chargeAmt").textContent = `KES ${charge.toFixed(0)}`;
-  document.getElementById("netAmt").textContent = `KES ${net.toFixed(0)}`;
+  document.getElementById("requestedAmt").textContent = `KES ${amount}`;
+  document.getElementById("chargeAmt").textContent = `KES ${fee}`;
+  document.getElementById("netAmt").textContent = `KES ${net}`;
 
-  breakdown.classList.remove("hidden");
+  box.classList.remove("hidden");
 }
 
 async function loadBalance() {
   try {
     const res = await fetch(`${BACKEND_URL}/dashboard`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`
+      }
     });
     const data = await res.json();
-    document.getElementById("balance").textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
-  } catch (e) {
-    console.error("Failed to load balance");
-  }
+    document.getElementById("balance").textContent = `KES ${data.balance || 0}`;
+  } catch {}
 }
 
 function showMsg(type, text) {
   const msg = document.getElementById("msg");
   msg.className = `msg ${type}`;
   msg.textContent = text;
-  setTimeout(() => msg.textContent = "", 8000);
-}
-
-function logout() {
-  localStorage.clear();
-  window.location.href = "login.html";
+  setTimeout(() => msg.textContent = "", 6000);
 }
 </script>
 
