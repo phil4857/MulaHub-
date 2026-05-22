@@ -3,504 +3,945 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MulaHub Dashboard 🚀</title>
+
+<title>MulaHub | Wealth Dashboard 🚀</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-  body { background: linear-gradient(to right, #f0f9f7, #e0f2fe); font-family: 'Segoe UI', Arial, sans-serif; }
-  .welcome-banner {
-    background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #1dd1a1);
-    color: white;
-    padding: 22px 25px;
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
-  }
-  .live-banner {
-    background: linear-gradient(90deg, #10b981, #34d399);
-    color: white;
-    padding: 16px 20px;
-    border-radius: 14px;
-    text-align: center;
-    font-weight: 700;
-    margin: 20px 0 30px 0;
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
-    animation: pulse 3s infinite;
-    font-size: 1.12rem;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.92; }
-  }
-  .commodity-card {
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-  }
-  .commodity-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 25px rgba(99,102,241,0.3);
-  }
-  .commodity-card.selected {
-    border-color: #6366f1;
-    background: #eef2ff;
-  }
-  .emoji { font-size: 2.8rem; display: block; margin-bottom: 8px; }
-  .msg { padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; text-align: center; }
-  .success { background: #d4edda; color: #155724; }
-  .error { background: #f8d7da; color: #721c24; }
-  .grab-btn {
-    transition: all 0.3s ease;
-  }
-  .grab-btn:hover {
-    transform: scale(1.03);
-  }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Segoe UI',sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#10b981,#0ea5e9,#6366f1);
+  background-attachment:fixed;
+}
+
+.hero-banner{
+  background:linear-gradient(
+    135deg,
+    rgba(16,185,129,.95),
+    rgba(14,165,233,.95),
+    rgba(99,102,241,.95)
+  );
+  color:white;
+  padding:30px;
+  border-radius:24px;
+  text-align:center;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+  margin-bottom:20px;
+}
+
+.live-banner{
+  background:white;
+  color:#111827;
+  padding:18px;
+  border-radius:18px;
+  text-align:center;
+  margin-top:15px;
+  font-weight:700;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+
+.plan-card{
+  transition:.3s;
+  cursor:pointer;
+  border:2px solid transparent;
+}
+
+.plan-card:hover{
+  transform:translateY(-8px);
+  box-shadow:0 15px 35px rgba(0,0,0,.15);
+}
+
+.plan-card.selected{
+  border-color:#10b981;
+  background:#ecfdf5;
+}
+
+.stat-card{
+  background:white;
+  border-radius:24px;
+  padding:28px;
+  text-align:center;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+
+.section-card{
+  background:white;
+  border-radius:24px;
+  padding:30px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+
+.msg{
+  padding:15px;
+  margin-bottom:20px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:700;
+}
+
+.success{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.error{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.tab-btn{
+  background:white;
+  color:#111827;
+  transition:.3s;
+}
+
+.tab-btn.active{
+  background:#10b981;
+  color:white;
+}
+
+.glow-btn{
+  transition:.3s;
+}
+
+.glow-btn:hover{
+  transform:translateY(-3px);
+}
+
+.logo-circle{
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  background:white;
+  color:#10b981;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.5rem;
+  font-weight:bold;
+}
+
+.footer-note{
+  font-size:.8rem;
+  color:#6b7280;
+  text-align:center;
+  margin-top:20px;
+}
 </style>
 </head>
-<body class="p-6">
 
-<!-- Top Welcome Banner -->
-<div class="welcome-banner">
-  Welcome to MulaHub – Build Your Digital Income Daily 🚀
+<body class="p-4 md:p-6">
 
-<!-- Live Banner -->
-<div class="live-banner">
-  🚀 Millions of members are growing their income with MulaHub every day📈
-  <span style="font-size: 0.95rem; opacity: 0.95;">Start your journey to financial freedom today</span>
-</div>
+<div class="max-w-7xl mx-auto">
 
-<div class="max-w-6xl mx-auto">
+  <div class="hero-banner">
 
-  <!-- Navbar -->
-  <div class="flex justify-between items-center bg-indigo-700 text-white p-5 rounded-2xl shadow-xl mb-8">
-<h1 class="text-2xl font-bold"<h1 class="text-2xl font-bold">🚀 MulaHub Dashboard</h1>
-    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-xl font-semibold">Logout</button>
-  </div>
-
-  <!-- M-Pesa Banner -->
-  <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 p-5 rounded-2xl mb-8 text-center font-medium">
-    Activate your MulaHub plan via M-Pesa: <span class="font-bold text-red-600">0752964507</span><br>
-    <small class="text-yellow-700">Include your username in the message</small>
-  </div>
-
-  <div id="msg" class="msg"></div>
-
-  <!-- Tabs -->
-  <div class="flex flex-wrap gap-3 justify-center mb-8">
-    <button onclick="switchTab(0)" id="tab0" class="tab-btn active px-8 py-3 rounded-2xl font-semibold">Invest</button>
-    <button onclick="switchTab(1)" id="tab1" class="tab-btn px-8 py-3 rounded-2xl font-semibold">Earnings</button>
-    <button onclick="switchTab(2)" id="tab2" class="tab-btn px-8 py-3 rounded-2xl font-semibold">Withdraw</button>
-  </div>
-
-  <!-- INVEST TAB -->
-  <div id="tabContent0" class="tab-content">
-    <div class="bg-white rounded-3xl p-8 shadow-2xl">
-      <h2 class="text-3xl font-bold text-center mb-8 text-indigo-700">Choose Investment</h2>
-      <div id="commodityGrid" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div>
-
-      <div class="mt-12 text-center">
-        <p class="text-xl mb-4">Selected: <span id="selected" class="font-bold text-indigo-600">-- None --</span></p>
-        <button id="investBtn" onclick="invest()" disabled 
-          class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-xl font-bold py-5 px-16 rounded-3xl w-full max-w-md disabled:opacity-50">
-          Request Investment
-        </button>
+      <div class="flex justify-center mb-4">
+          <div class="logo-circle">M</div>
       </div>
-    </div>
+
+      <h1 class="text-4xl font-extrabold mb-3">
+          🚀 Welcome to MulaHub
+      </h1>
+
+      <p class="text-xl">
+          Build Your Digital Income Daily
+      </p>
+
+      <div class="live-banner">
+          📈 Thousands of members are growing their income through MulaHub every day.
+          Start building your financial future today.
+      </div>
+
+  </div>
+
+  <div class="flex justify-between items-center bg-white rounded-3xl p-5 shadow-xl mb-6">
+
+      <div>
+          <h2 class="text-2xl font-bold text-gray-800">
+              🚀 MulaHub Wealth Dashboard
+          </h2>
+          <p class="text-sm text-gray-500">
+              Earn • Grow • Prosper
+          </p>
+      </div>
+
+      <button
+        onclick="logout()"
+        class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold">
+        Logout
+      </button>
+
+  </div>
+
+  <div class="bg-white rounded-3xl p-5 shadow-lg mb-6 text-center">
+
+      <h3 class="text-xl font-bold text-emerald-700">
+          📲 Activate Your MulaHub Plan
+      </h3>
+
+      <p class="mt-2">
+          Send payment via M-Pesa to:
+      </p>
+
+      <p class="text-3xl font-bold text-red-600">
+          0752964507
+      </p>
+
+      <p class="text-sm text-gray-500 mt-2">
+          Include your username in the M-Pesa message.
+      </p>
+
+  </div>
+
+  <div id="msg"></div>
+
+  <div class="flex flex-wrap gap-3 justify-center mb-8">
+
+      <button onclick="switchTab(0)" id="tab0"
+        class="tab-btn active px-8 py-3 rounded-2xl font-bold">
+        🚀 Plans
+      </button>
+
+      <button onclick="switchTab(1)" id="tab1"
+        class="tab-btn px-8 py-3 rounded-2xl font-bold">
+        💵 Earnings
+      </button>
+
+      <button onclick="switchTab(2)" id="tab2"
+        class="tab-btn px-8 py-3 rounded-2xl font-bold">
+        💸 Withdraw
+      </button>
+
+  </div>
+
+  <!-- PLANS TAB -->
+
+  <div id="tabContent0" class="tab-content">
+
+      <div class="section-card">
+
+          <h2 class="text-3xl font-bold text-center mb-8 text-emerald-700">
+              🚀 Choose Your MulaHub Plan
+          </h2>
+
+          <div id="commodityGrid"
+               class="grid grid-cols-2 md:grid-cols-4 gap-5">
+          </div>
+
+          <div class="mt-10 text-center">
+
+              <p class="text-lg mb-4">
+                  Selected Plan:
+                  <span id="selected"
+                    class="font-bold text-emerald-700">
+                    -- None --
+                  </span>
+              </p>
+
+              <button
+                id="investBtn"
+                onclick="invest()"
+                disabled
+                class="glow-btn bg-gradient-to-r from-emerald-500 to-blue-600 text-white py-5 px-12 rounded-3xl font-bold text-xl disabled:opacity-50">
+
+                  Activate Selected Plan
+
+              </button>
+
+          </div>
+
+      </div>
+
   </div>
 
   <!-- EARNINGS TAB -->
+
   <div id="tabContent1" class="tab-content hidden">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white rounded-3xl p-8 shadow-2xl text-center">
-        <p class="text-gray-500 text-sm">Current Balance</p>
-        <p id="balance" class="text-4xl font-bold text-indigo-700">KES 0.00</p>
-      </div>
-      <div class="bg-white rounded-3xl p-8 shadow-2xl text-center">
-        <p class="text-gray-500 text-sm">Total Earnings</p>
-        <p id="earnings" class="text-4xl font-bold text-green-600">KES 0.00</p>
-      </div>
-      <div class="bg-white rounded-3xl p-8 shadow-2xl text-center border-2 border-amber-400">
-        <p class="text-gray-500 text-sm">Referral Bonus</p>
-        <p id="referralBonus" class="text-4xl font-bold text-amber-600">KES 0.00</p>
-      </div>
-    </div>
 
-    <div class="bg-white rounded-3xl p-8 shadow-2xl">
-      <h3 class="font-bold text-2xl mb-6">Your Investments & Daily Bonuses</h3>
-      <div id="investmentsList" class="space-y-6"></div>
-    </div>
+      <div class="grid md:grid-cols-3 gap-6 mb-8">
 
-    <div class="bg-white rounded-3xl p-8 shadow-2xl mt-8">
-      <h3 class="font-bold text-xl mb-4">Your Referral Link</h3>
-      <input id="refLink" readonly class="w-full bg-gray-100 p-4 rounded-2xl text-sm font-mono" />
-      <button onclick="copyRef()" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-2xl font-semibold">
-        Copy Referral Link
-      </button>
-    </div>
+          <div class="stat-card">
+              <p class="text-gray-500 text-sm">
+                  Current Balance
+              </p>
+
+              <h3 id="balance"
+                  class="text-4xl font-bold text-emerald-600">
+                  KES 0.00
+              </h3>
+          </div>
+
+          <div class="stat-card">
+              <p class="text-gray-500 text-sm">
+                  Total Earnings
+              </p>
+
+              <h3 id="earnings"
+                  class="text-4xl font-bold text-blue-600">
+                  KES 0.00
+              </h3>
+          </div>
+
+          <div class="stat-card border-2 border-amber-400">
+              <p class="text-gray-500 text-sm">
+                  Referral Rewards
+              </p>
+
+              <h3 id="referralBonus"
+                  class="text-4xl font-bold text-amber-600">
+                  KES 0.00
+              </h3>
+          </div>
+
+      </div>
+
+      <div class="section-card">
+
+          <h3 class="text-2xl font-bold mb-6">
+              🎁 Active Plans & Daily Rewards
+          </h3>
+
+          <div id="investmentsList"></div>
+
+      </div>
+
+      <div class="section-card mt-8">
+
+          <h3 class="font-bold text-xl mb-3">
+              🎁 Referral Rewards Center
+          </h3>
+
+          <p class="text-sm text-gray-500 mb-4">
+              Invite friends and earn bonuses whenever they activate qualifying plans.
+          </p>
+
+          <input
+            id="refLink"
+            readonly
+            class="w-full bg-gray-100 p-4 rounded-2xl text-sm">
+
+          <button
+            onclick="copyRef()"
+            class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-2xl font-bold">
+
+              Copy Referral Link
+
+          </button>
+
+      </div>
+
   </div>
 
   <!-- WITHDRAW TAB -->
+
   <div id="tabContent2" class="tab-content hidden">
-    <div class="bg-white rounded-3xl p-8 shadow-2xl">
-      <h2 class="text-3xl font-bold text-center mb-6 text-indigo-700">Withdraw Funds</h2>
-      
-      <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 mb-8 text-center">
-        <p class="text-gray-600">Available Balance</p>
-        <p id="withdrawBalance" class="text-5xl font-bold text-indigo-700">KES 0.00</p>
-      </div>
 
-      <div id="withdrawMsg" class="msg hidden"></div>
+      <div class="section-card">
 
-      <div class="max-w-md mx-auto">
-        <label class="block text-sm font-semibold mb-2 text-gray-700">Amount to Withdraw (KES)</label>
-        <input type="number" id="withdrawAmount" min="100" placeholder="e.g. 5000" 
-          class="w-full p-5 text-2xl text-center border border-gray-300 rounded-2xl mb-4 focus:outline-none focus:border-indigo-500"
-          oninput="updateChargePreview()">
+          <h2 class="text-3xl font-bold text-center mb-6 text-red-600">
+              💸 Withdrawal Center
+          </h2>
 
-        <!-- Live Charge Preview -->
-        <div id="chargePreview" class="hidden bg-amber-50 border border-amber-300 p-5 rounded-2xl mb-6">
-          <div class="space-y-3 text-sm">
-            <div class="flex justify-between">
-              <span class="text-gray-600">Requested:</span>
-              <span id="previewRequested" class="font-medium">KES 0</span>
-            </div>
-            <div class="flex justify-between text-red-600">
-              <span>20% Charge:</span>
-              <span id="previewCharge" class="font-medium">KES 0</span>
-            </div>
-            <div class="flex justify-between border-t pt-3 font-bold">
-              <span>You will receive:</span>
-              <span id="previewNet" class="text-green-600">KES 0</span>
-            </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 mb-8 text-center">
+
+              <p class="text-gray-600">
+                  Available Balance
+              </p>
+
+              <h3 id="withdrawBalance"
+                  class="text-5xl font-bold text-emerald-700">
+                  KES 0.00
+              </h3>
+
+          </div><div id="withdrawMsg" class="msg hidden"></div>
+
+          <div class="max-w-md mx-auto">
+
+              <label class="block text-sm font-semibold mb-2 text-gray-700">
+                  Amount to Withdraw (KES)
+              </label>
+
+              <input
+                  type="number"
+                  id="withdrawAmount"
+                  min="100"
+                  placeholder="e.g. 5000"
+                  class="w-full p-5 text-xl text-center border border-gray-300 rounded-2xl mb-4"
+                  oninput="updateChargePreview()">
+
+              <div id="chargePreview"
+                   class="hidden bg-amber-50 border border-amber-300 p-5 rounded-2xl mb-6">
+
+                  <div class="space-y-3">
+
+                      <div class="flex justify-between">
+                          <span>Requested:</span>
+                          <span id="previewRequested">KES 0</span>
+                      </div>
+
+                      <div class="flex justify-between text-red-600">
+                          <span>20% Charge:</span>
+                          <span id="previewCharge">KES 0</span>
+                      </div>
+
+                      <div class="flex justify-between border-t pt-3 font-bold">
+                          <span>You Receive:</span>
+                          <span id="previewNet" class="text-green-600">
+                              KES 0
+                          </span>
+                      </div>
+
+                  </div>
+
+              </div>
+
+              <label class="block text-sm font-semibold mb-2">
+                  Payment Method
+              </label>
+
+              <select
+                  id="withdrawMethod"
+                  class="w-full p-4 border rounded-2xl mb-5">
+
+                  <option value="">Select Method</option>
+                  <option value="mpesa">M-Pesa</option>
+                  <option value="bank">Bank Transfer</option>
+                  <option value="paypal">PayPal</option>
+
+              </select>
+
+              <label class="block text-sm font-semibold mb-2">
+                  Account / Phone Number
+              </label>
+
+              <input
+                  id="withdrawAccount"
+                  type="text"
+                  placeholder="0712345678"
+                  class="w-full p-4 border rounded-2xl mb-6">
+
+              <button
+                  onclick="requestWithdrawal()"
+                  class="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-3xl font-bold text-xl">
+
+                  Submit Withdrawal Request
+
+              </button>
+
           </div>
-        </div>
 
-        <label class="block text-sm font-semibold mb-2 text-gray-700">Payment Method</label>
-        <select id="withdrawMethod" class="w-full p-5 border border-gray-300 rounded-2xl mb-6">
-          <option value="">Select Method</option>
-          <option value="mpesa">M-Pesa</option>
-          <option value="airtel">Airtel Money</option>
-          <option value="bank">Bank Transfer</option>
-          <option value="paypal">PayPal</option>
-        </select>
+          <p class="footer-note">
+              Minimum withdrawal: KES 100 • 20% processing fee applies •
+              Withdrawals are reviewed by the MulaHub team.
+          </p>
 
-        <label class="block text-sm font-semibold mb-2 text-gray-700">Account / Phone Number</label>
-        <input type="text" id="withdrawAccount" placeholder="0712345678 or Bank Account Number" 
-          class="w-full p-5 border border-gray-300 rounded-2xl mb-8">
-
-        <button onclick="requestWithdrawal()" 
-          class="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-3xl font-bold text-xl">
-          Submit Withdrawal Request
-        </button>
       </div>
 
-      <p class="text-center text-xs text-gray-500 mt-8">
-        Minimum withdrawal: KES 100 • 20% service charge applies • Processed after admin approval
-      </p>
-    </div>
   </div>
 
 </div>
 
 <script>
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
+
+const BACKEND_URL =
+"https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
 const COMMODITY_INFO = {
-  data_pack:      { price: 1000, emoji: "📶" },
-  creator:        { price: 1400, emoji: "🎥" },
-  affiliate:      { price: 1800, emoji: "🤝" },
-  influencer:     { price: 2200, emoji: "📱" },
-  digital_pro:    { price: 2600, emoji: "💻" },
-  growth_hub:     { price: 3000, emoji: "📈" },
-  wealth_builder: { price: 3500, emoji: "💰" },
-  empire:         { price: 4000, emoji: "🏆" }
+
+  data_pack:{
+      price:1000,
+      emoji:"📶"
+  },
+
+  creator:{
+      price:1400,
+      emoji:"🎥"
+  },
+
+  affiliate:{
+      price:1800,
+      emoji:"🤝"
+  },
+
+  influencer:{
+      price:2200,
+      emoji:"📱"
+  },
+
+  digital_pro:{
+      price:2600,
+      emoji:"💻"
+  },
+
+  growth_hub:{
+      price:3000,
+      emoji:"📈"
+  },
+
+  wealth_builder:{
+      price:3500,
+      emoji:"💰"
+  },
+
+  empire:{
+      price:4000,
+      emoji:"🏆"
+  }
+
 };
 
 const PLAN_NAMES = {
-  data_pack: "Data Pack",
-  creator: "Creator",
-  affiliate: "Affiliate",
-  influencer: "Influencer",
-  digital_pro: "Digital Pro",
-  growth_hub: "Growth Hub",
-  wealth_builder: "Wealth Builder",
-  empire: "Empire"
+
+  data_pack:"Data Pack",
+  creator:"Creator",
+  affiliate:"Affiliate",
+  influencer:"Influencer",
+  digital_pro:"Digital Pro",
+  growth_hub:"Growth Hub",
+  wealth_builder:"Wealth Builder",
+  empire:"Empire"
+
 };
 
 let selectedCommodity = null;
 
-document.addEventListener("DOMContentLoaded", () => {
-  if (!localStorage.getItem("access_token")) {
-    window.location.href = "login.html";
-    return;
+document.addEventListener("DOMContentLoaded",()=>{
+
+  if(!localStorage.getItem("access_token")){
+      window.location.href="login.html";
+      return;
   }
-  document.getElementById("refLink").value = `https://jipate-bonus-v1.vercel.app/register.html?ref=${localStorage.getItem("username") || ""}`;
+
+  document.getElementById("refLink").value =
+  `https://mula-hyum72b8o-voting-219fda77.vercel.app/register.html?ref=${
+  localStorage.getItem("username") || ""
+  }`;
+
   renderCommodities();
   loadDashboard();
+
 });
 
-function logout() {
+function logout(){
+
   localStorage.clear();
-  window.location.href = "login.html";
+  window.location.href="login.html";
+
 }
 
-function showMsg(type, text) {
-  const msgEl = document.getElementById("msg");
-  msgEl.textContent = text;
-  msgEl.className = `msg ${type}`;
-  setTimeout(() => msgEl.textContent = "", 7000);
+function showMsg(type,text){
+
+  const msg=document.getElementById("msg");
+
+  msg.className=`msg ${type}`;
+  msg.textContent=text;
+
+  setTimeout(()=>{
+      msg.textContent="";
+      msg.className="";
+  },5000);
+
 }
 
-async function loadDashboard() {
-  try {
-    const res = await fetch(`${BACKEND_URL}/dashboard`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-    });
-    const data = await res.json();
+function renderCommodities(){
 
-    if (!res.ok) throw new Error(data.detail || "Failed to load");
+  const grid=document.getElementById("commodityGrid");
 
-    document.getElementById("balance").textContent = `KES ${Number(data.balance || 0).toFixed(2)}`;
-    document.getElementById("earnings").textContent = `KES ${Number(data.earnings || 0).toFixed(2)}`;
-    document.getElementById("referralBonus").textContent = `KES ${Number(data.referral_bonus_earned || 0).toFixed(2)}`;
-    document.getElementById("withdrawBalance").textContent = Number(data.balance || 0).toFixed(2);
+  grid.innerHTML="";
 
-    renderInvestments(data.investments || {});
-  } catch (e) {
-    console.error("Dashboard load error:", e);
-    showMsg("error", e.message || "Could not load dashboard");
-  }
-}
+  Object.entries(COMMODITY_INFO).forEach(([key,plan])=>{
 
-function renderCommodities() {
-  const grid = document.getElementById("commodityGrid");
-  grid.innerHTML = "";
-  Object.entries(COMMODITY_INFO).forEach(([key, com]) => {
-    const card = document.createElement("div");
-    card.className = "commodity-card p-6 text-center cursor-pointer bg-white rounded-3xl shadow";
-    card.innerHTML = `
-      <div class="emoji text-5xl">${com.emoji}</div>
-      <div class="font-bold text-xl mt-3">${key.replace("_", " ").toUpperCase()}</div>
-      <div class="text-2xl font-semibold text-indigo-600 mt-1">KES ${com.price}</div>
-    `;
-    card.onclick = () => {
-      selectedCommodity = key;
-      document.getElementById("selected").textContent = key.replace("_", " ").toUpperCase();
-      document.querySelectorAll(".commodity-card").forEach(c => c.classList.remove("selected"));
-      card.classList.add("selected");
-      document.getElementById("investBtn").disabled = false;
-    };
-    grid.appendChild(card);
-  });
-}
+      const card=document.createElement("div");
 
-function renderInvestments(investments) {
-  const container = document.getElementById("investmentsList");
-  container.innerHTML = "";
+      card.className=
+      "plan-card bg-white rounded-3xl p-6 text-center shadow-lg";
 
-  if (Object.keys(investments).length === 0) {
-    container.innerHTML = `<p class="text-center text-gray-500 py-12">No investments yet. Start investing in the Invest tab.</p>`;
-    return;
-  }
+      card.innerHTML=`
 
-  Object.entries(investments).forEach(([commodity, info]) => {
-    const isApproved = info.status === "approved";
-    const canGrab = isApproved && info.can_grab === true;
-
-    let cardHTML = `
-      <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow">
-        <div class="flex justify-between items-start">
-          <div class="flex items-center gap-4">
-            <span class="text-5xl">${info.emoji || '📦'}</span>
-            <div>
-              <h4 class="font-bold text-xl">${commodity.toUpperCase()}</h4>
-              <p class="text-indigo-600">KES ${Number(info.amount || 0).toFixed(0)}</p>
-            </div>
+          <div class="text-5xl mb-3">
+              ${plan.emoji}
           </div>
-          <span class="px-4 py-1 rounded-full text-sm ${isApproved ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-            ${isApproved ? 'Approved' : 'Pending'}
-          </span>
-        </div>
-    `;
 
-    if (isApproved) {
-      cardHTML += `
-        <div class="mt-6 grid grid-cols-2 gap-6 text-sm">
-          <div>
-            <p class="text-gray-500">Daily Bonus</p>
-            <p class="text-2xl font-bold text-green-600">KES ${info.daily_earning}</p>
-          </div>
-          <div>
-            <p class="text-gray-500">Days Left</p>
-            <p class="text-2xl font-bold">${info.days_remaining}</p>
-          </div>
-        </div>
+          <h3 class="font-bold text-lg">
+              ${PLAN_NAMES[key]}
+          </h3>
 
-        <div class="mt-4 p-4 bg-gray-50 rounded-2xl text-center">
-          <p class="font-medium">${info.time_to_next || "Ready now!"}</p>
-        </div>
+          <p class="text-emerald-600 font-bold text-2xl mt-2">
+              KES ${plan.price}
+          </p>
 
-        <button onclick="grabBonus('${commodity}')" 
-          class="grab-btn w-full mt-6 py-4 rounded-2xl font-bold text-lg text-white ${canGrab ? 
-            'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700' : 
-            'bg-gray-400 cursor-not-allowed'}"
-          ${canGrab ? '' : 'disabled'}>
-          ${canGrab ? '🎁 GRAB DAILY BONUS NOW' : '⏳ Next bonus in ' + (info.time_to_next || '')}
-        </button>
       `;
-    } else {
-      cardHTML += `<div class="mt-6 p-4 bg-yellow-50 rounded-2xl text-center text-amber-700">Waiting for admin approval...</div>`;
-    }
 
-    cardHTML += `</div>`;
-    container.innerHTML += cardHTML;
+      card.onclick=()=>{
+
+          selectedCommodity=key;
+
+          document.getElementById("selected").textContent=
+          PLAN_NAMES[key];
+
+          document
+            .querySelectorAll(".plan-card")
+            .forEach(c=>c.classList.remove("selected"));
+
+          card.classList.add("selected");
+
+          document.getElementById("investBtn").disabled=false;
+
+      };
+
+      grid.appendChild(card);
+
   });
+
 }
 
-async function grabBonus(commodity) {
-  if (!confirm(`Claim daily bonus for ${commodity.toUpperCase()}?`)) return;
+async function loadDashboard(){
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/bonus/grab`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`
-      },
-      body: JSON.stringify({ commodity })
-    });
+  try{
 
-    const result = await res.json();
+      const res=await fetch(
+          `${BACKEND_URL}/dashboard`,
+          {
+              headers:{
+                  Authorization:
+                  `Bearer ${localStorage.getItem("access_token")}`
+              }
+          }
+      );
 
-    if (res.ok) {
-      showMsg("success", result.message || `✅ Bonus added!`);
-      loadDashboard();
-    } else {
-      showMsg("error", result.detail || result.message || "Failed to grab bonus");
-    }
-  } catch (e) {
-    console.error("Grab bonus error:", e);
-    showMsg("error", "Network error");
+      const data=await res.json();
+
+      if(!res.ok){
+          throw new Error(data.detail || "Failed");
+      }
+
+      document.getElementById("balance").textContent=
+      `KES ${Number(data.balance || 0).toFixed(2)}`;
+
+      document.getElementById("earnings").textContent=
+      `KES ${Number(data.earnings || 0).toFixed(2)}`;
+
+      document.getElementById("referralBonus").textContent=
+      `KES ${Number(data.referral_bonus_earned || 0).toFixed(2)}`;
+
+      document.getElementById("withdrawBalance").textContent=
+      `KES ${Number(data.balance || 0).toFixed(2)}`;
+
+      renderInvestments(data.investments || {});
+
+  }catch(error){
+
+      showMsg(
+          "error",
+          error.message || "Failed to load dashboard"
+      );
+
   }
+
 }
 
-async function invest() {
-  if (!selectedCommodity) return;
-  const btn = document.getElementById("investBtn");
-  btn.disabled = true;
-  btn.textContent = "Requesting...";
+function renderInvestments(investments){
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/invest/request`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`
-      },
-      body: JSON.stringify({ commodity: selectedCommodity })
-    });
-    const data = await res.json();
+  const container=
+  document.getElementById("investmentsList");
 
-    if (res.ok) {
-      alert(`✅ Request sent!\nPay KES ${COMMODITY_INFO[selectedCommodity].price} to M-Pesa 0752964507`);
-      loadDashboard();
-      selectedCommodity = null;
-      document.getElementById("selected").textContent = "-- None --";
-      btn.disabled = true;
-      btn.textContent = "Request Investment";
-    } else {
-      alert(data.message || "Failed");
-    }
-  } catch (e) {
-    console.error("Invest error:", e);
-    alert("Error: " + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Request Investment";
+  container.innerHTML="";
+
+  if(Object.keys(investments).length===0){
+
+      container.innerHTML=`
+      <div class="text-center text-gray-500 py-10">
+          No active plans yet.
+      </div>
+      `;
+
+      return;
   }
+
+  Object.entries(investments).forEach(([commodity,info])=>{
+
+      const approved=info.status==="approved";
+
+      container.innerHTML += `
+
+      <div class="border rounded-3xl p-6 mb-4">
+
+          <div class="flex justify-between items-center">
+
+              <div>
+
+                  <h4 class="font-bold text-xl">
+                      ${PLAN_NAMES[commodity] || commodity}
+                  </h4>
+
+                  <p class="text-gray-500">
+                      KES ${info.amount || 0}
+                  </p>
+
+              </div>
+
+              <span class="${
+                  approved
+                  ? "text-green-600"
+                  : "text-amber-600"
+              } font-bold">
+
+                  ${
+                      approved
+                      ? "✅ Approved"
+                      : "⏳ Pending"
+                  }
+
+              </span>
+
+          </div>
+
+      </div>
+
+      `;
+
+  });
+
 }
 
-function updateChargePreview() {
-  const amount = parseFloat(document.getElementById("withdrawAmount").value);
-  const preview = document.getElementById("chargePreview");
+async function invest(){
 
-  if (!amount || amount < 100) {
-    preview.classList.add("hidden");
-    return;
+  if(!selectedCommodity) return;
+
+  try{
+
+      const res=await fetch(
+          `${BACKEND_URL}/invest/request`,
+          {
+              method:"POST",
+              headers:{
+                  "Content-Type":"application/json",
+                  Authorization:
+                  `Bearer ${localStorage.getItem("access_token")}`
+              },
+              body:JSON.stringify({
+                  commodity:selectedCommodity
+              })
+          }
+      );
+
+      const data=await res.json();
+
+      if(res.ok){
+
+          showMsg(
+              "success",
+              data.message || "Plan request submitted."
+          );
+
+          loadDashboard();
+
+      }else{
+
+          showMsg(
+              "error",
+              data.detail || "Request failed"
+          );
+
+      }
+
+  }catch(error){
+
+      showMsg("error","Network error");
+
   }
 
-  const charge = Math.round(amount * 0.20);
-  const net = amount - charge;
+}
 
-  document.getElementById("previewRequested").textContent = `KES ${amount}`;
-  document.getElementById("previewCharge").textContent = `KES ${charge}`;
-  document.getElementById("previewNet").textContent = `KES ${net}`;
+async function grabBonus(commodity){
+
+  try{
+
+      const res=await fetch(
+          `${BACKEND_URL}/bonus/grab`,
+          {
+              method:"POST",
+              headers:{
+                  "Content-Type":"application/json",
+                  Authorization:
+                  `Bearer ${localStorage.getItem("access_token")}`
+              },
+              body:JSON.stringify({
+                  commodity
+              })
+          }
+      );
+
+      const data=await res.json();
+
+      if(res.ok){
+
+          showMsg("success",data.message);
+          loadDashboard();
+
+      }else{
+
+          showMsg(
+              "error",
+              data.detail || "Bonus failed"
+          );
+
+      }
+
+  }catch{
+
+      showMsg("error","Network error");
+
+  }
+
+}
+
+function updateChargePreview(){
+
+  const amount=parseFloat(
+      document.getElementById("withdrawAmount").value
+  );
+
+  const preview=
+  document.getElementById("chargePreview");
+
+  if(!amount || amount < 100){
+
+      preview.classList.add("hidden");
+      return;
+
+  }
+
+  const charge=amount*0.20;
+  const net=amount-charge;
+
+  document.getElementById("previewRequested").textContent=
+  `KES ${amount}`;
+
+  document.getElementById("previewCharge").textContent=
+  `KES ${charge.toFixed(2)}`;
+
+  document.getElementById("previewNet").textContent=
+  `KES ${net.toFixed(2)}`;
 
   preview.classList.remove("hidden");
+
 }
 
-async function requestWithdrawal() {
-  const amount = parseFloat(document.getElementById("withdrawAmount").value) || 0;
-  const method = document.getElementById("withdrawMethod").value;
-  const account = document.getElementById("withdrawAccount").value.trim();
+async function requestWithdrawal(){
 
-  console.log("Withdrawal attempt:", { amount, method, account }); // Debug log
+  const amount=
+  Number(document.getElementById("withdrawAmount").value);
 
-  if (amount < 100) {
-    showMsg("error", "Minimum withdrawal is KES 100");
-    return;
-  }
-  if (!method) {
-    showMsg("error", "Please select a payment method");
-    return;
-  }
-  if (!account) {
-    showMsg("error", "Please enter account/phone number");
-    return;
+  const method=
+  document.getElementById("withdrawMethod").value;
+
+  if(amount < 100){
+
+      showMsg(
+          "error",
+          "Minimum withdrawal is KES 100"
+      );
+
+      return;
   }
 
-  if (!confirm(`Request KES ${amount} withdrawal?\n20% charge will apply.`)) return;
+  try{
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/withdraw/request`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`
-      },
-      body: JSON.stringify({ 
-        amount: amount, 
-        payment_method: method 
-      })
-    });
+      const res=await fetch(
+          `${BACKEND_URL}/withdraw/request`,
+          {
+              method:"POST",
+              headers:{
+                  "Content-Type":"application/json",
+                  Authorization:
+                  `Bearer ${localStorage.getItem("access_token")}`
+              },
+              body:JSON.stringify({
+                  amount,
+                  payment_method:method
+              })
+          }
+      );
 
-    const data = await res.json();
-    console.log("Withdrawal response:", data);
+      const data=await res.json();
 
-    if (res.ok) {
-      showMsg("success", data.message || "Withdrawal request submitted successfully.");
-      document.getElementById("withdrawAmount").value = "";
-      document.getElementById("withdrawAccount").value = "";
-      document.getElementById("chargePreview").classList.add("hidden");
-      loadDashboard();   // Refresh everything including referral if needed
-    } else {
-      showMsg("error", data.detail || data.message || "Failed to submit");
-    }
-  } catch (e) {
-    console.error("Withdrawal error:", e);
-    showMsg("error", "Network error - check console for details");
+      if(res.ok){
+
+          showMsg(
+              "success",
+              data.message || "Withdrawal submitted"
+          );
+
+          loadDashboard();
+
+      }else{
+
+          showMsg(
+              "error",
+              data.detail || "Request failed"
+          );
+
+      }
+
+  }catch{
+
+      showMsg("error","Network error");
+
   }
+
 }
 
-function copyRef() {
-  const link = document.getElementById("refLink").value;
-  navigator.clipboard.writeText(link).then(() => alert("✅ Referral link copied!"));
+function copyRef(){
+
+  const link=
+  document.getElementById("refLink").value;
+
+  navigator.clipboard.writeText(link);
+
+  showMsg(
+      "success",
+      "Referral link copied successfully."
+  );
+
 }
 
-function switchTab(n) {
-  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('hidden', i !== n));
-  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === n));
+function switchTab(tab){
+
+  document
+  .querySelectorAll(".tab-content")
+  .forEach((content,index)=>{
+
+      content.classList.toggle(
+          "hidden",
+          index!==tab
+      );
+
+  });
+
+  document
+  .querySelectorAll(".tab-btn")
+  .forEach((btn,index)=>{
+
+      btn.classList.toggle(
+          "active",
+          index===tab
+      );
+
+  });
+
 }
+
 </script>
+
 </body>
 </html>
