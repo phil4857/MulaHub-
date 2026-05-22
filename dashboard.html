@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mkoba Wallet Dashboard 💸</title>
+<title>MulaHub Dashboard 🚀</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body { background: linear-gradient(to right, #f0f9f7, #e0f2fe); font-family: 'Segoe UI', Arial, sans-serif; }
@@ -61,12 +61,11 @@
 
 <!-- Top Welcome Banner -->
 <div class="welcome-banner">
-  Welcome to Mkoba Wallet – Your money grows daily! 🤑
-</div>
+  Welcome to MulaHub – Build Your Digital Income Daily 🚀
 
 <!-- Live Banner -->
 <div class="live-banner">
-  🚀 Thousands of people are earning more than 300 daily with Mkoba Wallet<br>
+  🚀 Millions of members are growing their income with MulaHub every day📈
   <span style="font-size: 0.95rem; opacity: 0.95;">Start your journey to financial freedom today</span>
 </div>
 
@@ -74,13 +73,13 @@
 
   <!-- Navbar -->
   <div class="flex justify-between items-center bg-indigo-700 text-white p-5 rounded-2xl shadow-xl mb-8">
-    <h1 class="text-2xl font-bold">Mkoba Wallet Dashboard</h1>
+<h1 class="text-2xl font-bold"<h1 class="text-2xl font-bold">🚀 MulaHub Dashboard</h1>
     <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-xl font-semibold">Logout</button>
   </div>
 
   <!-- M-Pesa Banner -->
   <div class="bg-yellow-100 border border-yellow-400 text-yellow-800 p-5 rounded-2xl mb-8 text-center font-medium">
-    Send investment to M-Pesa: <span class="font-bold text-red-600">0752964507</span><br>
+    Activate your MulaHub plan via M-Pesa: <span class="font-bold text-red-600">0752964507</span><br>
     <small class="text-yellow-700">Include your username in the message</small>
   </div>
 
@@ -207,14 +206,25 @@
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
 const COMMODITY_INFO = {
-  marble:     { price: 650, emoji: "🪨" },
-  crude_oil:  { price: 800, emoji: "🛢️" },
-  silver:     { price: 1000, emoji: "🪙" },
-  lead:       { price: 1200, emoji: "⚙️" },
-  platinum:   { price: 1350, emoji: "💎" },
-  diamonds:   { price: 1750, emoji: "💎" },
-  gold:       { price: 2200, emoji: "🪙" },
-  uranium:    { price: 3000, emoji: "☢️" }
+  data_pack:      { price: 1000, emoji: "📶" },
+  creator:        { price: 1400, emoji: "🎥" },
+  affiliate:      { price: 1800, emoji: "🤝" },
+  influencer:     { price: 2200, emoji: "📱" },
+  digital_pro:    { price: 2600, emoji: "💻" },
+  growth_hub:     { price: 3000, emoji: "📈" },
+  wealth_builder: { price: 3500, emoji: "💰" },
+  empire:         { price: 4000, emoji: "🏆" }
+};
+
+const PLAN_NAMES = {
+  data_pack: "Data Pack",
+  creator: "Creator",
+  affiliate: "Affiliate",
+  influencer: "Influencer",
+  digital_pro: "Digital Pro",
+  growth_hub: "Growth Hub",
+  wealth_builder: "Wealth Builder",
+  empire: "Empire"
 };
 
 let selectedCommodity = null;
