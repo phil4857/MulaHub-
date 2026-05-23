@@ -80,6 +80,7 @@ body{
   color:white;
 }
 
+/* ── PLAN CARDS ── */
 .plan-card{
   transition:.3s;
   cursor:pointer;
@@ -99,33 +100,25 @@ body{
 
 .plan-card.selected{
   border-color:#10b981;
-  box-shadow:0 0 0 3px rgba(16,185,129,.4), 0 20px 40px rgba(0,0,0,.4);
+  box-shadow:0 0 0 3px rgba(16,185,129,.4),0 20px 40px rgba(0,0,0,.4);
 }
 
-.plan-card::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0; bottom:0;
-  background:rgba(255,255,255,.05);
-  pointer-events:none;
-}
-
-/* Starter plan cards */
+/* ── STARTER PLAN GRADIENTS ── */
 .starter-spark   { background:linear-gradient(135deg,#7c3aed,#4f46e5); }
 .starter-boost   { background:linear-gradient(135deg,#db2777,#9d174d); }
 .starter-connect { background:linear-gradient(135deg,#0891b2,#1e40af); }
 .starter-stream  { background:linear-gradient(135deg,#059669,#047857); }
 .starter-launch  { background:linear-gradient(135deg,#d97706,#b45309); }
 
-/* Main plan cards */
-.main-data_pack     { background:linear-gradient(135deg,#0284c7,#1e3a8a); }
-.main-creator       { background:linear-gradient(135deg,#7c3aed,#6d28d9); }
-.main-affiliate     { background:linear-gradient(135deg,#059669,#065f46); }
-.main-influencer    { background:linear-gradient(135deg,#db2777,#be185d); }
-.main-digital_pro   { background:linear-gradient(135deg,#0891b2,#155e75); }
-.main-growth_hub    { background:linear-gradient(135deg,#d97706,#92400e); }
-.main-wealth_builder{ background:linear-gradient(135deg,#16a34a,#14532d); }
-.main-empire        { background:linear-gradient(135deg,#b45309,#78350f); }
+/* ── MAIN PLAN GRADIENTS ── */
+.main-data_pack      { background:linear-gradient(135deg,#0284c7,#1e3a8a); }
+.main-creator        { background:linear-gradient(135deg,#7c3aed,#6d28d9); }
+.main-affiliate      { background:linear-gradient(135deg,#059669,#065f46); }
+.main-influencer     { background:linear-gradient(135deg,#db2777,#be185d); }
+.main-digital_pro    { background:linear-gradient(135deg,#0891b2,#155e75); }
+.main-growth_hub     { background:linear-gradient(135deg,#d97706,#92400e); }
+.main-wealth_builder { background:linear-gradient(135deg,#16a34a,#14532d); }
+.main-empire         { background:linear-gradient(135deg,#b45309,#78350f); }
 
 .msg{
   padding:15px;
@@ -164,13 +157,14 @@ body{
 .logo-circle{
   width:60px; height:60px; border-radius:50%;
   background:linear-gradient(135deg,#10b981,#0284c7);
-  color:white; display:flex; align-items:center;
-  justify-content:center; font-size:1.6rem; font-weight:bold;
+  color:white; display:inline-flex; align-items:center;
+  justify-content:center; font-size:1.6rem; font-weight:900;
   box-shadow:0 4px 15px rgba(16,185,129,.4);
 }
 
 .footer-note{ font-size:.8rem; color:#64748b; text-align:center; margin-top:20px; }
 
+/* ── TIER BADGES ── */
 .tier-badge-starter{
   font-size:10px; font-weight:700;
   background:rgba(245,158,11,.2); color:#fbbf24;
@@ -187,16 +181,33 @@ body{
   display:inline-block; margin-bottom:6px;
 }
 
+/* ── SECTION DIVIDER ── */
 .section-divider{
   display:flex; align-items:center; gap:14px;
   margin:10px 0 18px;
 }
-.section-divider span{ white-space:nowrap; font-weight:700; font-size:15px; }
+
 .section-divider::before,.section-divider::after{
   content:''; flex:1; height:1px;
   background:rgba(99,179,237,.2);
 }
 
+.section-divider span{
+  white-space:nowrap; font-weight:700; font-size:14px;
+  padding:5px 14px; border-radius:20px;
+}
+
+.section-divider.starter span{
+  background:rgba(245,158,11,.15); color:#fbbf24;
+  border:1px solid rgba(245,158,11,.3);
+}
+
+.section-divider.main span{
+  background:rgba(16,185,129,.15); color:#6ee7b7;
+  border:1px solid rgba(16,185,129,.3);
+}
+
+/* ── INVESTMENT CARDS ── */
 .inv-card{
   background:rgba(255,255,255,.05);
   border:1px solid rgba(99,179,237,.15);
@@ -209,6 +220,7 @@ body{
   padding:10px 20px; font-weight:700; cursor:pointer;
   transition:.2s; font-size:14px;
 }
+
 .grab-btn:hover{ transform:translateY(-2px); box-shadow:0 6px 20px rgba(16,185,129,.4); }
 .grab-btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
 
@@ -218,6 +230,7 @@ input,select{
   color:white !important;
   border-radius:14px !important;
 }
+
 input::placeholder{ color:#64748b !important; }
 input:focus,select:focus{ outline:none; border-color:rgba(16,185,129,.5) !important; }
 select option{ background:#0f172a; color:white; }
@@ -246,7 +259,8 @@ select option{ background:#0f172a; color:white; }
       <h2 class="text-2xl font-bold text-white">🚀 MulaHub Wealth Dashboard</h2>
       <p class="text-sm text-slate-400">Earn • Grow • Prosper</p>
     </div>
-    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-2xl font-bold transition">
+    <button onclick="logout()"
+      class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-2xl font-bold transition">
       Logout
     </button>
   </div>
@@ -268,89 +282,155 @@ select option{ background:#0f172a; color:white; }
     <button onclick="switchTab(2)" id="tab2" class="tab-btn">💸 Withdraw</button>
   </div>
 
-  <!-- ===== PLANS TAB ===== -->
+  <!-- ================================================================
+       TAB 0 — PLANS
+  ================================================================ -->
   <div id="tabContent0" class="tab-content">
     <div class="section-card">
-      <h2 class="text-3xl font-bold text-center mb-6 text-white">🚀 Choose Your MulaHub Plan</h2>
 
-      <!-- Starter Plans -->
-      <div class="section-divider">
-        <span class="text-amber-400">⭐ Starter Plans</span>
+      <h2 class="text-3xl font-bold text-center mb-6 text-white">
+        🚀 Choose Your MulaHub Plan
+      </h2>
+
+      <!-- ── STARTER PLANS ── -->
+      <div class="section-divider starter">
+        <span>⭐ Starter Plans</span>
       </div>
-      <p class="text-slate-400 text-sm text-center mb-5">~5% daily returns • KES 450 – 900</p>
-      <div id="starterGrid" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10"></div>
+      <p class="text-slate-400 text-sm text-center mb-5">
+        ~8%–9% daily returns • KES 450 – 900
+      </p>
 
-      <!-- Main Plans -->
-      <div class="section-divider">
-        <span class="text-emerald-400">🏆 Main Plans</span>
+      <div id="starterGrid"
+           class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
       </div>
-      <p class="text-slate-400 text-sm text-center mb-5">10% daily returns • KES 1,000 – 4,000</p>
-      <div id="mainGrid" class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8"></div>
+      <!-- END STARTER PLANS -->
 
+      <!-- ── MAIN PLANS ── -->
+      <div class="section-divider main">
+        <span>🏆 Main Plans</span>
+      </div>
+      <p class="text-slate-400 text-sm text-center mb-5">
+        10% daily returns • KES 1,000 – 4,000
+      </p>
+
+      <div id="mainGrid"
+           class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+      </div>
+      <!-- END MAIN PLANS -->
+
+      <!-- ACTIVATE BUTTON -->
       <div class="text-center mt-4">
         <p class="text-lg mb-5 text-slate-300">
-          Selected Plan: <span id="selected" class="font-bold text-emerald-400">-- None --</span>
+          Selected Plan:
+          <span id="selected" class="font-bold text-emerald-400">
+            -- None --
+          </span>
         </p>
         <button
           id="investBtn"
           onclick="invest()"
           disabled
-          class="glow-btn bg-gradient-to-r from-emerald-500 to-blue-600 text-white py-5 px-14 rounded-3xl font-bold text-xl disabled:opacity-40">
+          class="glow-btn bg-gradient-to-r from-emerald-500 to-blue-600
+                 text-white py-5 px-14 rounded-3xl font-bold text-xl
+                 disabled:opacity-40">
           Activate Selected Plan
         </button>
       </div>
+
     </div>
   </div>
+  <!-- END TAB 0 -->
 
-  <!-- ===== EARNINGS TAB ===== -->
+  <!-- ================================================================
+       TAB 1 — EARNINGS
+  ================================================================ -->
   <div id="tabContent1" class="tab-content hidden">
+
+    <!-- STAT CARDS -->
     <div class="grid md:grid-cols-3 gap-6 mb-8">
+
       <div class="stat-card">
         <p class="text-slate-400 text-sm mb-2">Current Balance</p>
-        <h3 id="balance" class="text-4xl font-bold text-emerald-400">KES 0.00</h3>
+        <h3 id="balance" class="text-4xl font-bold text-emerald-400">
+          KES 0.00
+        </h3>
       </div>
+
       <div class="stat-card">
         <p class="text-slate-400 text-sm mb-2">Total Earnings</p>
-        <h3 id="earnings" class="text-4xl font-bold text-cyan-400">KES 0.00</h3>
+        <h3 id="earnings" class="text-4xl font-bold text-cyan-400">
+          KES 0.00
+        </h3>
       </div>
-      <div class="stat-card" style="border-color:rgba(245,158,11,.3)">
+
+      <div class="stat-card"
+           style="border-color:rgba(245,158,11,.3)">
         <p class="text-slate-400 text-sm mb-2">Referral Rewards</p>
-        <h3 id="referralBonus" class="text-4xl font-bold text-amber-400">KES 0.00</h3>
+        <h3 id="referralBonus"
+            class="text-4xl font-bold text-amber-400">
+          KES 0.00
+        </h3>
       </div>
+
     </div>
 
+    <!-- ACTIVE PLANS LIST -->
     <div class="section-card mb-6">
-      <h3 class="text-2xl font-bold mb-6 text-white">🎁 Active Plans & Daily Rewards</h3>
+      <h3 class="text-2xl font-bold mb-6 text-white">
+        🎁 Active Plans & Daily Rewards
+      </h3>
       <div id="investmentsList"></div>
     </div>
 
+    <!-- REFERRAL CENTER -->
     <div class="section-card">
-      <h3 class="font-bold text-xl mb-2 text-white">🔗 Referral Rewards Center</h3>
+      <h3 class="font-bold text-xl mb-2 text-white">
+        🔗 Referral Rewards Center
+      </h3>
       <p class="text-sm text-slate-400 mb-4">
         Invite friends and earn bonuses whenever they activate qualifying plans.
       </p>
-      <input id="refLink" readonly class="w-full p-4 rounded-2xl text-sm mb-4">
+      <input id="refLink" readonly
+             class="w-full p-4 rounded-2xl text-sm mb-4">
       <button onclick="copyRef()"
-        class="w-full bg-gradient-to-r from-emerald-500 to-cyan-600 hover:opacity-90 text-white py-4 rounded-2xl font-bold transition">
+        class="w-full bg-gradient-to-r from-emerald-500 to-cyan-600
+               hover:opacity-90 text-white py-4 rounded-2xl font-bold transition">
         Copy Referral Link
       </button>
     </div>
-  </div>
 
-  <!-- ===== WITHDRAW TAB ===== -->
+  </div>
+  <!-- END TAB 1 -->
+
+  <!-- ================================================================
+       TAB 2 — WITHDRAW
+  ================================================================ -->
   <div id="tabContent2" class="tab-content hidden">
     <div class="section-card">
-      <h2 class="text-3xl font-bold text-center mb-6 text-red-400">💸 Withdrawal Center</h2>
 
-      <div class="text-center mb-8 p-6 rounded-3xl" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3)">
+      <h2 class="text-3xl font-bold text-center mb-6 text-red-400">
+        💸 Withdrawal Center
+      </h2>
+
+      <!-- BALANCE -->
+      <div class="text-center mb-8 p-6 rounded-3xl"
+           style="background:rgba(16,185,129,.1);
+                  border:1px solid rgba(16,185,129,.3)">
         <p class="text-slate-400 text-sm">Available Balance</p>
-        <h3 id="withdrawBalance" class="text-5xl font-black text-emerald-400 mt-2">KES 0.00</h3>
+        <h3 id="withdrawBalance"
+            class="text-5xl font-black text-emerald-400 mt-2">
+          KES 0.00
+        </h3>
       </div>
 
       <div id="withdrawMsg" class="msg hidden"></div>
 
       <div class="max-w-md mx-auto">
-        <label class="block text-sm font-semibold mb-2 text-slate-300">Amount to Withdraw (KES)</label>
+
+        <!-- AMOUNT -->
+        <label class="block text-sm font-semibold mb-2 text-slate-300">
+          Amount to Withdraw (KES)
+        </label>
         <input
           type="number"
           id="withdrawAmount"
@@ -359,25 +439,33 @@ select option{ background:#0f172a; color:white; }
           class="w-full p-5 text-xl text-center mb-4"
           oninput="updateChargePreview()">
 
-        <div id="chargePreview" class="hidden p-5 rounded-2xl mb-6"
-             style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3)">
+        <!-- CHARGE PREVIEW -->
+        <div id="chargePreview"
+             class="hidden p-5 rounded-2xl mb-6"
+             style="background:rgba(245,158,11,.1);
+                    border:1px solid rgba(245,158,11,.3)">
           <div class="space-y-3 text-slate-300">
             <div class="flex justify-between">
               <span>Requested:</span>
-              <span id="previewRequested" class="font-bold text-white">KES 0</span>
+              <span id="previewRequested"
+                    class="font-bold text-white">KES 0</span>
             </div>
             <div class="flex justify-between text-red-400">
               <span>20% Charge:</span>
               <span id="previewCharge">KES 0</span>
             </div>
-            <div class="flex justify-between border-t pt-3 font-bold" style="border-color:rgba(255,255,255,.1)">
+            <div class="flex justify-between border-t pt-3 font-bold"
+                 style="border-color:rgba(255,255,255,.1)">
               <span class="text-white">You Receive:</span>
               <span id="previewNet" class="text-emerald-400">KES 0</span>
             </div>
           </div>
         </div>
 
-        <label class="block text-sm font-semibold mb-2 text-slate-300">Payment Method</label>
+        <!-- METHOD -->
+        <label class="block text-sm font-semibold mb-2 text-slate-300">
+          Payment Method
+        </label>
         <select id="withdrawMethod" class="w-full p-4 mb-5">
           <option value="">Select Method</option>
           <option value="mpesa">M-Pesa</option>
@@ -385,35 +473,59 @@ select option{ background:#0f172a; color:white; }
           <option value="paypal">PayPal</option>
         </select>
 
-        <label class="block text-sm font-semibold mb-2 text-slate-300">Account / Phone Number</label>
-        <input id="withdrawAccount" type="text" placeholder="0712345678" class="w-full p-4 mb-6">
+        <!-- ACCOUNT -->
+        <label class="block text-sm font-semibold mb-2 text-slate-300">
+          Account / Phone Number
+        </label>
+        <input id="withdrawAccount" type="text"
+               placeholder="0712345678"
+               class="w-full p-4 mb-6">
 
         <button onclick="requestWithdrawal()"
-          class="w-full bg-gradient-to-r from-red-600 to-rose-700 hover:opacity-90 text-white py-5 rounded-3xl font-bold text-xl transition">
+          class="w-full bg-gradient-to-r from-red-600 to-rose-700
+                 hover:opacity-90 text-white py-5 rounded-3xl
+                 font-bold text-xl transition">
           Submit Withdrawal Request
         </button>
+
       </div>
 
       <p class="footer-note mt-6">
         Minimum withdrawal: KES 100 • 20% processing fee applies •
         Withdrawals are reviewed by the MulaHub team.
       </p>
+
     </div>
   </div>
+  <!-- END TAB 2 -->
 
-</div>
+</div><!-- end max-w-7xl -->
 
 <script>
 const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 
-const COMMODITY_INFO = {
-  // Starter plans (~5% daily)
-  spark:         { price:450,  emoji:"⚡", daily:"KES 22/day",  duration:"15 Days", tier:"starter" },
-  boost:         { price:550,  emoji:"🔥", daily:"KES 27/day",  duration:"17 Days", tier:"starter" },
-  connect:       { price:650,  emoji:"🌐", daily:"KES 32/day",  duration:"19 Days", tier:"starter" },
-  stream:        { price:750,  emoji:"📡", daily:"KES 37/day",  duration:"21 Days", tier:"starter" },
-  launch:        { price:900,  emoji:"🚀", daily:"KES 45/day",  duration:"23 Days", tier:"starter" },
-  // Main plans (10% daily)
+/* ================================================================
+   COMMODITY INFO
+   — Starter plans and Main plans are kept COMPLETELY SEPARATE
+   — Do NOT mix or move entries between the two blocks
+================================================================ */
+
+// ── STARTER PLANS (~8–9% daily) ─────────────────────────────────
+// spark | boost | connect | stream | launch
+// Price range: KES 450 – 900
+const STARTER_INFO = {
+  spark:   { price:450, emoji:"⚡", daily:"KES 40/day",  duration:"18 Days", tier:"starter" },
+  boost:   { price:550, emoji:"🔥", daily:"KES 50/day",  duration:"20 Days", tier:"starter" },
+  connect: { price:650, emoji:"🌐", daily:"KES 60/day",  duration:"22 Days", tier:"starter" },
+  stream:  { price:750, emoji:"📡", daily:"KES 70/day",  duration:"24 Days", tier:"starter" },
+  launch:  { price:900, emoji:"🚀", daily:"KES 85/day",  duration:"26 Days", tier:"starter" },
+};
+
+// ── MAIN PLANS (10% daily) ───────────────────────────────────────
+// data_pack | creator | affiliate | influencer | digital_pro
+// growth_hub | wealth_builder | empire
+// Price range: KES 1,000 – 4,000
+const MAIN_INFO = {
   data_pack:     { price:1000, emoji:"📶", daily:"KES 100/day", duration:"20 Days", tier:"main" },
   creator:       { price:1400, emoji:"🎥", daily:"KES 140/day", duration:"23 Days", tier:"main" },
   affiliate:     { price:1800, emoji:"🤝", daily:"KES 180/day", duration:"25 Days", tier:"main" },
@@ -424,23 +536,39 @@ const COMMODITY_INFO = {
   empire:        { price:4000, emoji:"🏆", daily:"KES 400/day", duration:"45 Days", tier:"main" },
 };
 
+// Combined — used for lookups (DO NOT EDIT ORDER)
+const COMMODITY_INFO = { ...STARTER_INFO, ...MAIN_INFO };
+
+/* ── PLAN DISPLAY NAMES ── */
 const PLAN_NAMES = {
-  spark:"Spark", boost:"Boost", connect:"Connect", stream:"Stream", launch:"Launch",
-  data_pack:"Data Pack", creator:"Creator", affiliate:"Affiliate",
-  influencer:"Influencer", digital_pro:"Digital Pro",
-  growth_hub:"Growth Hub", wealth_builder:"Wealth Builder", empire:"Empire"
+  // Starter
+  spark:"Spark", boost:"Boost", connect:"Connect",
+  stream:"Stream", launch:"Launch",
+  // Main
+  data_pack:"Data Pack", creator:"Creator",
+  affiliate:"Affiliate", influencer:"Influencer",
+  digital_pro:"Digital Pro", growth_hub:"Growth Hub",
+  wealth_builder:"Wealth Builder", empire:"Empire",
 };
 
+/* ── CARD CSS CLASSES ── */
 const CARD_CLASS = {
-  spark:"starter-spark", boost:"starter-boost", connect:"starter-connect",
-  stream:"starter-stream", launch:"starter-launch",
-  data_pack:"main-data_pack", creator:"main-creator", affiliate:"main-affiliate",
-  influencer:"main-influencer", digital_pro:"main-digital_pro",
-  growth_hub:"main-growth_hub", wealth_builder:"main-wealth_builder", empire:"main-empire"
+  // Starter
+  spark:"starter-spark", boost:"starter-boost",
+  connect:"starter-connect", stream:"starter-stream",
+  launch:"starter-launch",
+  // Main
+  data_pack:"main-data_pack", creator:"main-creator",
+  affiliate:"main-affiliate", influencer:"main-influencer",
+  digital_pro:"main-digital_pro", growth_hub:"main-growth_hub",
+  wealth_builder:"main-wealth_builder", empire:"main-empire",
 };
 
 let selectedCommodity = null;
 
+/* ================================================================
+   INIT
+================================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   if (!localStorage.getItem("access_token")) {
     window.location.href = "login.html";
@@ -449,10 +577,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("refLink").value =
     "https://mula-hyum72b8o-voting-219fda77.vercel.app/register.html?ref=" +
     (localStorage.getItem("username") || "");
+
   renderCommodities();
   loadDashboard();
 });
 
+/* ================================================================
+   UTILS
+================================================================ */
 function logout() {
   localStorage.clear();
   window.location.href = "login.html";
@@ -465,22 +597,30 @@ function showMsg(type, text) {
   setTimeout(() => { msg.textContent = ""; msg.className = ""; }, 5000);
 }
 
-function renderCommodities() {
-  const starterGrid = document.getElementById("starterGrid");
-  const mainGrid = document.getElementById("mainGrid");
-  starterGrid.innerHTML = "";
-  mainGrid.innerHTML = "";
+function switchTab(tab) {
+  document.querySelectorAll(".tab-content")
+    .forEach((c, i) => c.classList.toggle("hidden", i !== tab));
+  document.querySelectorAll(".tab-btn")
+    .forEach((b, i) => b.classList.toggle("active", i === tab));
+}
 
-  Object.entries(COMMODITY_INFO).forEach(([key, plan]) => {
+/* ================================================================
+   RENDER PLAN CARDS
+   Starter and Main grids are built and appended independently
+================================================================ */
+function renderCommodities() {
+
+  const starterGrid = document.getElementById("starterGrid");
+  const mainGrid    = document.getElementById("mainGrid");
+  starterGrid.innerHTML = "";
+  mainGrid.innerHTML    = "";
+
+  // ── Build STARTER cards ──────────────────────────────────────
+  Object.entries(STARTER_INFO).forEach(([key, plan]) => {
     const card = document.createElement("div");
     card.className = "plan-card " + CARD_CLASS[key];
-
-    const tierBadge = plan.tier === "starter"
-      ? '<span class="tier-badge-starter">⭐ Starter</span>'
-      : '<span class="tier-badge-main">🏆 Main</span>';
-
     card.innerHTML = `
-      <div>${tierBadge}</div>
+      <div><span class="tier-badge-starter">⭐ Starter</span></div>
       <div class="text-4xl mb-3">${plan.emoji}</div>
       <h3 class="font-extrabold text-lg mb-1">${PLAN_NAMES[key]}</h3>
       <p class="text-2xl font-black mb-3">KES ${plan.price.toLocaleString()}</p>
@@ -489,35 +629,61 @@ function renderCommodities() {
         <p class="text-xs mt-1 opacity-80">⏳ ${plan.duration}</p>
       </div>
     `;
-
-    card.onclick = () => {
-      selectedCommodity = key;
-      document.getElementById("selected").textContent = PLAN_NAMES[key];
-      document.querySelectorAll(".plan-card").forEach(c => c.classList.remove("selected"));
-      card.classList.add("selected");
-      document.getElementById("investBtn").disabled = false;
-    };
-
-    if (plan.tier === "starter") {
-      starterGrid.appendChild(card);
-    } else {
-      mainGrid.appendChild(card);
-    }
+    card.onclick = () => selectPlan(key, card);
+    starterGrid.appendChild(card);
   });
+  // ── END STARTER cards ────────────────────────────────────────
+
+  // ── Build MAIN cards ─────────────────────────────────────────
+  Object.entries(MAIN_INFO).forEach(([key, plan]) => {
+    const card = document.createElement("div");
+    card.className = "plan-card " + CARD_CLASS[key];
+    card.innerHTML = `
+      <div><span class="tier-badge-main">🏆 Main</span></div>
+      <div class="text-4xl mb-3">${plan.emoji}</div>
+      <h3 class="font-extrabold text-lg mb-1">${PLAN_NAMES[key]}</h3>
+      <p class="text-2xl font-black mb-3">KES ${plan.price.toLocaleString()}</p>
+      <div class="rounded-xl p-3" style="background:rgba(255,255,255,.12)">
+        <p class="text-sm font-bold">${plan.daily}</p>
+        <p class="text-xs mt-1 opacity-80">⏳ ${plan.duration}</p>
+      </div>
+    `;
+    card.onclick = () => selectPlan(key, card);
+    mainGrid.appendChild(card);
+  });
+  // ── END MAIN cards ───────────────────────────────────────────
+
 }
 
+function selectPlan(key, card) {
+  selectedCommodity = key;
+  document.getElementById("selected").textContent = PLAN_NAMES[key];
+  document.querySelectorAll(".plan-card").forEach(c => c.classList.remove("selected"));
+  card.classList.add("selected");
+  document.getElementById("investBtn").disabled = false;
+}
+
+/* ================================================================
+   DASHBOARD DATA
+================================================================ */
 async function loadDashboard() {
   try {
     const res = await fetch(BACKEND_URL + "/dashboard", {
-      headers: { Authorization: "Bearer " + localStorage.getItem("access_token") }
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("access_token")
+      }
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Failed");
 
-    document.getElementById("balance").textContent        = "KES " + Number(data.balance || 0).toFixed(2);
-    document.getElementById("earnings").textContent       = "KES " + Number(data.earnings || 0).toFixed(2);
-    document.getElementById("referralBonus").textContent  = "KES " + Number(data.referral_bonus_earned || 0).toFixed(2);
-    document.getElementById("withdrawBalance").textContent= "KES " + Number(data.balance || 0).toFixed(2);
+    document.getElementById("balance").textContent =
+      "KES " + Number(data.balance || 0).toFixed(2);
+    document.getElementById("earnings").textContent =
+      "KES " + Number(data.earnings || 0).toFixed(2);
+    document.getElementById("referralBonus").textContent =
+      "KES " + Number(data.referral_bonus_earned || 0).toFixed(2);
+    document.getElementById("withdrawBalance").textContent =
+      "KES " + Number(data.balance || 0).toFixed(2);
 
     renderInvestments(data.investments || {});
   } catch (err) {
@@ -525,12 +691,17 @@ async function loadDashboard() {
   }
 }
 
+/* ================================================================
+   RENDER ACTIVE INVESTMENTS
+================================================================ */
 function renderInvestments(investments) {
   const container = document.getElementById("investmentsList");
   container.innerHTML = "";
 
   if (Object.keys(investments).length === 0) {
-    container.innerHTML = '<div class="text-center text-slate-500 py-10">No active plans yet. Activate one above!</div>';
+    container.innerHTML =
+      '<div class="text-center text-slate-500 py-10">' +
+      'No active plans yet. Activate one above!</div>';
     return;
   }
 
@@ -538,7 +709,6 @@ function renderInvestments(investments) {
     const approved = info.status === "approved";
     const pending  = info.status === "pending";
     const plan     = COMMODITY_INFO[commodity] || {};
-
     const canGrab  = approved && info.can_grab;
     const timeNext = info.time_to_next || "";
 
@@ -548,11 +718,22 @@ function renderInvestments(investments) {
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="text-2xl">${plan.emoji || "💼"}</span>
-              <h4 class="font-bold text-xl text-white">${PLAN_NAMES[commodity] || commodity}</h4>
+              <h4 class="font-bold text-xl text-white">
+                ${PLAN_NAMES[commodity] || commodity}
+              </h4>
             </div>
-            <p class="text-slate-400 text-sm">KES ${Number(info.amount || 0).toLocaleString()} invested</p>
-            ${approved ? '<p class="text-slate-400 text-sm">Daily: ' + (plan.daily || "") + ' • ' + (info.days_remaining || 0) + ' days left</p>' : ""}
-            ${pending  ? '<p class="text-amber-400 text-sm mt-1">⏳ Awaiting admin approval after M-Pesa payment</p>' : ""}
+            <p class="text-slate-400 text-sm">
+              KES ${Number(info.amount || 0).toLocaleString()} invested
+            </p>
+            ${approved
+              ? '<p class="text-slate-400 text-sm">Daily: ' +
+                (plan.daily || "") + ' • ' +
+                (info.days_remaining || 0) + ' days left</p>'
+              : ""}
+            ${pending
+              ? '<p class="text-amber-400 text-sm mt-1">' +
+                '⏳ Awaiting admin approval after M-Pesa payment</p>'
+              : ""}
           </div>
           <div class="text-right">
             <span class="${approved ? "text-emerald-400" : "text-amber-400"} font-bold text-lg">
@@ -574,6 +755,9 @@ function renderInvestments(investments) {
   });
 }
 
+/* ================================================================
+   INVEST
+================================================================ */
 async function invest() {
   if (!selectedCommodity) return;
   try {
@@ -586,11 +770,18 @@ async function invest() {
       body: JSON.stringify({ commodity: selectedCommodity })
     });
     const data = await res.json();
-    if (res.ok) { showMsg("success", data.message || "Plan request submitted."); loadDashboard(); }
-    else showMsg("error", data.detail || "Request failed");
+    if (res.ok) {
+      showMsg("success", data.message || "Plan request submitted.");
+      loadDashboard();
+    } else {
+      showMsg("error", data.detail || "Request failed");
+    }
   } catch { showMsg("error", "Network error"); }
 }
 
+/* ================================================================
+   GRAB DAILY BONUS
+================================================================ */
 async function grabBonus(commodity) {
   try {
     const res = await fetch(BACKEND_URL + "/bonus/grab", {
@@ -602,20 +793,30 @@ async function grabBonus(commodity) {
       body: JSON.stringify({ commodity })
     });
     const data = await res.json();
-    if (res.ok) { showMsg("success", data.message); loadDashboard(); }
-    else showMsg("error", data.detail || "Bonus failed");
+    if (res.ok) {
+      showMsg("success", data.message);
+      loadDashboard();
+    } else {
+      showMsg("error", data.detail || "Bonus failed");
+    }
   } catch { showMsg("error", "Network error"); }
 }
 
+/* ================================================================
+   WITHDRAW
+================================================================ */
 function updateChargePreview() {
-  const amount = parseFloat(document.getElementById("withdrawAmount").value);
+  const amount  = parseFloat(document.getElementById("withdrawAmount").value);
   const preview = document.getElementById("chargePreview");
   if (!amount || amount < 100) { preview.classList.add("hidden"); return; }
   const charge = amount * 0.20;
-  const net = amount - charge;
-  document.getElementById("previewRequested").textContent = "KES " + amount.toLocaleString();
-  document.getElementById("previewCharge").textContent    = "KES " + charge.toFixed(2);
-  document.getElementById("previewNet").textContent       = "KES " + net.toFixed(2);
+  const net    = amount - charge;
+  document.getElementById("previewRequested").textContent =
+    "KES " + amount.toLocaleString();
+  document.getElementById("previewCharge").textContent =
+    "KES " + charge.toFixed(2);
+  document.getElementById("previewNet").textContent =
+    "KES " + net.toFixed(2);
   preview.classList.remove("hidden");
 }
 
@@ -624,9 +825,9 @@ async function requestWithdrawal() {
   const method  = document.getElementById("withdrawMethod").value;
   const account = document.getElementById("withdrawAccount").value.trim();
 
-  if (amount < 100) { showMsg("error", "Minimum withdrawal is KES 100"); return; }
-  if (!method)      { showMsg("error", "Please select a payment method"); return; }
-  if (!account)     { showMsg("error", "Please enter your account/phone number"); return; }
+  if (amount < 100) { showMsg("error","Minimum withdrawal is KES 100"); return; }
+  if (!method)      { showMsg("error","Please select a payment method"); return; }
+  if (!account)     { showMsg("error","Please enter your account/phone number"); return; }
 
   try {
     const res = await fetch(BACKEND_URL + "/withdraw/request", {
@@ -640,22 +841,22 @@ async function requestWithdrawal() {
     const data = await res.json();
     if (res.ok) {
       showMsg("success", data.message || "Withdrawal submitted");
-      document.getElementById("withdrawAmount").value = "";
+      document.getElementById("withdrawAmount").value  = "";
       document.getElementById("withdrawAccount").value = "";
       document.getElementById("chargePreview").classList.add("hidden");
       loadDashboard();
-    } else showMsg("error", data.detail || "Request failed");
+    } else {
+      showMsg("error", data.detail || "Request failed");
+    }
   } catch { showMsg("error", "Network error"); }
 }
 
+/* ================================================================
+   REFERRAL
+================================================================ */
 function copyRef() {
   navigator.clipboard.writeText(document.getElementById("refLink").value);
   showMsg("success", "Referral link copied successfully.");
-}
-
-function switchTab(tab) {
-  document.querySelectorAll(".tab-content").forEach((c, i) => c.classList.toggle("hidden", i !== tab));
-  document.querySelectorAll(".tab-btn").forEach((b, i) => b.classList.toggle("active", i === tab));
 }
 </script>
 </body>
