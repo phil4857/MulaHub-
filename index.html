@@ -3,351 +3,576 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
 <title>MulaHub 🚀 | Build Your Digital Income Daily</title>
-
 <meta name="description" content="Join MulaHub and start building your digital income with smart plans, referral rewards and daily earning opportunities."/>
-
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+*{ margin:0; padding:0; box-sizing:border-box; }
 
 body{
-font-family:'Segoe UI',sans-serif;
-background:linear-gradient(135deg,#0f172a,#1e3a8a,#10b981);
-min-height:100vh;
-color:white;
-overflow-x:hidden;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#071226,#0f172a,#111827,#1e3a8a);
+  background-attachment:fixed;
+  min-height:100vh;
+  color:white;
+  overflow-x:hidden;
 }
 
+/* ── HERO ── */
 .hero{
-padding:80px 20px 40px;
-text-align:center;
+  padding:70px 20px 30px;
+  text-align:center;
 }
 
-.hero h1{
-font-size:4rem;
-font-weight:800;
-margin-bottom:15px;
-text-shadow:0 5px 20px rgba(0,0,0,.3);
-}
-
-.hero p{
-font-size:1.3rem;
-max-width:800px;
-margin:auto;
-opacity:.95;
-line-height:1.7;
+.logo-circle{
+  width:72px; height:72px; border-radius:50%;
+  background:linear-gradient(135deg,#10b981,#0284c7);
+  color:white; display:inline-flex; align-items:center;
+  justify-content:center; font-size:2rem; font-weight:900;
+  box-shadow:0 6px 25px rgba(16,185,129,.45);
+  margin-bottom:18px;
 }
 
 .badge{
-display:inline-block;
-background:rgba(255,255,255,.15);
-padding:12px 25px;
-border-radius:50px;
-margin-bottom:25px;
-font-weight:700;
-backdrop-filter:blur(10px);
+  display:inline-block;
+  background:rgba(16,185,129,.15);
+  border:1px solid rgba(16,185,129,.35);
+  padding:10px 24px;
+  border-radius:50px;
+  margin-bottom:22px;
+  font-weight:700;
+  font-size:.9rem;
+  color:#6ee7b7;
+  backdrop-filter:blur(10px);
 }
-
-.container{
-max-width:1200px;
-margin:auto;
-padding:30px 20px;
-}
-
-.cards{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:30px;
-margin-top:40px;
-}
-
-.card{
-background:white;
-color:#111827;
-width:340px;
-border-radius:30px;
-padding:35px;
-text-align:center;
-box-shadow:0 20px 40px rgba(0,0,0,.2);
-transition:.3s;
-}
-
-.card:hover{
-transform:translateY(-10px);
-}
-
-.card h3{
-font-size:2rem;
-margin-bottom:15px;
-color:#0f766e;
-}
-
-.card p{
-line-height:1.8;
-margin-bottom:25px;
-color:#4b5563;
-}
-
-.btn{
-display:inline-block;
-padding:15px 35px;
-border-radius:50px;
-text-decoration:none;
-font-weight:700;
-font-size:1.1rem;
-transition:.3s;
-}
-
-.btn-register{
-background:#10b981;
-color:white;
-}
-
-.btn-login{
-background:#2563eb;
-color:white;
-}
-
-.btn:hover{
-transform:scale(1.05);
-}
-
-.plans{
-margin-top:70px;
-}
-
-.plans h2{
-text-align:center;
-font-size:2.5rem;
-margin-bottom:30px;
-}
-
-.plan-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:20px;
-}
-
-.plan{
-background:rgba(255,255,255,.12);
-padding:20px;
-border-radius:20px;
-backdrop-filter:blur(10px);
-text-align:center;
-border:1px solid rgba(255,255,255,.15);
-}
-
-.plan .emoji{
-font-size:2rem;
-margin-bottom:10px;
-}
-
-.plan h4{
-margin-bottom:10px;
-}
-
-.plan p{
-font-weight:bold;
-color:#fde68a;
-}
-
-.footer{
-text-align:center;
-padding:40px 20px 100px;
-font-size:1rem;
-opacity:.95;
-}
-
-.live-banner{
-position:fixed;
-left:0;
-width:100%;
-padding:14px 0;
-overflow:hidden;
-white-space:nowrap;
-font-weight:700;
-z-index:999;
-}
-
-.banner1{
-bottom:45px;
-background:#10b981;
-}
-
-.banner2{
-bottom:0;
-background:#f59e0b;
-color:#111827;
-}
-
-.live-banner span{
-display:inline-block;
-padding-left:100%;
-animation:scrollText 18s linear infinite;
-}
-
-@keyframes scrollText{
-0%{transform:translateX(0);}
-100%{transform:translateX(-100%);}
-}
-
-@media(max-width:768px){
 
 .hero h1{
-font-size:2.8rem;
+  font-size:3.8rem;
+  font-weight:900;
+  margin-bottom:14px;
+  background:linear-gradient(135deg,#ffffff,#6ee7b7,#67e8f9);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:none;
 }
 
 .hero p{
-font-size:1.05rem;
+  font-size:1.15rem;
+  max-width:700px;
+  margin:0 auto 30px;
+  color:#94a3b8;
+  line-height:1.8;
+}
+
+.hero-stats{
+  display:flex;
+  justify-content:center;
+  gap:30px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.hero-stat{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(99,179,237,.15);
+  border-radius:16px;
+  padding:14px 24px;
+  text-align:center;
+  backdrop-filter:blur(8px);
+}
+
+.hero-stat .val{ font-size:1.6rem; font-weight:800; color:#10b981; }
+.hero-stat .lbl{ font-size:.75rem; color:#64748b; margin-top:2px; }
+
+/* ── CONTAINER ── */
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:20px 20px 160px;
+}
+
+/* ── CTA CARDS ── */
+.cards{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:24px;
+  margin-top:40px;
 }
 
 .card{
-width:100%;
+  background:rgba(13,26,42,.85);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(99,179,237,.18);
+  color:white;
+  width:320px;
+  border-radius:28px;
+  padding:36px 30px;
+  text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+  transition:.3s;
 }
 
+.card:hover{ transform:translateY(-8px); box-shadow:0 28px 60px rgba(0,0,0,.45); }
+
+.card-icon{ font-size:3rem; margin-bottom:14px; }
+
+.card h3{
+  font-size:1.6rem;
+  margin-bottom:12px;
+  font-weight:800;
 }
 
+.card p{
+  line-height:1.8;
+  margin-bottom:26px;
+  color:#94a3b8;
+  font-size:.95rem;
+}
+
+.btn{
+  display:inline-block;
+  padding:14px 36px;
+  border-radius:50px;
+  text-decoration:none;
+  font-weight:800;
+  font-size:1rem;
+  transition:.3s;
+  letter-spacing:.3px;
+}
+
+.btn-register{
+  background:linear-gradient(135deg,#10b981,#059669);
+  color:white;
+  box-shadow:0 6px 20px rgba(16,185,129,.35);
+}
+
+.btn-login{
+  background:linear-gradient(135deg,#0284c7,#1e40af);
+  color:white;
+  box-shadow:0 6px 20px rgba(2,132,199,.35);
+}
+
+.btn:hover{ transform:scale(1.06); }
+
+/* ── MPESA BAR ── */
+.mpesa-bar{
+  background:linear-gradient(135deg,rgba(15,23,42,.9),rgba(30,58,138,.8));
+  border:1px solid rgba(6,182,212,.3);
+  border-radius:20px;
+  padding:20px 28px;
+  text-align:center;
+  margin:36px 0;
+}
+
+.mpesa-bar p{ color:#94a3b8; font-size:.9rem; margin-bottom:4px; }
+.mpesa-bar .number{ font-size:2.4rem; font-weight:900; color:white; }
+.mpesa-bar .note{ font-size:.8rem; color:#64748b; margin-top:6px; }
+
+/* ── SECTION TITLE ── */
+.section-title{
+  text-align:center;
+  font-size:2rem;
+  font-weight:800;
+  margin-bottom:10px;
+  color:white;
+}
+
+.section-sub{
+  text-align:center;
+  color:#64748b;
+  font-size:.9rem;
+  margin-bottom:28px;
+}
+
+/* ── PLAN SECTION DIVIDER ── */
+.tier-divider{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:10px 0 18px;
+}
+
+.tier-divider::before,.tier-divider::after{
+  content:''; flex:1; height:1px;
+  background:rgba(99,179,237,.18);
+}
+
+.tier-divider span{
+  white-space:nowrap;
+  font-weight:700;
+  font-size:13px;
+  padding:5px 14px;
+  border-radius:20px;
+}
+
+.tier-divider.starter span{
+  background:rgba(245,158,11,.15);
+  color:#fbbf24;
+  border:1px solid rgba(245,158,11,.3);
+}
+
+.tier-divider.main span{
+  background:rgba(16,185,129,.15);
+  color:#6ee7b7;
+  border:1px solid rgba(16,185,129,.3);
+}
+
+/* ── PLAN GRID ── */
+.starter-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:14px;
+  margin-bottom:30px;
+}
+
+.main-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+}
+
+/* Plan card styles */
+.plan{
+  border-radius:20px;
+  padding:22px 16px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,.08);
+  transition:.3s;
+  position:relative;
+  overflow:hidden;
+  color:white;
+}
+
+.plan:hover{ transform:translateY(-6px); box-shadow:0 16px 35px rgba(0,0,0,.4); }
+
+/* Starter gradients */
+.plan-spark        { background:linear-gradient(135deg,#7c3aed,#4f46e5); }
+.plan-boost        { background:linear-gradient(135deg,#db2777,#9d174d); }
+.plan-connect      { background:linear-gradient(135deg,#0891b2,#1e40af); }
+.plan-stream       { background:linear-gradient(135deg,#059669,#047857); }
+.plan-launch       { background:linear-gradient(135deg,#d97706,#b45309); }
+/* Main gradients */
+.plan-data_pack    { background:linear-gradient(135deg,#0284c7,#1e3a8a); }
+.plan-creator      { background:linear-gradient(135deg,#7c3aed,#6d28d9); }
+.plan-affiliate    { background:linear-gradient(135deg,#059669,#065f46); }
+.plan-influencer   { background:linear-gradient(135deg,#db2777,#be185d); }
+.plan-digital_pro  { background:linear-gradient(135deg,#0891b2,#155e75); }
+.plan-growth_hub   { background:linear-gradient(135deg,#d97706,#92400e); }
+.plan-wealth_builder{ background:linear-gradient(135deg,#16a34a,#14532d); }
+.plan-empire       { background:linear-gradient(135deg,#b45309,#78350f); }
+
+.plan .emoji{ font-size:2rem; margin-bottom:8px; }
+.plan h4{ font-size:1rem; font-weight:800; margin-bottom:6px; }
+.plan .price{ font-size:1.3rem; font-weight:900; color:#fde68a; margin-bottom:6px; }
+.plan .daily{ font-size:.78rem; opacity:.85; margin-bottom:2px; }
+.plan .days{ font-size:.72rem; opacity:.65; }
+
+/* ── REFERRAL BANNER ── */
+.referral-banner{
+  background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(79,70,229,.2));
+  border:1px solid rgba(139,92,246,.3);
+  border-radius:20px;
+  padding:24px;
+  text-align:center;
+  margin:36px 0;
+}
+
+.referral-banner h3{ font-size:1.3rem; font-weight:800; margin-bottom:8px; color:#c4b5fd; }
+.referral-banner p{ color:#94a3b8; font-size:.9rem; line-height:1.7; }
+
+/* ── FOOTER ── */
+.footer{
+  text-align:center;
+  padding:30px 20px 20px;
+  color:#475569;
+  font-size:.9rem;
+  line-height:2;
+}
+
+.footer strong{ color:#10b981; }
+
+/* ── LIVE BANNERS (bottom) ── */
+.live-banner{
+  position:fixed;
+  left:0; width:100%;
+  padding:13px 0;
+  overflow:hidden;
+  white-space:nowrap;
+  font-weight:700;
+  z-index:999;
+  font-size:.9rem;
+}
+
+.banner1{
+  bottom:44px;
+  background:linear-gradient(90deg,#0f172a,#1e3a8a,#0f172a);
+  border-top:1px solid rgba(6,182,212,.3);
+  border-bottom:1px solid rgba(6,182,212,.3);
+  color:#67e8f9;
+}
+
+.banner2{
+  bottom:0;
+  background:linear-gradient(90deg,#0f172a,#064e3b,#0f172a);
+  border-top:1px solid rgba(16,185,129,.3);
+  color:#6ee7b7;
+}
+
+.live-banner span{
+  display:inline-block;
+  padding-left:100%;
+  animation:scrollText 22s linear infinite;
+}
+
+.banner1 span{ animation-duration:22s; }
+.banner2 span{ animation-duration:28s; }
+
+@keyframes scrollText{
+  0%  { transform:translateX(0); }
+  100%{ transform:translateX(-100%); }
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .hero h1{ font-size:2.6rem; }
+  .hero p{ font-size:1rem; }
+  .card{ width:100%; }
+  .hero-stats{ gap:14px; }
+  .hero-stat{ padding:12px 16px; }
+  .hero-stat .val{ font-size:1.3rem; }
+}
 </style>
 </head>
 <body>
 
+<!-- HERO -->
 <section class="hero">
+  <div class="logo-circle">M</div>
+  <div class="badge">🚀 Kenya's #1 Digital Income Platform</div>
+  <h1>MulaHub 🚀</h1>
+  <p>
+    Build Your Digital Income Daily. Join thousands of members using
+    MulaHub to grow earnings, unlock referral rewards and access
+    powerful digital income plans.
+  </p>
 
-<div class="badge">
-🚀 Welcome to MulaHub
-</div>
-
-<h1>MulaHub 🚀</h1>
-
-<p>
-Build Your Digital Income Daily.
-Join thousands of members using MulaHub to grow earnings,
-unlock referral rewards and access powerful digital income opportunities.
-</p>
-
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="val">13</div>
+      <div class="lbl">Active Plans</div>
+    </div>
+    <div class="hero-stat">
+      <div class="val">5%–10%</div>
+      <div class="lbl">Daily Returns</div>
+    </div>
+    <div class="hero-stat">
+      <div class="val">10%</div>
+      <div class="lbl">Referral Bonus</div>
+    </div>
+    <div class="hero-stat">
+      <div class="val">KES 450</div>
+      <div class="lbl">Start From</div>
+    </div>
+  </div>
 </section>
 
 <div class="container">
 
-<div class="cards">
+  <!-- CTA CARDS -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h3>Register</h3>
+      <p>
+        Create your free MulaHub account, activate a plan,
+        earn daily rewards and build your income step by step.
+      </p>
+      <a href="./register.html" class="btn btn-register">Get Started Free</a>
+    </div>
 
-<div class="card">
+    <div class="card">
+      <div class="card-icon">🔐</div>
+      <h3>Login</h3>
+      <p>
+        Access your dashboard, manage your plans,
+        track earnings and submit withdrawals anytime.
+      </p>
+      <a href="./login.html" class="btn btn-login">Login to Dashboard</a>
+    </div>
+  </div>
 
-<h3>🚀 Register</h3>
+  <!-- MPESA BAR -->
+  <div class="mpesa-bar">
+    <p>📲 Activate any plan via M-Pesa — Send to:</p>
+    <div class="number">0752964507</div>
+    <div class="note">Include your MulaHub username in the M-Pesa message after payment.</div>
+  </div>
 
-<p>
-Create your free MulaHub account, activate a plan,
-earn daily rewards and build your income step by step.
-</p>
+  <!-- ALL PLANS -->
+  <div class="section-title">🔥 All Available Plans</div>
+  <div class="section-sub">Choose a plan that fits your budget and start earning daily</div>
 
-<a href="./register.html" class="btn btn-register">
-Get Started
-</a>
+  <!-- STARTER PLANS -->
+  <div class="tier-divider starter">
+    <span>⭐ Starter Plans — ~5% Daily</span>
+  </div>
+  <div class="starter-grid">
+
+    <div class="plan plan-spark">
+      <div class="emoji">⚡</div>
+      <h4>Spark</h4>
+      <div class="price">KES 450</div>
+      <div class="daily">KES 22 / day</div>
+      <div class="days">⏳ 15 Days</div>
+    </div>
+
+    <div class="plan plan-boost">
+      <div class="emoji">🔥</div>
+      <h4>Boost</h4>
+      <div class="price">KES 550</div>
+      <div class="daily">KES 27 / day</div>
+      <div class="days">⏳ 17 Days</div>
+    </div>
+
+    <div class="plan plan-connect">
+      <div class="emoji">🌐</div>
+      <h4>Connect</h4>
+      <div class="price">KES 650</div>
+      <div class="daily">KES 32 / day</div>
+      <div class="days">⏳ 19 Days</div>
+    </div>
+
+    <div class="plan plan-stream">
+      <div class="emoji">📡</div>
+      <h4>Stream</h4>
+      <div class="price">KES 750</div>
+      <div class="daily">KES 37 / day</div>
+      <div class="days">⏳ 21 Days</div>
+    </div>
+
+    <div class="plan plan-launch">
+      <div class="emoji">🚀</div>
+      <h4>Launch</h4>
+      <div class="price">KES 900</div>
+      <div class="daily">KES 45 / day</div>
+      <div class="days">⏳ 23 Days</div>
+    </div>
+
+  </div>
+
+  <!-- MAIN PLANS -->
+  <div class="tier-divider main">
+    <span>🏆 Main Plans — 10% Daily</span>
+  </div>
+  <div class="main-grid">
+
+    <div class="plan plan-data_pack">
+      <div class="emoji">📶</div>
+      <h4>Data Pack</h4>
+      <div class="price">KES 1,000</div>
+      <div class="daily">KES 100 / day</div>
+      <div class="days">⏳ 20 Days</div>
+    </div>
+
+    <div class="plan plan-creator">
+      <div class="emoji">🎥</div>
+      <h4>Creator</h4>
+      <div class="price">KES 1,400</div>
+      <div class="daily">KES 140 / day</div>
+      <div class="days">⏳ 23 Days</div>
+    </div>
+
+    <div class="plan plan-affiliate">
+      <div class="emoji">🤝</div>
+      <h4>Affiliate</h4>
+      <div class="price">KES 1,800</div>
+      <div class="daily">KES 180 / day</div>
+      <div class="days">⏳ 25 Days</div>
+    </div>
+
+    <div class="plan plan-influencer">
+      <div class="emoji">📱</div>
+      <h4>Influencer</h4>
+      <div class="price">KES 2,200</div>
+      <div class="daily">KES 220 / day</div>
+      <div class="days">⏳ 28 Days</div>
+    </div>
+
+    <div class="plan plan-digital_pro">
+      <div class="emoji">💻</div>
+      <h4>Digital Pro</h4>
+      <div class="price">KES 2,600</div>
+      <div class="daily">KES 260 / day</div>
+      <div class="days">⏳ 30 Days</div>
+    </div>
+
+    <div class="plan plan-growth_hub">
+      <div class="emoji">📈</div>
+      <h4>Growth Hub</h4>
+      <div class="price">KES 3,000</div>
+      <div class="daily">KES 300 / day</div>
+      <div class="days">⏳ 35 Days</div>
+    </div>
+
+    <div class="plan plan-wealth_builder">
+      <div class="emoji">💰</div>
+      <h4>Wealth Builder</h4>
+      <div class="price">KES 3,500</div>
+      <div class="daily">KES 350 / day</div>
+      <div class="days">⏳ 40 Days</div>
+    </div>
+
+    <div class="plan plan-empire">
+      <div class="emoji">🏆</div>
+      <h4>Empire</h4>
+      <div class="price">KES 4,000</div>
+      <div class="daily">KES 400 / day</div>
+      <div class="days">⏳ 45 Days</div>
+    </div>
+
+  </div>
+
+  <!-- REFERRAL BANNER -->
+  <div class="referral-banner">
+    <h3>🎁 Earn More with Referrals</h3>
+    <p>
+      Invite a friend to MulaHub and earn <strong style="color:#c4b5fd">10% referral bonus</strong>
+      automatically when they activate a qualifying plan.
+      Share your referral link from your dashboard after registering.
+    </p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    💰 Referral Rewards Available &nbsp;•&nbsp;
+    🚀 13 Digital Income Plans &nbsp;•&nbsp;
+    📱 M-Pesa: <strong>0752964507</strong><br>
+    MulaHub — Build Your Digital Income Daily
+  </div>
 
 </div>
 
-<div class="card">
-
-<h3>🔐 Login</h3>
-
-<p>
-Access your dashboard, manage your plans,
-track earnings and submit withdrawals.
-</p>
-
-<a href="./login.html" class="btn btn-login">
-Login
-</a>
-
-</div>
-
-</div>
-
-<div class="plans">
-
-<h2>🔥 Available Plans</h2>
-
-<div class="plan-grid">
-
-<div class="plan">
-<div class="emoji">📶</div>
-<h4>Data Pack</h4>
-<p>KES 1,000</p>
-</div>
-
-<div class="plan">
-<div class="emoji">🎥</div>
-<h4>Creator</h4>
-<p>KES 1,400</p>
-</div>
-
-<div class="plan">
-<div class="emoji">🤝</div>
-<h4>Affiliate</h4>
-<p>KES 1,800</p>
-</div>
-
-<div class="plan">
-<div class="emoji">📱</div>
-<h4>Influencer</h4>
-<p>KES 2,200</p>
-</div>
-
-<div class="plan">
-<div class="emoji">💻</div>
-<h4>Digital Pro</h4>
-<p>KES 2,600</p>
-</div>
-
-<div class="plan">
-<div class="emoji">📈</div>
-<h4>Growth Hub</h4>
-<p>KES 3,000</p>
-</div>
-
-<div class="plan">
-<div class="emoji">💰</div>
-<h4>Wealth Builder</h4>
-<p>KES 3,500</p>
-</div>
-
-<div class="plan">
-<div class="emoji">🏆</div>
-<h4>Empire</h4>
-<p>KES 4,000</p>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="footer">
-
-💰 Referral Rewards Available<br>
-🚀 Multiple Digital Income Plans<br>
-📱 Activate via M-Pesa: <strong>0752964507</strong>
-
-</div>
-
+<!-- LIVE SCROLLING BANNERS -->
 <div class="live-banner banner1">
-<span>
-🚀 Thousands of members are building their digital income daily with MulaHub. Start today and unlock new earning opportunities.
-</span>
+  <span>
+    🚀 Thousands of members are building their digital income daily with MulaHub &nbsp;•&nbsp;
+    ⭐ Starter plans from just KES 450 &nbsp;•&nbsp;
+    🏆 Main plans up to KES 4,000 with 10% daily returns &nbsp;•&nbsp;
+    🎁 Earn 10% referral bonus on every qualifying plan &nbsp;•&nbsp;
+    Join MulaHub today and start earning! &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>
 </div>
 
 <div class="live-banner banner2">
-<span>
-📱 Activate Your Plan via M-Pesa/ Send Money: 0752964507 • Include your username after payment • Activate your MulaHub plan today 🚀
-</span>
+  <span>
+    📲 Activate Your Plan via M-Pesa &nbsp;•&nbsp;
+    Send Money to: 0752964507 &nbsp;•&nbsp;
+    Include your username after payment &nbsp;•&nbsp;
+    Plans: Spark KES 450 • Boost KES 550 • Connect KES 650 • Stream KES 750 • Launch KES 900 •
+    Data Pack KES 1,000 • Creator KES 1,400 • Affiliate KES 1,800 • Influencer KES 2,200 •
+    Digital Pro KES 2,600 • Growth Hub KES 3,000 • Wealth Builder KES 3,500 • Empire KES 4,000 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>
 </div>
 
 </body>
