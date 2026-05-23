@@ -1,436 +1,593 @@
-<!DOCTYPE html>    <html lang="en">    
-<head>    
-<meta charset="UTF-8">    
-<title>MulaHub Admin Dashboard</title>   
-<meta name="viewport" content="width=device-width, initial-scale=1.0">    
-  <style>
-  body{
-  font-family:'Poppins',Arial,sans-serif;
-  background:linear-gradient(135deg,#0F172A,#10B981);
-  margin:0;
-  padding:20px;
-  min-height:100vh;
-}
-
-.header{
-  background:linear-gradient(135deg,#0F172A,#10B981);
-  color:white;
-  padding:18px 24px;
-  border-radius:16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:25px;
-  box-shadow:0 8px 25px rgba(0,0,0,.15);
-}
-
-h1{
-  margin:0;
-  font-size:24px;
-}
-
-.tabs{
-  display:flex;
-  margin-bottom:20px;
-  background:white;
-  border-radius:12px;
-  overflow:hidden;
-  box-shadow:0 4px 15px rgba(0,0,0,.08);
-}
-
-.tab{
-  padding:14px 24px;
-  cursor:pointer;
-  font-weight:700;
-  flex:1;
-  text-align:center;
-}
-
-.tab.active{
-  background:#10B981;
-  color:white;
-}
-
-.tab-content{
-  display:none;
-  background:white;
-  padding:20px;
-  border-radius:16px;
-  box-shadow:0 8px 25px rgba(0,0,0,.12);
-}
-
-.tab-content.active{
-  display:block;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th{
-  background:#0F172A;
-  color:white;
-}
-
-th,td{
-  padding:12px;
-  border-bottom:1px solid #e5e7eb;
-}
-
-tr:hover{
-  background:#f8fafc;
-}
-
-.message{
-  padding:12px;
-  margin:15px 0;
-  border-radius:8px;
-  font-weight:bold;
-}
-
-.success{
-  background:#DCFCE7;
-  color:#166534;
-}
-
-.error{
-  background:#FEE2E2;
-  color:#991B1B;
-}
-
-button{
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  padding:10px 15px;
-  font-weight:600;
-}
-
-button:hover{
-  opacity:.92;
-}
-
-.action{
-  margin:2px;
-}
-
-h2{
-  color:#0F172A;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MulaHub Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-</head>    
-<body>    <div class="header">    
-  <h1>💼 MulaHub Admin Dashboard</h1>    
-  <button onclick="logout()">Logout</button>    
-</div>    <div id="message" class="message"></div>    <div class="tabs">    
-  <div class="tab active" onclick="switchTab(0)">Users</div>    
-  <div class="tab" onclick="switchTab(1)">Withdrawals</div>    
-  <div class="tab" onclick="switchTab(2)">Pending Investments</div>    
-</div>    <!-- Users Tab -->    <div id="tab-users" class="tab-content active">    
-  <h2>User Management</h2>    
-  <table id="usersTable">    
-    <thead>    
-      <tr>    
-        <th>Username</th>    
-        <th>Phone</th>    
-        <th>Status</th>    
-        <th>Balance (KES)</th>    
-        <th>Earnings (KES)</th>    
-        <th>Actions</th>    
-      </tr>    
-    </thead>    
-    <tbody></tbody>    
-  </table>    
-</div>    <!-- Withdrawals Tab -->    <div id="tab-withdrawals" class="tab-content">    
-  <h2>Withdrawal Requests</h2>    
-  <table id="withdrawalsTable">    
-    <thead>    
-      <tr>    
-        <th>Username</th>    
-        <th>Amount (KES)</th>    
-        <th>Requested At</th>    
-        <th>Status</th>    
-        <th>Action</th>    
-      </tr>    
-    </thead>    
-    <tbody></tbody>    
-  </table>    
-</div>    <!-- Investments Tab -->    <div id="tab-investments" class="tab-content">    
-  <h2>Pending Investments</h2>    
-  <table id="investmentsTable">    
-    <thead>    
-      <tr>    
-        <th>Username</th>    
-        <th>Commodity</th>    
-        <th>Amount (KES)</th>    
-        <th>Requested At</th>    
-        <th>Action</th>    
-      </tr>    
-    </thead>    
-    <tbody></tbody>    
-  </table>    
-</div>    <script>    
-const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";    
+  :root {
+    --bg: #050c14;
+    --surface: #0d1a27;
+    --surface2: #112030;
+    --border: #1e3448;
+    --green: #10B981;
+    --green-dim: #0d9268;
+    --green-glow: rgba(16,185,129,0.18);
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --text: #e2eaf4;
+    --muted: #6b8ba8;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .logo-mark { font-size: 22px; font-weight: 700; color: var(--green); letter-spacing: -0.5px; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px; cursor: pointer; color: var(--muted);
+    font-size: 14px; font-weight: 500; transition: all .18s;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { color: var(--text); background: var(--green-glow); }
+  .nav-item.active { color: var(--green); border-left-color: var(--green); background: var(--green-glow); }
+  .nav-icon { font-size: 18px; width: 22px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; background: var(--red); color: white;
+    font-size: 11px; font-weight: 700; border-radius: 20px;
+    padding: 2px 7px; font-family: var(--mono); display: none;
+  }
+  .nav-badge.show { display: block; }
+  .sidebar-bottom { margin-top: auto; padding: 20px 24px; border-top: 1px solid var(--border); }
+  .btn-logout {
+    width: 100%; padding: 10px; background: transparent;
+    border: 1px solid var(--border); color: var(--muted);
+    border-radius: 10px; cursor: pointer; font-size: 13px;
+    font-weight: 600; font-family: 'Space Grotesk', sans-serif; transition: .18s;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+  .main { margin-left: 240px; flex: 1; padding: 32px; min-height: 100vh; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text); }
+  .page-title span { color: var(--green); }
+  .btn {
+    padding: 9px 18px; border: none; border-radius: 9px; cursor: pointer;
+    font-size: 13px; font-weight: 600; font-family: 'Space Grotesk', sans-serif;
+    transition: .18s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { transform: translateY(-1px); opacity: .9; }
+  .btn-green  { background: var(--green); color: #fff; }
+  .btn-amber  { background: var(--amber); color: #000; }
+  .btn-red    { background: var(--red);   color: #fff; }
+  .btn-blue   { background: var(--blue);  color: #fff; }
+  .btn-ghost  { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .btn-sm     { padding: 6px 12px; font-size: 12px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 22px; position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; border-radius: 14px 14px 0 0;
+  }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.red::before   { background: var(--red); }
+  .stat-card.blue::before  { background: var(--blue); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-family: var(--mono); }
+  .stat-value { font-size: 28px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.amber .stat-value { color: var(--amber); }
+  .stat-card.red   .stat-value { color: var(--red); }
+  .stat-card.blue  .stat-value { color: var(--blue); }
+  .stat-icon { position: absolute; right: 18px; top: 18px; font-size: 26px; opacity: .15; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .panel-header {
+    padding: 18px 22px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .panel-header h2 { font-size: 15px; font-weight: 600; color: var(--text); }
+  .panel-tools {
+    display: flex; gap: 10px; align-items: center;
+    padding: 14px 22px; border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .search-input {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+    padding: 8px 14px; color: var(--text); font-size: 13px;
+    font-family: 'Space Grotesk', sans-serif; width: 240px; transition: .18s;
+  }
+  .search-input:focus { outline: none; border-color: var(--green); }
+  .search-input::placeholder { color: var(--muted); }
+  select.search-input { cursor: pointer; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--bg); color: var(--muted); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .8px; padding: 12px 16px;
+    text-align: left; white-space: nowrap; font-family: var(--mono);
+  }
+  td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--green-glow); }
+  .empty-cell { text-align: center; color: var(--muted); padding: 50px !important; font-size: 14px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px; font-size: 11px;
+    font-weight: 700; font-family: var(--mono); letter-spacing: .3px;
+  }
+  .badge-green { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
+  .badge-amber { background: rgba(245,158,11,.15);  color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+  .badge-red   { background: rgba(239,68,68,.15);   color: var(--red);   border: 1px solid rgba(239,68,68,.3); }
+  .badge-blue  { background: rgba(59,130,246,.15);  color: var(--blue);  border: 1px solid rgba(59,130,246,.3); }
+  .badge-muted { background: rgba(107,139,168,.1);  color: var(--muted); border: 1px solid var(--border); }
+  #toast {
+    position: fixed; bottom: 28px; right: 28px; padding: 14px 20px;
+    border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999;
+    transform: translateY(80px); opacity: 0;
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    max-width: 360px; box-shadow: 0 8px 30px rgba(0,0,0,.4);
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { background: var(--green); color: white; }
+  #toast.error   { background: var(--red);   color: white; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .mono { font-family: var(--mono); }
+  @media (max-width: 900px) {
+    .sidebar { width: 60px; }
+    .logo, .nav-item span, .logo-sub, .sidebar-bottom { display: none; }
+    .nav-item { justify-content: center; padding: 16px; }
+    .main { margin-left: 60px; padding: 20px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .main { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">💼 MulaHub</div>
+      <div class="logo-sub">Admin Panel</div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="showPage('users')">
+        <span class="nav-icon">👥</span>
+        <span>Users</span>
+      </div>
+      <div class="nav-item" onclick="showPage('investments')">
+        <span class="nav-icon">⏳</span>
+        <span>Pending Plans</span>
+        <span class="nav-badge" id="badge-inv">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('withdrawals')">
+        <span class="nav-icon">💸</span>
+        <span>Withdrawals</span>
+        <span class="nav-badge" id="badge-wd">0</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="btn-logout" onclick="logout()">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">👥 <span>Users</span></div>
+      <div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="stat-users">—</div>
+        <div class="stat-icon">👥</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-label">Pending Plans</div>
+        <div class="stat-value" id="stat-inv">—</div>
+        <div class="stat-icon">⏳</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Pending Withdrawals</div>
+        <div class="stat-value" id="stat-wd">—</div>
+        <div class="stat-icon">💸</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Total Balance (KES)</div>
+        <div class="stat-value" id="stat-bal">—</div>
+        <div class="stat-icon">💰</div>
+      </div>
+    </div>
+
+    <!-- USERS PAGE -->
+    <div class="page active" id="page-users">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>User Management</h2>
+          <button class="btn btn-ghost btn-sm" onclick="fetchUsers()">Reload</button>
+        </div>
+        <div class="panel-tools">
+          <input class="search-input" type="text" id="userSearch" placeholder="🔍 Search username or phone…" oninput="filterUsers()">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Username</th><th>Phone</th><th>Balance</th>
+                <th>Earnings</th><th>Ref Bonus</th><th>Referred By</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td class="empty-cell" colspan="8">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVESTMENTS PAGE -->
+    <div class="page" id="page-investments">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>⏳ Pending Plan Activations</h2>
+          <button class="btn btn-ghost btn-sm" onclick="fetchInvestments()">Reload</button>
+        </div>
+        <div class="panel-tools" style="font-size:13px;color:var(--muted);">
+          ⚠️ Verify M-Pesa payment before approving. Number: <strong style="color:var(--green);font-family:var(--mono);">0752964507</strong>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th><th>Phone</th><th>Plan</th><th>Tier</th>
+                <th>Amount (KES)</th><th>Requested</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="invBody">
+              <tr><td class="empty-cell" colspan="7">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- WITHDRAWALS PAGE -->
+    <div class="page" id="page-withdrawals">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>💸 Withdrawal Requests</h2>
+          <button class="btn btn-ghost btn-sm" onclick="fetchWithdrawals()">Reload</button>
+        </div>
+        <div class="panel-tools">
+          <select class="search-input" id="wdFilter" onchange="filterWithdrawals()" style="width:160px;">
+            <option value="all">All Statuses</option>
+            <option value="pending">⏳ Pending</option>
+            <option value="approved">✅ Approved</option>
+            <option value="rejected">❌ Rejected</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Username</th><th>Phone</th><th>Requested</th>
+                <th>Charge</th><th>They Receive</th><th>Method</th>
+                <th>Account</th><th>Date</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="wdBody">
+              <tr><td class="empty-cell" colspan="11">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BACKEND_URL = "https://repo-1red-jipate-bonus-1-kwee.onrender.com";
 const ADMIN_PASSWORD = "PHIL4857";
-    const PLAN_NAMES = {
-  data_pack: "Data Pack",
-  creator: "Creator",
-  affiliate: "Affiliate",
-  influencer: "Influencer",
-  digital_pro: "Digital Pro",
-  growth_hub: "Growth Hub",
-  wealth_builder: "Wealth Builder",
-  empire: "Empire"
+
+const PLAN_INFO = {
+  spark:         { label: "✨ Spark",         price: 450,  tier: "starter" },
+  boost:         { label: "📲 Boost",         price: 550,  tier: "starter" },
+  connect:       { label: "🔗 Connect",       price: 650,  tier: "starter" },
+  stream:        { label: "📡 Stream",        price: 750,  tier: "starter" },
+  launch:        { label: "🚀 Launch",        price: 900,  tier: "starter" },
+  data_pack:     { label: "📶 Data Pack",     price: 1000, tier: "main" },
+  creator:       { label: "🎥 Creator",       price: 1400, tier: "main" },
+  affiliate:     { label: "🤝 Affiliate",     price: 1800, tier: "main" },
+  influencer:    { label: "📱 Influencer",    price: 2200, tier: "main" },
+  digital_pro:   { label: "💻 Digital Pro",   price: 2600, tier: "main" },
+  growth_hub:    { label: "📈 Growth Hub",    price: 3000, tier: "main" },
+  wealth_builder:{ label: "💰 Wealth Builder",price: 3500, tier: "main" },
+  empire:        { label: "🏆 Empire",        price: 4000, tier: "main" },
 };
-    
-function showMessage(type, text) {    
-  const msg = document.getElementById("message");    
-  msg.className = `message ${type}`;    
-  msg.textContent = text;    
-  setTimeout(() => { msg.textContent = ""; }, 8000);    
-}    
-    
-function switchTab(n) {    
-  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));    
-  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === n));    
-}    
-    
-// ==================== USERS ====================    
-async function fetchUsers() {    
-  const tbody = document.querySelector("#usersTable tbody");    
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Loading users...</td></tr>`;    
-    
-  try {    
-    const res = await fetch(`${BACKEND_URL}/admin/users`, {    
-      method: "POST",    
-      headers: { "Content-Type": "application/json" },    
-      body: JSON.stringify({ password: ADMIN_PASSWORD })    
-    });    
-    
-    const data = await res.json().catch(() => []);    
-    if (res.ok) {    
-      populateUsersTable(Array.isArray(data) ? data : []);    
-    } else {    
-      showMessage("error", data.detail || "Failed to load users");    
-    }    
-  } catch (err) {    
-    showMessage("error", "Cannot connect to server");    
-  }    
-}    
-    
-function populateUsersTable(users) {    
-  const tbody = document.querySelector("#usersTable tbody");    
-  tbody.innerHTML = "";    
-    
-  if (users.length === 0) {    
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;">No registered users yet</td></tr>`;    
-    return;    
-  }    
-    
-  users.forEach(user => {    
-    const row = document.createElement("tr");    
-    row.innerHTML = `    
-      <td>${user.username || 'N/A'}</td>    
-      <td>${user.phone || 'N/A'}</td>    
-      <td>${user.approved ? '✅ Approved' : '⏳ Pending'}</td>    
-      <td>KES ${Number(user.balance || 0).toFixed(2)}</td>    
-      <td>KES ${Number(user.earnings || 0).toFixed(2)}</td>    
-      <td>    
-        <button class="action" onclick="resetPassword('${user.username}')" style="background:#ffc107;">Reset PW</button>    
-        <button class="action" onclick="terminateUser('${user.username}')" style="background:#dc3545;color:white;">Terminate</button>    
-      </td>    
-    `;    
-    tbody.appendChild(row);    
-  });    
-}    
-    
-// ==================== WITHDRAWALS ====================    
-async function fetchWithdrawals() {    
-  const tbody = document.querySelector("#withdrawalsTable tbody");    
-  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading withdrawals...</td></tr>`;    
-    
-  try {    
-    const res = await fetch(`${BACKEND_URL}/admin/withdrawals`, {    
-      method: "POST",    
-      headers: { "Content-Type": "application/json" },    
-      body: JSON.stringify({ password: ADMIN_PASSWORD })    
-    });    
-    
-    const data = await res.json().catch(() => []);    
-    if (res.ok) {    
-      populateWithdrawalsTable(Array.isArray(data) ? data : []);    
-    } else {    
-      showMessage("error", data.detail || "Failed to load withdrawals");    
-    }    
-  } catch (err) {    
-    showMessage("error", "Cannot load withdrawals");    
-  }    
-}    
-    
-function populateWithdrawalsTable(withdrawals) {    
-  const tbody = document.querySelector("#withdrawalsTable tbody");    
-  tbody.innerHTML = "";    
-    
-  if (withdrawals.length === 0) {    
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No withdrawal requests</td></tr>`;    
-    return;    
-  }    
-    
-  withdrawals.forEach(w => {    
-    const row = document.createElement("tr");    
-    row.innerHTML = `    
-      <td>${w.username || 'N/A'}</td>    
-      <td>KES ${Number(w.amount || 0).toFixed(2)}</td>    
-      <td>${w.requested_at || 'N/A'}</td>    
-      <td>${w.status || 'pending'}</td>    
-      <td>    
-        ${w.status === 'pending' ?     
-          `<button class="action" onclick="approveWithdrawal(${w.id})" style="background:#28a745;color:white;">Approve</button>` :     
-          'Processed'}    
-      </td>    
-    `;    
-    tbody.appendChild(row);    
-  });    
-}    
-    
-async function approveWithdrawal(id) {    
-  if (!confirm("Approve this withdrawal?")) return;    
-  try {    
-    const res = await fetch(`${BACKEND_URL}/admin/withdraw_approve`, {    
-      method: "POST",    
-      headers: { "Content-Type": "application/json" },    
-      body: JSON.stringify({ password: ADMIN_PASSWORD, withdrawal_id: id })    
-    });    
-    const result = await res.json().catch(() => ({}));    
-    if (res.ok) {    
-      showMessage("success", result.message || "Withdrawal approved successfully");    
-      fetchWithdrawals();    
-    } else {    
-      showMessage("error", result.detail || "Failed to approve withdrawal");    
-    }    
-  } catch (e) {    
-    showMessage("error", "Network error");    
-  }    
-}    
-    
-// ==================== PENDING INVESTMENTS ====================    
-async function fetchInvestments() {    
-  const tbody = document.querySelector("#investmentsTable tbody");    
-  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading pending investments...</td></tr>`;    
-    
-  try {    
-    const res = await fetch(`${BACKEND_URL}/admin/pending-investments`, {    
-      method: "POST",    
-      headers: { "Content-Type": "application/json" },    
-      body: JSON.stringify({ password: ADMIN_PASSWORD })    
-    });    
-    
-    const data = await res.json().catch(() => []);    
-    if (res.ok) {    
-      populateInvestmentsTable(Array.isArray(data) ? data : []);    
-    } else {    
-      showMessage("error", data.detail || "Failed to load investments");    
-    }    
-  } catch (err) {    
-    showMessage("error", "Cannot load pending investments");    
-  }    
-}    
-    
-function populateInvestmentsTable(investments) {    
-  const tbody = document.querySelector("#investmentsTable tbody");    
-  tbody.innerHTML = "";    
-    
-  if (investments.length === 0) {    
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">No pending investments</td></tr>`;    
-    return;    
-  }    
-    
-  investments.forEach(inv => {    
-    const row = document.createElement("tr");    
-    row.innerHTML = `    
-      <td>${inv.username || 'N/A'}</td>    
-      <td>${inv.commodity || 'N/A'}</td>    
-      <td>KES ${Number(inv.amount || 0).toFixed(2)}</td>    
-      <td>${inv.requested_at || 'N/A'}</td>    
-      <td>    
-        <button class="action" onclick="approveInvestment('${inv.username}', '${inv.commodity}')"     
-                style="background:#28a745;color:white;">Approve Investment</button>    
-      </td>    
-    `;    
-    tbody.appendChild(row);    
-  });    
-}    
-    
-async function approveInvestment(username, commodity) {    
-  if (!confirm(`Approve investment in ${commodity} for ${username}?`)) return;    
-    
-  try {    
-    const res = await fetch(`${BACKEND_URL}/admin/approve-investment`, {    
-      method: "POST",    
-      headers: { "Content-Type": "application/json" },    
-      body: JSON.stringify({     
-        password: ADMIN_PASSWORD,     
-        username: username,     
-        investment_commodity: commodity     
-      })    
-    });    
-    
-    const result = await res.json().catch(() => ({}));    
-    if (res.ok) {    
-      showMessage("success", result.message || "Investment approved successfully");    
-      fetchInvestments();    
-    } else {    
-      showMessage("error", result.detail || "Failed to approve investment");    
-    }    
-  } catch (e) {    
-    showMessage("error", "Network error");    
-  }    
-}    
-    
-// ==================== Reset Password & Terminate ====================    
-async function adminAction(endpoint, username) {    
-  if (!confirm(`Confirm ${endpoint.replace(/-/g, ' ')} for user ${username}?`)) return;    
-    
-  try {    
-    const res = await fetch(`${BACKEND_URL}/admin/${endpoint}`, {    
-      method: "POST",    
-      headers: { "Content-Type": "application/json" },    
-      body: JSON.stringify({     
-        password: ADMIN_PASSWORD,     
-        username: username     
-      })    
-    });    
-    
-    const result = await res.json().catch(() => ({}));    
-    
-    if (res.ok) {    
-      showMessage("success", result.message || "Action completed successfully");    
-      fetchUsers();    
-    } else {    
-      showMessage("error", result.detail || "Action failed");    
-    }    
-  } catch (err) {    
-    showMessage("error", "Cannot connect to backend");    
-  }    
-}    
-    
-function resetPassword(username) { adminAction("reset-password", username); }    
-function terminateUser(username) { adminAction("terminate-user", username); }    
-    
-function logout() {    
-  localStorage.removeItem("adminLoggedIn");    
-  window.location.href = "admin-login.html";    
-}    
-    
-document.addEventListener("DOMContentLoaded", () => {    
-  if (localStorage.getItem("adminLoggedIn") !== "true") {    
-    window.location.href = "admin-login.html";    
-    return;    
-  }    
-  fetchUsers();    
-  fetchWithdrawals();    
-  fetchInvestments();    
-});    
-</script>    </body>    
+
+let allUsers = [];
+let allWithdrawals = [];
+
+function toast(type, text) {
+  const el = document.getElementById("toast");
+  el.className = "show " + type;
+  el.textContent = (type === "success" ? "✅  " : "❌  ") + text;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ""; }, 4500);
+}
+
+function showPage(name) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.getElementById("page-" + name).classList.add("active");
+  const titles = {
+    users: "👥 <span>Users</span>",
+    investments: "⏳ <span>Pending Plans</span>",
+    withdrawals: "💸 <span>Withdrawals</span>"
+  };
+  document.getElementById("pageTitle").innerHTML = titles[name];
+  const idx = { users: 0, investments: 1, withdrawals: 2 }[name];
+  document.querySelectorAll(".nav-item")[idx].classList.add("active");
+}
+
+function refreshAll() { fetchUsers(); fetchInvestments(); fetchWithdrawals(); }
+
+function logout() {
+  localStorage.removeItem("adminLoggedIn");
+  window.location.href = "admin-login.html";
+}
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  try { return new Date(iso).toLocaleString("en-KE", { dateStyle: "short", timeStyle: "short" }); }
+  catch { return iso; }
+}
+
+function fmtKES(n) {
+  return "KES " + Number(n || 0).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+async function fetchUsers() {
+  document.getElementById("usersBody").innerHTML = '<tr><td class="empty-cell" colspan="8">Loading users…</td></tr>';
+  try {
+    const res = await fetch(BACKEND_URL + "/admin/users", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+    const data = await res.json().catch(() => []);
+    if (!res.ok) { toast("error", data.detail || "Failed to load users"); return; }
+    allUsers = Array.isArray(data) ? data : [];
+    renderUsers(allUsers);
+    document.getElementById("stat-users").textContent = allUsers.length;
+    const totalBal = allUsers.reduce((s, u) => s + (u.balance || 0), 0);
+    document.getElementById("stat-bal").textContent = totalBal >= 1000
+      ? (totalBal / 1000).toFixed(1) + "k" : Math.round(totalBal);
+  } catch { toast("error", "Cannot connect to server"); }
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById("usersBody");
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td class="empty-cell" colspan="8">No registered users yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map((u, i) => `
+    <tr>
+      <td class="mono" style="color:var(--muted)">${i + 1}</td>
+      <td><strong>${u.username || "N/A"}</strong></td>
+      <td class="mono" style="font-size:12px">${u.phone || "N/A"}</td>
+      <td class="mono">${fmtKES(u.balance)}</td>
+      <td class="mono" style="color:var(--green)">${fmtKES(u.earnings)}</td>
+      <td class="mono" style="color:var(--amber)">${fmtKES(u.referral_bonus_earned)}</td>
+      <td>${u.referral_code ? '<span class="badge badge-blue">' + u.referral_code + '</span>' : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>
+        <button class="btn btn-blue btn-sm" onclick="resetPassword('${u.username}')">Reset PW</button>
+        <button class="btn btn-red btn-sm" onclick="terminateUser('${u.username}')">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function filterUsers() {
+  const q = document.getElementById("userSearch").value.toLowerCase();
+  renderUsers(allUsers.filter(u =>
+    (u.username || "").toLowerCase().includes(q) || (u.phone || "").includes(q)
+  ));
+}
+
+async function fetchInvestments() {
+  document.getElementById("invBody").innerHTML = '<tr><td class="empty-cell" colspan="7">Loading…</td></tr>';
+  try {
+    const res = await fetch(BACKEND_URL + "/admin/pending-investments", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+    const data = await res.json().catch(() => []);
+    if (!res.ok) { toast("error", data.detail || "Failed to load"); return; }
+    const list = Array.isArray(data) ? data : [];
+    document.getElementById("stat-inv").textContent = list.length;
+    const badge = document.getElementById("badge-inv");
+    badge.textContent = list.length;
+    badge.classList.toggle("show", list.length > 0);
+    if (!list.length) {
+      document.getElementById("invBody").innerHTML = '<tr><td class="empty-cell" colspan="7">✅ No pending plan activations</td></tr>';
+      return;
+    }
+    document.getElementById("invBody").innerHTML = list.map(inv => {
+      const plan = PLAN_INFO[inv.commodity] || {};
+      const tier = plan.tier === "starter"
+        ? '<span class="badge badge-amber">Starter 5%</span>'
+        : '<span class="badge badge-green">Main 10%</span>';
+      return `
+        <tr>
+          <td><strong>${inv.username || "N/A"}</strong></td>
+          <td class="mono" style="font-size:12px">${inv.phone || "N/A"}</td>
+          <td>${plan.label || inv.commodity}</td>
+          <td>${tier}</td>
+          <td class="mono"><strong>${fmtKES(inv.amount)}</strong></td>
+          <td class="mono" style="font-size:12px;color:var(--muted)">${fmtDate(inv.requested_at)}</td>
+          <td>
+            <button class="btn btn-green btn-sm" onclick="approveInvestment('${inv.username}','${inv.commodity}')">✅ Approve</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  } catch { toast("error", "Cannot load pending investments"); }
+}
+
+async function approveInvestment(username, commodity) {
+  const plan = PLAN_INFO[commodity] || {};
+  if (!confirm("Approve " + (plan.label || commodity) + " for @" + username + "?\n\nConfirm M-Pesa payment of " + fmtKES(plan.price) + " received before approving.")) return;
+  try {
+    const res = await fetch(BACKEND_URL + "/admin/approve-investment", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, username: username, investment_commodity: commodity })
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) { toast("success", result.message || "Plan approved!"); fetchInvestments(); fetchUsers(); }
+    else toast("error", result.detail || "Failed to approve");
+  } catch { toast("error", "Network error"); }
+}
+
+async function fetchWithdrawals() {
+  document.getElementById("wdBody").innerHTML = '<tr><td class="empty-cell" colspan="11">Loading…</td></tr>';
+  try {
+    const res = await fetch(BACKEND_URL + "/admin/withdrawals", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD })
+    });
+    const data = await res.json().catch(() => []);
+    if (!res.ok) { toast("error", data.detail || "Failed to load"); return; }
+    allWithdrawals = Array.isArray(data) ? data : [];
+    const pendingCount = allWithdrawals.filter(w => w.status === "pending").length;
+    document.getElementById("stat-wd").textContent = pendingCount;
+    const badge = document.getElementById("badge-wd");
+    badge.textContent = pendingCount;
+    badge.classList.toggle("show", pendingCount > 0);
+    filterWithdrawals();
+  } catch { toast("error", "Cannot load withdrawals"); }
+}
+
+function filterWithdrawals() {
+  const f = document.getElementById("wdFilter").value;
+  const list = f === "all" ? allWithdrawals : allWithdrawals.filter(w => w.status === f);
+  const tbody = document.getElementById("wdBody");
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td class="empty-cell" colspan="11">No withdrawal requests found</td></tr>';
+    return;
+  }
+  const statusBadge = { pending: "badge-amber", approved: "badge-green", rejected: "badge-red" };
+  const statusLabel = { pending: "⏳ Pending", approved: "✅ Approved", rejected: "❌ Rejected" };
+  tbody.innerHTML = list.map(w => `
+    <tr>
+      <td class="mono" style="color:var(--muted)">#${w.id}</td>
+      <td><strong>${w.username || "N/A"}</strong></td>
+      <td class="mono" style="font-size:12px">${w.phone || "N/A"}</td>
+      <td class="mono"><strong>${fmtKES(w.amount)}</strong></td>
+      <td class="mono" style="color:var(--red);font-size:12px">-${fmtKES(w.charge)}</td>
+      <td class="mono" style="color:var(--green);font-weight:700">${fmtKES(w.net_amount)}</td>
+      <td><span class="badge badge-blue">${(w.payment_method || "N/A").toUpperCase()}</span></td>
+      <td class="mono" style="font-size:12px">${w.account_number || "—"}</td>
+      <td class="mono" style="font-size:11px;color:var(--muted)">${fmtDate(w.requested_at)}</td>
+      <td><span class="badge ${statusBadge[w.status] || "badge-muted"}">${statusLabel[w.status] || w.status}</span></td>
+      <td>
+        ${w.status === "pending"
+          ? '<button class="btn btn-green btn-sm" onclick="approveWithdrawal(' + w.id + ')">✅ Approve</button> <button class="btn btn-amber btn-sm" onclick="rejectWithdrawal(' + w.id + ')">❌ Reject</button>'
+          : '<span style="color:var(--muted);font-size:12px">Done</span>'}
+      </td>
+    </tr>
+  `).join("");
+}
+
+async function approveWithdrawal(id) {
+  const w = allWithdrawals.find(x => x.id === id);
+  const info = w ? "Send " + fmtKES(w.net_amount) + " to " + w.username + " via " + (w.payment_method || "").toUpperCase() + " — " + (w.account_number || "N/A") : "ID #" + id;
+  if (!confirm("Approve withdrawal?\n\n" + info + "\n\n⚠️ Send money FIRST before clicking OK.")) return;
+  try {
+    const res = await fetch(BACKEND_URL + "/admin/withdraw_approve", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, withdrawal_id: id })
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) { toast("success", result.message || "Withdrawal approved"); fetchWithdrawals(); fetchUsers(); }
+    else toast("error", result.detail || "Failed");
+  } catch { toast("error", "Network error"); }
+}
+
+async function rejectWithdrawal(id) {
+  if (!confirm("Reject withdrawal #" + id + "? User balance will NOT be deducted.")) return;
+  try {
+    const res = await fetch(BACKEND_URL + "/admin/withdraw_reject", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, withdrawal_id: id })
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) { toast("success", "Withdrawal #" + id + " rejected"); fetchWithdrawals(); }
+    else toast("error", result.detail || "Failed");
+  } catch { toast("error", "Network error"); }
+}
+
+async function adminAction(endpoint, username) {
+  try {
+    const res = await fetch(BACKEND_URL + "/admin/" + endpoint, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, username: username })
+    });
+    const result = await res.json().catch(() => ({}));
+    if (res.ok) { toast("success", result.message || "Done"); fetchUsers(); }
+    else toast("error", result.detail || "Action failed");
+  } catch { toast("error", "Network error"); }
+}
+
+function resetPassword(u) {
+  if (confirm("Reset @" + u + "'s password to '123456'?")) adminAction("reset-password", u);
+}
+function terminateUser(u) {
+  if (confirm("⚠️ Permanently DELETE @" + u + "? This cannot be undone!")) adminAction("terminate-user", u);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("adminLoggedIn") !== "true") {
+    window.location.href = "admin-login.html";
+    return;
+  }
+  refreshAll();
+});
+</script>
+</body>
 </html>
