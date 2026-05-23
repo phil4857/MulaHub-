@@ -18,17 +18,25 @@
 body{
   font-family:'Segoe UI',sans-serif;
   min-height:100vh;
-  background:linear-gradient(135deg,#10b981,#0ea5e9,#6366f1);
+  background:
+linear-gradient(
+135deg,
+#071226,
+#0f172a,
+#111827,
+#1e3a8a
+);
   background-attachment:fixed;
 }
 
-.hero-banner{
-  background:linear-gradient(
-    135deg,
-    rgba(16,185,129,.95),
-    rgba(14,165,233,.95),
-    rgba(99,102,241,.95)
-  );
+.hero-banner
+  background:
+linear-gradient(
+135deg,
+rgba(15,23,42,.95),
+rgba(30,58,138,.95),
+rgba(6,182,212,.9)
+);
   color:white;
   padding:30px;
   border-radius:24px;
@@ -457,49 +465,106 @@ const BACKEND_URL =
 
 const COMMODITY_INFO = {
 
+  spark:{
+      price:450,
+      emoji:"⚡",
+      daily:"KES 40/day",
+      duration:"18 Days"
+  },
+
+  boost:{
+      price:550,
+      emoji:"🔥",
+      daily:"KES 50/day",
+      duration:"20 Days"
+  },
+
+  connect:{
+      price:650,
+      emoji:"🌐",
+      daily:"KES 60/day",
+      duration:"22 Days"
+  },
+
+  stream:{
+      price:750,
+      emoji:"📡",
+      daily:"KES 70/day",
+      duration:"24 Days"
+  },
+
+  launch:{
+      price:900,
+      emoji:"🚀",
+      daily:"KES 85/day",
+      duration:"26 Days"
+  },
+
   data_pack:{
       price:1000,
-      emoji:"📶"
+      emoji:"📶",
+      daily:"KES 100/day",
+      duration:"20 Days"
   },
 
   creator:{
       price:1400,
-      emoji:"🎥"
+      emoji:"🎥",
+      daily:"KES 140/day",
+      duration:"23 Days"
   },
 
   affiliate:{
       price:1800,
-      emoji:"🤝"
+      emoji:"🤝",
+      daily:"KES 180/day",
+      duration:"25 Days"
   },
 
   influencer:{
       price:2200,
-      emoji:"📱"
+      emoji:"📱",
+      daily:"KES 220/day",
+      duration:"28 Days"
   },
 
   digital_pro:{
       price:2600,
-      emoji:"💻"
+      emoji:"💻",
+      daily:"KES 260/day",
+      duration:"30 Days"
   },
 
   growth_hub:{
       price:3000,
-      emoji:"📈"
+      emoji:"📈",
+      daily:"KES 300/day",
+      duration:"35 Days"
   },
 
   wealth_builder:{
       price:3500,
-      emoji:"💰"
+      emoji:"💰",
+      daily:"KES 350/day",
+      duration:"40 Days"
   },
 
   empire:{
       price:4000,
-      emoji:"🏆"
+      emoji:"🏆",
+      daily:"KES 400/day",
+      duration:"45 Days"
   }
 
 };
 
 const PLAN_NAMES = {
+
+  spark:"Spark",
+  boost:"Boost",
+  connect:"Connect",
+  stream:"Stream",
+  launch:"Launch",
 
   data_pack:"Data Pack",
   creator:"Creator",
@@ -563,23 +628,54 @@ function renderCommodities(){
       const card=document.createElement("div");
 
       card.className=
-      "plan-card bg-white rounded-3xl p-6 text-center shadow-lg";
+"plan-card rounded-3xl p-6 text-center shadow-xl text-white relative overflow-hidden";
 
-      card.innerHTML=`
+      const gradients = [
+  "from-emerald-500 to-green-700",
+  "from-blue-500 to-cyan-700",
+  "from-purple-500 to-indigo-700",
+  "from-orange-500 to-red-600",
+  "from-pink-500 to-rose-700",
+  "from-teal-500 to-cyan-700"
+];
 
-          <div class="text-5xl mb-3">
-              ${plan.emoji}
-          </div>
+const randomGradient =
+gradients[Math.floor(Math.random()*gradients.length)];
 
-          <h3 class="font-bold text-lg">
-              ${PLAN_NAMES[key]}
-          </h3>
+card.classList.add(
+  "bg-gradient-to-br",
+  ...randomGradient.split(" ")
+);
 
-          <p class="text-emerald-600 font-bold text-2xl mt-2">
-              KES ${plan.price}
-          </p>
+card.innerHTML=`
 
-      `;
+    <div class="text-5xl mb-4">
+        ${plan.emoji}
+    </div>
+
+    <h3 class="font-extrabold text-2xl mb-2">
+        ${PLAN_NAMES[key]}
+    </h3>
+
+    <p class="text-3xl font-black">
+        KES ${plan.price}
+    </p>
+
+    <div class="mt-4 bg-white/20 rounded-2xl p-3">
+
+        <p class="text-sm font-semibold">
+            ${plan.daily}
+        </p>
+
+        <p class="text-sm mt-1">
+            ⏳ ${plan.duration}
+        </p>
+
+    </div>
+
+`;
+
+    
 
       card.onclick=()=>{
 
